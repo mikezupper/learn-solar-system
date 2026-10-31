@@ -636,7 +636,7 @@ toolchain and can be read and tested here.
 | `pnpm lint:taste` | Source files under 400 lines; no `class`, `style`, `div` or `span` in views; logical properties and oklch in CSS |
 | `pnpm gen-docs --check` | Generated documents match the code |
 | `pnpm quality --check` | Every package has a grade |
-| `pnpm coverage` | Unit tests pass, with at least 85% of lines covered. On 2026-10-31 it stood at 95.9% |
+| `pnpm coverage` | Unit tests pass, with at least 85% of lines covered. On 2026-10-31 it stood at 96.0% |
 | `pnpm test:browser` | Components work in a real browser |
 | `pnpm build`, `pnpm budget` | At most 240 KiB of gzipped JavaScript |
 | `pnpm e2e` | Acceptance tests, including axe in both color schemes |

@@ -88,6 +88,44 @@ describe("kernelSourceFile", () => {
     ).pipe(Effect.scoped),
   )
 
+  // Worktrees share this cache, and so do test files running side by side, so a cold cache can see
+  // two downloads of one kernel at the same moment. CI found this: with a shared partial file, the
+  // second rename finds its file already gone.
+  it.live("lets two downloads of the same kernel run at once", () =>
+    withKernelSource(KERNEL, ({ dir }) =>
+      Effect.gen(function* () {
+        const kernels = yield* KernelSource
+        const fs = yield* FileSystem.FileSystem
+        const readers = yield* Effect.all(
+          [kernels.open(pin(KERNEL_SHA256)), kernels.open(pin(KERNEL_SHA256)), kernels.open(pin(KERNEL_SHA256))],
+          { concurrency: "unbounded" },
+        )
+        for (const reader of readers) {
+          assert.deepStrictEqual(new TextDecoder().decode(yield* reader.read(0, 3)), "abc")
+        }
+        assert.deepStrictEqual(yield* fs.readDirectory(dir), ["test.bsp"])
+      }),
+    ).pipe(Effect.scoped),
+  )
+
+  it.live("leaves nothing behind when a download fails", () =>
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem
+      const dir = yield* fs.makeTempDirectoryScoped()
+      const failing = Layer.succeed(
+        HttpClient.HttpClient,
+        HttpClient.make((request) =>
+          Effect.succeed(HttpClientResponse.fromWeb(request, new Response("", { status: 503 }))),
+        ),
+      )
+      const kernels = yield* KernelSource.pipe(
+        Effect.provide(kernelSourceFile({ cacheDir: dir }).pipe(Layer.provide(failing))),
+      )
+      assert.instanceOf(yield* kernels.open(pin(KERNEL_SHA256)).pipe(Effect.flip), KernelReadError)
+      assert.deepStrictEqual(yield* fs.readDirectory(dir), [])
+    }).pipe(Effect.provide(NodeServices.layer), Effect.scoped),
+  )
+
   it.live("replaces a cached copy that has gone bad", () =>
     withKernelSource(KERNEL, ({ dir, requests }) =>
       Effect.gen(function* () {

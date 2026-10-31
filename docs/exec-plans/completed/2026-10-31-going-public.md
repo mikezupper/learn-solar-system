@@ -14,7 +14,8 @@ stranger can clone it, follow the guide and get a green `pnpm verify`.
 - [x] Explain the page on the page, with its numbers under test
 - [x] Fix the tile requests that a separate host would refuse
 - [x] License, README, guides, templates, citation
-- [ ] CI proven on GitHub, and a fresh clone verified
+- [x] CI proven on GitHub
+- [x] A stranger's clone verified: no SSH key or GitHub credentials, through `pnpm bootstrap`, `pnpm verify` and one published year
 
 ## Decision log
 
@@ -45,6 +46,11 @@ which a Gyral component cannot do. So it does not live in `copy.ts`, and because
 load tiles from another origin: Effect's HTTP client adds `traceparent` and `b3`, which trigger a preflight that an
 ordinary static host refuses. No test had tried a second origin. Tile requests now set
 `TracerPropagationEnabled` to false, and the client span is still recorded.
+
+**2026-10-31. Kernel downloads no longer share a partial file.** The first CI run started with an empty cache, and
+two kernel test files downloaded at once. Both wrote `de440s.bsp.partial`, and the second rename found its file gone. A
+local cache had hidden this, and two worktrees booting on a fresh machine would have hit it too. Each download now
+works in its own directory.
 
 **2026-10-31. `mikezupper/learn-solar-system`.** The address the owner gave spelled the account `mikezuppper`, which does
 not exist on GitHub. `mikezupper` is the logged-in account and owns the skill repositories.

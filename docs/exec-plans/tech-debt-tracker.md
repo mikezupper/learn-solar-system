@@ -4,7 +4,6 @@ Each entry says what triggers paying it down.
 
 | Debt | Why it matters | Pay it when |
 |---|---|---|
-| CI has never run. `.github/workflows/` was written without a remote. | The workflows are unproven, and the same gates run only locally | The repository gets a remote |
 | No deployment or tile bucket. `tileStoreFile` writes to a local directory. | The page has no public home | The first teacher is due to try it |
 | The stage has no keyboard camera controls. | Keyboard users cannot turn or zoom; the table does carry every number | Before any classroom pilot |
 | Mars through Neptune use barycenters. | Off by a few hundred kilometers from the planet's center; needed for close views | Moon kernels land |
@@ -16,5 +15,7 @@ Each entry says what triggers paying it down.
 | One worker at a time. `TileStore` has no compare-and-swap. | Two writers could lose a catalog update | Builds run from more than one place |
 | No strict CSP. | Not needed by a static page today, but a cheap defense | Before public deployment |
 | No mutation testing in CI. Six deliberate breaks were done by hand. | Late tests may be weaker than they look | The domain next grows |
-| The gardening workflow reports staleness but opens no fix-up pull requests. | The article's doc-gardening agent is not built | CI is running |
+| The gardening workflow reports staleness but opens no fix-up pull requests. | The article's doc-gardening agent is not built, so someone must read the weekly report | Stale documents start slipping past the report |
+| Four of the seven skills are private. | `AGENTS.md` names standards an outside contributor or agent cannot read; `CONTRIBUTING.md` carries what they ask | The owner decides whether to publish them |
+| The site must sit at the root of a domain. Links start from `/`. | Rules out a plain project site such as `example.github.io/learn-solar-system/` | Someone wants to host it there |
 | No video or screenshot evidence loop for pull requests. | The article's agents record their fixes | Agents start working unattended |

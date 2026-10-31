@@ -30,23 +30,29 @@ export const kernelSourceFile = (options: { readonly cacheDir: string }) =>
           )
         })
 
+      /**
+       * Each download works in its own directory, inside the cache so that the rename stays atomic. Two
+       * worktrees starting at once therefore cannot overwrite or move each other's partial file: each
+       * checks its own bytes, and the last rename replaces a file with the same verified contents.
+       */
       const download = Effect.fn("KernelSource.download")(function* (pin: KernelPin, target: string) {
-        const partial = `${target}.partial`
-        yield* Effect.logInfo("downloading kernel", { kernel: pin.name, url: pin.url })
-        const response = yield* client.get(pin.url).pipe(Effect.mapError(fail(pin)))
-        yield* response.stream.pipe(
-          Stream.run(fs.sink(partial)),
-          Effect.mapError(fail(pin)),
-        )
-        const actual = yield* sha256Of(partial, pin)
-        if (actual !== pin.sha256) {
-          yield* fs.remove(partial).pipe(Effect.mapError(fail(pin)))
-          return yield* new KernelReadError({
-            path: pin.name,
-            reason: `Expected SHA-256 ${pin.sha256}, downloaded ${actual}. Update data/kernels.lock.json only after reading why the file changed.`,
-          })
-        }
-        yield* fs.rename(partial, target).pipe(Effect.mapError(fail(pin)))
+        const workspace = yield* fs
+          .makeTempDirectory({ directory: path.dirname(target), prefix: `${pin.name}.partial-` })
+          .pipe(Effect.mapError(fail(pin)))
+        const partial = path.join(workspace, pin.name)
+        yield* Effect.gen(function* () {
+          yield* Effect.logInfo("downloading kernel", { kernel: pin.name, url: pin.url })
+          const response = yield* client.get(pin.url).pipe(Effect.mapError(fail(pin)))
+          yield* response.stream.pipe(Stream.run(fs.sink(partial)), Effect.mapError(fail(pin)))
+          const actual = yield* sha256Of(partial, pin)
+          if (actual !== pin.sha256) {
+            return yield* new KernelReadError({
+              path: pin.name,
+              reason: `Expected SHA-256 ${pin.sha256}, downloaded ${actual}. Update data/kernels.lock.json only after reading why the file changed.`,
+            })
+          }
+          yield* fs.rename(partial, target).pipe(Effect.mapError(fail(pin)))
+        }).pipe(Effect.ensuring(fs.remove(workspace, { recursive: true, force: true }).pipe(Effect.ignore)))
       })
 
       const isIntact = (file: string, pin: KernelPin) =>

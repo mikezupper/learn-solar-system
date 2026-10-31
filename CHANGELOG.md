@@ -23,3 +23,5 @@ has no releases yet, so everything sits under Unreleased.
 
 - Tiles can now load from a host on another origin. Trace headers on those requests had triggered a CORS preflight
   that an ordinary static host refuses.
+- Two downloads of the kernel can now run at once. They had shared one partial file, so on an empty cache the second
+  could fail.
