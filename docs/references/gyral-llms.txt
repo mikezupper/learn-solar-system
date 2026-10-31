@@ -1,0 +1,878 @@
+# Gyral: the small pack for coding agents
+
+For Gyral 0.3.9. Generated from https://gyral.dev; every complete code block compiles against the released packages. Index of all pages: https://gyral.dev/llms.txt.
+
+> Everything you need to write a correct Gyral component: the mental model, the rules, one
+> complete component, task-sized recipes with tests, and where each export comes from. Read
+> this first; open the full docs only for what it doesn't cover.
+
+## The mental model
+
+A Gyral component is a standard custom element defined from four pure parts. **`init`** returns
+the first state. **`intent`** turns DOM events into typed messages: the view names an intent on
+an element with `data-intent=${i.Save}`, and when that element's natural event fires (click for
+a button, submit for a form, input for a text field, change for a checkbox or select), the
+parser with that name reads the event and returns a message, or `undefined` to ignore it.
+**`update`** has one reducer per message tag: it takes the state and the message and returns
+the next state, or `[nextState, [commands]]`. **`view`** renders the state with an `html`
+template. Nothing else changes state.
+
+Side effects never run in your code. A reducer returns **commands**, plain data that says what
+to do (`focus('#email')`, `delay(500, msg)`, `get(url, handlers)`, `command(driver, input,
+handlers)`), and a **driver** does it and sends the answer back as another message. Work that
+should keep running while some condition holds (a timer, a socket, a store watch) is returned
+from **`subscriptions(state, props)`**, and Gyral starts and stops it as the state changes.
+
+Because the parts are pure functions of data, a test feeds messages to `update` and checks the
+state and the commands, with no browser (`step`, `run` from `@gyral/testing`). The same view
+renders on a server and hydrates in the browser, so server-rendered state must be plain JSON.
+
+A new app starts from `npm create gyral@latest my-app -- --template basic` (browser only) or
+`--template ssr` (prerendered and hydrated). The `basic` app has `@gyral/core`,
+`@gyral/testing`, Vitest in browser mode, and nothing else: the recipes below need nothing more.
+
+With Gyral's MCP server connected (hosted at `https://mcp.gyral.dev/mcp`, or locally with
+`npx -y @gyral/mcp`), call `start_here` once, start from `get_example` or `scaffold_component`,
+and run `check_snippet` (local server only) on each module, applying its suggested fixes until
+it passes. Setup for each client: [Use Gyral with coding agents](https://gyral.dev/docs/coding-agents/).
+
+## MUST
+
+- **MUST define components in two calls**: `define<State, Msg>()('my-tag', { … })`. The first
+  call takes the types, the second the tag (with a hyphen) and the spec. One call fails with
+  "Expected 0 arguments, but got 2".
+- **MUST import every component module from the entry module.** `define()` registers the tag
+  when its module runs, so a component in its own file (`src/signup-form.ts`) needs a
+  side-effect import in `src/main.ts`, or in a module `main.ts` imports:
+  `import './signup-form.js';`. Without it the tag is never defined: `<signup-form>` stays an
+  empty unknown element (development builds warn G0014 after 3 seconds).
+- **MUST render a component by its tag**: `<signup-form></signup-form>`, with the name given to
+  `define()`. Never a JSX-style `<SignupForm />`: templates are HTML, which reads it as an
+  unknown `<signupform>` element that renders nothing. Attributes on it are kebab-case, as its
+  props read them: `max-value=${n}` (or the property, `.maxValue=${n}`), never `maxValue=`.
+- **MUST write messages as a tagged union** with `readonly` fields:
+  `{ readonly _tag: 'Toggle'; readonly id: number }`. `update` needs a reducer for every tag.
+- **MUST keep reducers, `init` and `view` pure.** Return a new object
+  (`{ ...s, items: [...s.items, x] }`); never mutate state. A component renders only when its
+  state, a declared prop or a declared store's value changes, so a reducer with nothing to
+  change returns `s` itself, and a view that reads anything else shows stale values (G0017). A
+  message that carries a new object each time renders every time: drop repeats in the driver or
+  with the subscription's `equals`.
+- **MUST return side effects as commands**: `Save: (s) => [{ ...s, saving: true }, [cmd]]`.
+  Focus is a command too: `focus('#name')` runs after the update renders.
+- **MUST start long-lived work from `subscriptions(state, props)`**, not from `init` or a
+  reducer: timers (`every`), sockets, store or media-query watches. Return `[]` to stop it.
+- **MUST name intents in markup**: `data-intent=${i.Add}`, where `i` is the view's second
+  argument. Override the event with `data-intent-on="keydown"`.
+- **MUST validate input in the parser.** `value` is a string or `undefined`; parse it once
+  (`Number`, a type guard, `trim()`) and return `undefined` for input you don't accept. For one
+  event type, `on('keydown', { keys: ['Enter'] }, (input) => …)` types `input.event` and adds
+  `modifiers`, `files`, `valueAsNumber` (a number input's value) and `origin`; bind its intent to
+  that event (G0018 otherwise). Test it in Node:
+  `parse(C, 'Save', { key: 's', modifiers: { ctrl: true } })`.
+- **MUST carry ids, not positions**, in list controls: `value=${todo.id}` on the button or
+  checkbox, and match by id in the reducer (`t.id === m.id`). With a filter or sort, a position
+  points at the wrong item.
+- **MUST render changing lists with `each(items, (t) => t.id, Row)`**, and keep rows pure: a
+  row reads only its item, what `pick` returns, and module constants. Name intents in rows with
+  a module constant `const i = intentsOf<typeof MyComponent>()`, and give the row a return type
+  (`(t: Todo): TemplateResult => html…`).
+- **MUST write form state as attributes**: `value=${s.text}`, `?checked=${s.done}`,
+  `<textarea>${s.note}</textarea>`. To empty an input after a submit, keep its text in state
+  and set it to `''`.
+- **MUST use `?attr=${bool}` for boolean attributes**: `?disabled=${s.busy}`,
+  `?hidden=${!s.open}`. `aria-*` attributes take strings or booleans: `aria-pressed=${s.on}`.
+- **MUST put `novalidate` on a form that shows its own error messages**, and read each field's
+  `validity` (`valueMissing`, `typeMismatch`, `tooShort`) in the submit parser. Without
+  `novalidate`, a failing `required` or `type="email"` stops the `submit` event, so the parser
+  and your messages never run. The signup form recipe below is a complete validated form to
+  start from (also on [Forms](https://gyral.dev/docs/forms/#complete-example-a-validated-form)).
+- **MUST keep server-rendered state, props and store state JSON-safe**: strings, numbers,
+  booleans, `null`, arrays, plain objects.
+- **MUST `await settled()`** (or use `mount()` from `@gyral/testing`) before reading the DOM in
+  a browser test.
+- **MUST import the view layer from `@gyral/core`**: `html`, `css`, `each`, `keyed`,
+  `nothing`, `defineHook`.
+
+## DO NOT
+
+- **DO NOT attach event handlers.** There is no `@click=${…}`, `onclick=${…}` or
+  `.onclick=${…}`; the template compiler rejects them. Use `data-intent`.
+- **DO NOT call `fetch`, `setTimeout`, `Date.now()`, `Math.random()`, `localStorage` or the DOM
+  in `update`, `init` or `view`.** Return a command (`delay`, `get`, a small driver of your
+  own) and handle its answer as a message.
+- **DO NOT start timers or listeners from `init` or a reducer.** Nothing stops them when the
+  state changes, and nothing restarts them when the element is removed and attached again.
+  `subscriptions` does both.
+- **DO NOT do side effects in an intent parser.** It may read the event, the target element and
+  the form's fields; the one write it may do is `event.preventDefault()`.
+- **DO NOT check `instanceof KeyboardEvent`, modifier keys or `composedPath()[0]` by hand** in a
+  parser for one event: write it with `on()` and a key filter (`modifiers: 'none'` keeps Ctrl+R
+  for the browser).
+- **DO NOT annotate a parser with the whole union** (`(): Msg => …`). Leave the return type
+  off: each `intent` key returns its own variant. A key that isn't a message tag may return any
+  message.
+- **DO NOT bind form state as a property** (`.value=${…}`, `.checked=${…}`): the server can't
+  write a property. **DO NOT write `disabled=${bool}`**: it renders `disabled="false"`, which is
+  still disabled.
+- **DO NOT read the view's variables (`s`, `i`, props) inside an `each` row.** Pass what the
+  row needs through `pick`: `each(items, key, Row, (t) => t.id === s.selected)`.
+- **DO NOT use an array as the whole state.** An array return means `[state, commands]`; wrap
+  it: `{ items: [] }`.
+- **DO NOT use the index from `.map((t, n) => …)` as an id**, and don't index the full list
+  with a position from a filtered one.
+- **DO NOT keep passwords or tokens in state** or in messages you keep. Leave them in the
+  submitted `FormData`.
+- **DO NOT expect a child's output to reach its grandparent.** Outputs (`outputs<Out>()` in
+  the child, `child(Child, mapper)` in the parent) go to the direct parent only; pass them on
+  with an output of the parent's own.
+- **DO NOT import `lit`** or another library's `html`: Gyral renders with its own view layer.
+- **DO NOT test with jsdom or happy-dom.** Test the model with `step`/`run`, parsers with
+  `parse`, and the element in a real browser, where Gyral's development checks run and throw on
+  mistakes such as a duplicate key.
+- **DO NOT guess at exports.** If a name isn't in the import map below, look it up in the
+  [API reference](https://gyral.dev/docs/api/) before you use it.
+
+## A complete component
+
+A component with a command, a driver of its own and state as a union. The driver is the only
+code that touches the network; the reducers stay pure and testable:
+
+```ts
+// src/quote.ts
+import { command, define, defineDriver, html, type Command } from '@gyral/core';
+
+export interface Quote {
+  readonly text: string;
+  readonly author: string;
+}
+
+const isQuote = (body: unknown): body is Quote =>
+  typeof body === 'object' &&
+  body !== null &&
+  typeof (body as Partial<Quote>).text === 'string' &&
+  typeof (body as Partial<Quote>).author === 'string';
+
+/** Fetches a quote on a topic. A new request cancels the one in flight (`switch`). */
+export const quotes = defineDriver<string, Quote>({
+  name: 'quotes',
+  concurrency: 'switch',
+  run: async (topic, { signal }) => {
+    const response = await fetch(`/api/quote?topic=${encodeURIComponent(topic)}`, { signal });
+    if (!response.ok) throw new Error(`HTTP ${String(response.status)}`);
+    const body: unknown = await response.json();
+    if (!isQuote(body)) throw new Error('not a quote');
+    return body;
+  },
+});
+
+export type State =
+  | { readonly _tag: 'Idle' }
+  | { readonly _tag: 'Loading'; readonly topic: string }
+  | { readonly _tag: 'Shown'; readonly quote: Quote }
+  | { readonly _tag: 'Failed'; readonly topic: string };
+
+export type Msg =
+  | { readonly _tag: 'Load'; readonly topic: string }
+  | { readonly _tag: 'Loaded'; readonly quote: Quote }
+  | { readonly _tag: 'Failed' };
+
+const load = (topic: string): Command<Msg> =>
+  command(quotes, topic, {
+    onSuccess: (quote): Msg => ({ _tag: 'Loaded', quote }),
+    onFailure: (): Msg => ({ _tag: 'Failed' }),
+  });
+
+const TOPICS: readonly string[] = ['science', 'art'];
+
+export const QuoteCard = define<State, Msg>()('my-quote-card', {
+  init: () => ({ _tag: 'Idle' }),
+  intent: {
+    Load: ({ value }) =>
+      value !== undefined && TOPICS.includes(value) ? { _tag: 'Load', topic: value } : undefined,
+  },
+  update: {
+    Load: (_s, m) => [{ _tag: 'Loading', topic: m.topic }, [load(m.topic)]],
+    Loaded: (_s, m) => ({ _tag: 'Shown', quote: m.quote }),
+    Failed: (s) => (s._tag === 'Loading' ? { _tag: 'Failed', topic: s.topic } : s),
+  },
+  view: (s, i) => html`
+    ${TOPICS.map(
+      (t) =>
+        html`<button type="button" value=${t} data-intent=${i.Load}>A quote about ${t}</button>`,
+    )}
+    <p aria-live="polite">
+      ${
+        s._tag === 'Idle'
+          ? 'Pick a topic.'
+          : s._tag === 'Loading'
+            ? 'Loading…'
+            : s._tag === 'Failed'
+              ? `No quote about ${s.topic} right now.`
+              : `“${s.quote.text}” (${s.quote.author})`
+      }
+    </p>
+  `,
+});
+```
+
+```ts
+// src/quote.test.ts
+import { expect, it } from 'vitest';
+import { inputsFor, resolve, step } from '@gyral/testing';
+import { QuoteCard, quotes } from './quote.js';
+
+it('asks the driver for a quote and shows the answer', () => {
+  const loading = step(QuoteCard.spec, { _tag: 'Idle' }, { _tag: 'Load', topic: 'art' });
+  expect(loading.state).toEqual({ _tag: 'Loading', topic: 'art' });
+  expect(inputsFor(loading.commands, quotes)).toEqual(['art']);
+
+  // Answer the command through its own mapper, then feed the message back.
+  const [request] = loading.commands;
+  if (request === undefined) throw new Error('expected a command');
+  const answer = resolve(request, { text: 'Art is long.', author: 'Hippocrates' });
+  if (answer === undefined) throw new Error('expected a message');
+  expect(step(QuoteCard.spec, loading.state, answer).state._tag).toBe('Shown');
+});
+```
+
+In a browser test, substitute the driver by name: `mount(QuoteCard, { drivers: [fake] })`, with
+`const fake = fakeDriver(quotes)`, which takes the driver's name.
+
+## A todo list with filters
+
+Add todos, tick them off, delete them, and show all, active or done ones:
+
+```ts
+// src/todo-app.ts
+import { define, each, focus, html, intentsOf, type TemplateResult } from '@gyral/core';
+
+export interface Todo {
+  readonly id: number;
+  readonly text: string;
+  readonly done: boolean;
+}
+
+export type Filter = 'all' | 'active' | 'done';
+
+export interface State {
+  readonly todos: readonly Todo[];
+  readonly nextId: number;
+  readonly draft: string;
+  readonly filter: Filter;
+}
+
+export type Msg =
+  | { readonly _tag: 'Typed'; readonly text: string }
+  | { readonly _tag: 'Add'; readonly text: string }
+  | { readonly _tag: 'Toggle'; readonly id: number }
+  | { readonly _tag: 'Delete'; readonly id: number }
+  | { readonly _tag: 'Show'; readonly filter: Filter };
+
+const FILTERS: readonly Filter[] = ['all', 'active', 'done'];
+const LABELS: Readonly<Record<Filter, string>> = { all: 'All', active: 'Active', done: 'Done' };
+
+const isFilter = (value: string | undefined): value is Filter => FILTERS.some((f) => f === value);
+
+/** A row's id from its control's `value`, or `undefined` for anything else. */
+const idOf = (value: string | undefined): number | undefined =>
+  value !== undefined && /^\d+$/.test(value) ? Number(value) : undefined;
+
+/** The todos a filter shows. State keeps the whole list; the view shows this. */
+export const visible = (todos: readonly Todo[], filter: Filter): readonly Todo[] =>
+  filter === 'all' ? todos : todos.filter((t) => t.done === (filter === 'done'));
+
+// The intent names as a module constant, so rows can use them and stay pure.
+const i = intentsOf<typeof TodoApp>();
+
+// A row reads only its todo and module constants. Its controls carry the id, never a position.
+const Row = (todo: Todo): TemplateResult =>
+  html`<li>
+    <label>
+      <input type="checkbox" value=${todo.id} ?checked=${todo.done} data-intent=${i.Toggle} />
+      ${todo.text}
+    </label>
+    <button
+      type="button"
+      value=${todo.id}
+      aria-label=${`Delete ${todo.text}`}
+      data-intent=${i.Delete}
+    >
+      Delete
+    </button>
+  </li>`;
+
+export const TodoApp = define<State, Msg>()('my-todo-app', {
+  init: () => ({ todos: [], nextId: 1, draft: '', filter: 'all' }),
+  intent: {
+    Typed: ({ value }) => ({ _tag: 'Typed', text: value ?? '' }),
+    Add: ({ formData }) => {
+      const text = formData?.get('text');
+      return typeof text === 'string' && text.trim() !== ''
+        ? { _tag: 'Add', text: text.trim() }
+        : undefined;
+    },
+    Toggle: ({ value }) => {
+      const id = idOf(value);
+      return id === undefined ? undefined : { _tag: 'Toggle', id };
+    },
+    Delete: ({ value }) => {
+      const id = idOf(value);
+      return id === undefined ? undefined : { _tag: 'Delete', id };
+    },
+    Show: ({ value }) => (isFilter(value) ? { _tag: 'Show', filter: value } : undefined),
+  },
+  update: {
+    Typed: (s, m) => ({ ...s, draft: m.text }),
+    // Clearing `draft` empties the input; focus goes back to it for the next todo.
+    Add: (s, m) => [
+      {
+        ...s,
+        todos: [...s.todos, { id: s.nextId, text: m.text, done: false }],
+        nextId: s.nextId + 1,
+        draft: '',
+      },
+      [focus('#new-todo')],
+    ],
+    Toggle: (s, m) => ({
+      ...s,
+      todos: s.todos.map((t) => (t.id === m.id ? { ...t, done: !t.done } : t)),
+    }),
+    // The deleted row had focus: give it to the input, not to the page body.
+    Delete: (s, m) => [{ ...s, todos: s.todos.filter((t) => t.id !== m.id) }, [focus('#new-todo')]],
+    Show: (s, m) => ({ ...s, filter: m.filter }),
+  },
+  view: (s, i) => {
+    const shown = visible(s.todos, s.filter);
+    const left = s.todos.filter((t) => !t.done).length;
+    return html`
+      <form data-intent=${i.Add}>
+        <label for="new-todo">New todo</label>
+        <input
+          id="new-todo"
+          name="text"
+          autocomplete="off"
+          value=${s.draft}
+          data-intent=${i.Typed}
+        />
+        <button>Add</button>
+      </form>
+      <div role="group" aria-label="Show">
+        ${FILTERS.map(
+          (f) =>
+            html`<button
+              type="button"
+              value=${f}
+              aria-pressed=${s.filter === f}
+              data-intent=${i.Show}
+            >
+              ${LABELS[f]}
+            </button>`,
+        )}
+      </div>
+      <ul aria-label="Todos">
+        ${each(shown, (t) => t.id, Row)}
+      </ul>
+      <p>${shown.length === 0 ? 'Nothing to show.' : ''}</p>
+      <p><output aria-live="polite">${left} left</output></p>
+    `;
+  },
+});
+```
+
+How it works:
+
+- **State keeps the whole list. The view filters it.** `visible(todos, filter)` is a plain
+  function that the view and the tests call. The filter is state; the filtered list isn't, so
+  the two can't get out of step.
+- **Controls carry the id**: `value=${todo.id}`, and the parser reads `value`. A message says
+  which todo, never which row. See
+  [the wrong item changes](#toggling-an-item-in-a-filtered-list-changes-the-wrong-item).
+- **Rows are keyed by id**: `each(shown, (t) => t.id, Row)`. A todo keeps its element when the
+  filter changes or another row goes away.
+- **Rows are pure.** `Row` reads only its todo and module constants, such as
+  `i = intentsOf<typeof TodoApp>()`. Its return type is written out, so `Row` and `TodoApp`
+  don't infer each other's types. The view uses its own `i`.
+- **The input is form state.** `value=${s.draft}` follows `Typed`, and `Add` sets `draft` back
+  to `''`, which empties the input. Without `draft` in state, the text would stay after Add.
+- **Focus is a command.** `Add` and `Delete` return `focus('#new-todo')`, so focus never falls
+  to the page body when its row is deleted.
+- The filter buttons use `.map`: three buttons that never move don't need `each`.
+
+Test the model without a browser. `run` folds messages from `init` (or from `state`), and
+`parse` runs one parser without a DOM:
+
+```ts
+// src/todo-app.test.ts
+import { expect, it } from 'vitest';
+import { focusTargetsIn, parse, run, step } from '@gyral/testing';
+import { TodoApp, visible } from './todo-app.js';
+
+const added = run(TodoApp.spec, [
+  { _tag: 'Add', text: 'Write docs' },
+  { _tag: 'Add', text: 'Ship it' },
+  { _tag: 'Add', text: 'Celebrate' },
+]).state;
+
+it('adds todos with their own ids and clears the input', () => {
+  expect(added.todos.map((t) => [t.id, t.text])).toEqual([
+    [1, 'Write docs'],
+    [2, 'Ship it'],
+    [3, 'Celebrate'],
+  ]);
+  expect(added.draft).toBe('');
+  const { commands } = step(TodoApp.spec, added, { _tag: 'Add', text: 'More' });
+  expect(focusTargetsIn(commands)).toEqual([{ selector: '#new-todo' }]);
+});
+
+it('toggles and deletes by id, whatever the filter shows', () => {
+  const { state } = run(
+    TodoApp.spec,
+    [
+      { _tag: 'Toggle', id: 1 },
+      { _tag: 'Show', filter: 'active' },
+      // "Celebrate" is the second row on screen now, but the message names it by id.
+      { _tag: 'Toggle', id: 3 },
+      { _tag: 'Delete', id: 2 },
+    ],
+    { state: added },
+  );
+  expect(state.todos).toEqual([
+    { id: 1, text: 'Write docs', done: true },
+    { id: 3, text: 'Celebrate', done: true },
+  ]);
+  expect(visible(state.todos, 'active')).toEqual([]);
+  expect(visible(state.todos, 'done').map((t) => t.id)).toEqual([1, 3]);
+});
+
+it('reads ids and filters from the markup, and ignores anything else', () => {
+  expect(parse(TodoApp, 'Toggle', { value: '3' })).toEqual({ _tag: 'Toggle', id: 3 });
+  expect(parse(TodoApp, 'Toggle', { value: 'three' })).toBeUndefined();
+  expect(parse(TodoApp, 'Show', { value: 'done' })).toEqual({ _tag: 'Show', filter: 'done' });
+  expect(parse(TodoApp, 'Show', { value: 'archived' })).toBeUndefined();
+});
+```
+
+## A signup form with native validation
+
+No extra packages. The browser's constraint checks find what is wrong, and your own messages
+say it. The [Forms](https://gyral.dev/docs/forms/#complete-example-a-validated-form) page starts with this same
+component and explains each part; here it comes with its tests:
+
+```ts
+// src/account-form.ts
+import { define, focus, html } from '@gyral/core';
+
+/** The fields, in the order they appear: the first one with an error gets focus. */
+export const FIELDS = ['name', 'email', 'password', 'consent'] as const;
+export type Field = (typeof FIELDS)[number];
+
+/** One message per field; `''` means no error. */
+export type Errors = Readonly<Record<Field, string>>;
+
+export const NO_ERRORS: Errors = { name: '', email: '', password: '', consent: '' };
+
+export interface State {
+  readonly errors: Errors;
+  /** What the live region announces after a rejected submit; `''` otherwise. */
+  readonly summary: string;
+  /** The clean values after a successful signup. */
+  readonly account: { readonly name: string; readonly email: string } | undefined;
+}
+
+export type Msg =
+  | { readonly _tag: 'Rejected'; readonly errors: Errors }
+  | { readonly _tag: 'SignedUp'; readonly name: string; readonly email: string }
+  | { readonly _tag: 'Checked'; readonly field: Field; readonly error: string };
+
+const isField = (name: string): name is Field => FIELDS.some((f) => f === name);
+
+/**
+ * Your message for a field's first problem, from the browser's own checks (`validity`), or
+ * `''` when the field is fine. The constraints in the markup (`required`, `type="email"`,
+ * `minlength`) still decide what is wrong; `novalidate` only stops the browser from
+ * blocking the submit and showing its own bubble.
+ */
+export function problemWith(input: HTMLInputElement): string {
+  const { validity } = input;
+  // A checkbox is missing when unchecked. `required` accepts "   ", so blank text is missing too.
+  const missing =
+    input.type === 'checkbox' ? !input.checked : validity.valueMissing || input.value.trim() === '';
+  switch (input.name) {
+    case 'name':
+      return missing ? 'Enter your name.' : '';
+    case 'email':
+      if (missing) return 'Enter your email address.';
+      return validity.typeMismatch ? 'Enter an email address like ada@example.com.' : '';
+    case 'password':
+      if (missing) return 'Enter a password.';
+      // `tooShort` is set only for typed values; the length check also covers a pre-filled one.
+      return validity.tooShort || input.value.length < input.minLength
+        ? 'Use at least 8 characters.'
+        : '';
+    case 'consent':
+      return missing ? 'Accept the privacy policy to continue.' : '';
+    default:
+      return '';
+  }
+}
+
+/** What the status region announces after a successful signup. */
+const welcome = (account: State['account']): string =>
+  account === undefined ? '' : `Welcome, ${account.name}! We’ll write to ${account.email}.`;
+
+/** Reads a submitted form: every field's error, or the clean values. */
+function submission(form: Element, data: FormData | undefined): Msg | undefined {
+  if (!(form instanceof HTMLFormElement) || data === undefined) return undefined;
+  const errors: Record<Field, string> = { ...NO_ERRORS };
+  for (const field of FIELDS) {
+    const input = form.elements.namedItem(field);
+    if (input instanceof HTMLInputElement) errors[field] = problemWith(input);
+  }
+  if (FIELDS.some((f) => errors[f] !== '')) return { _tag: 'Rejected', errors };
+  const text = (field: Field): string => {
+    const value = data.get(field);
+    return typeof value === 'string' ? value.trim() : '';
+  };
+  // The password stays in the form data: never keep it in state.
+  return { _tag: 'SignedUp', name: text('name'), email: text('email') };
+}
+
+export const AccountForm = define<State, Msg>()('my-account-form', {
+  init: () => ({ errors: NO_ERRORS, summary: '', account: undefined }),
+  intent: {
+    // Not a message tag, so it may return either message.
+    Submit: ({ target, formData }) => submission(target, formData),
+    // Text fields send it on `input`, the checkbox on `change`.
+    Checked: ({ target }) =>
+      target instanceof HTMLInputElement && isField(target.name)
+        ? { _tag: 'Checked', field: target.name, error: problemWith(target) }
+        : undefined,
+  },
+  update: {
+    // Show every error at once, announce how many, and focus the first field that has one.
+    Rejected: (s, m) => {
+      const count = FIELDS.filter((f) => m.errors[f] !== '').length;
+      const first = FIELDS.find((f) => m.errors[f] !== '');
+      const summary = `Fix ${String(count)} ${count === 1 ? 'field' : 'fields'} to continue.`;
+      const focusFirst = first === undefined ? [] : [focus(`#${first}`)];
+      return [{ ...s, errors: m.errors, summary }, focusFirst];
+    },
+    // In an app, this also returns the command that posts the form.
+    SignedUp: (_s, m) => ({
+      errors: NO_ERRORS,
+      summary: '',
+      account: { name: m.name, email: m.email },
+    }),
+    // While the user types, only a field that already shows an error is checked again,
+    // so a message changes or disappears as soon as the value is fixed.
+    Checked: (s, m) =>
+      s.errors[m.field] === '' ? s : { ...s, errors: { ...s.errors, [m.field]: m.error } },
+  },
+  // No `value` bindings: what the user typed stays in the fields after a rejected submit.
+  view: (s, i) => html`
+    <form novalidate data-intent=${i.Submit}>
+      <p role="alert">${s.summary}</p>
+
+      <label for="name">Name</label>
+      <input
+        id="name"
+        name="name"
+        autocomplete="name"
+        required
+        aria-invalid=${s.errors.name !== ''}
+        aria-describedby="name-error"
+        data-intent=${i.Checked}
+      />
+      <p id="name-error">${s.errors.name}</p>
+
+      <label for="email">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        required
+        aria-invalid=${s.errors.email !== ''}
+        aria-describedby="email-error"
+        data-intent=${i.Checked}
+      />
+      <p id="email-error">${s.errors.email}</p>
+
+      <label for="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        required
+        minlength="8"
+        aria-invalid=${s.errors.password !== ''}
+        aria-describedby="password-error"
+        data-intent=${i.Checked}
+      />
+      <p id="password-error">${s.errors.password}</p>
+
+      <input
+        id="consent"
+        name="consent"
+        type="checkbox"
+        required
+        aria-invalid=${s.errors.consent !== ''}
+        aria-describedby="consent-error"
+        data-intent=${i.Checked}
+      />
+      <label for="consent">I accept the privacy policy</label>
+      <p id="consent-error">${s.errors.consent}</p>
+
+      <button>Create account</button>
+    </form>
+    <p role="status">${welcome(s.account)}</p>
+  `,
+});
+```
+
+How it works:
+
+- **`novalidate` on the form, constraints on the fields.** `required`, `type="email"` and
+  `minlength` still set each field's `validity`. `novalidate` stops the browser from blocking
+  the submit. Without it, a failing constraint shows the browser's bubble and no `submit` event
+  fires, so your messages never appear.
+- **The submit parser reads `validity`.** `problemWith(input)` turns `valueMissing`,
+  `typeMismatch`, `tooShort` and an unchecked checkbox into your words. `Submit` checks every
+  field and returns `Rejected` with all the errors, or `SignedUp` with clean values. Reading the
+  form is input parsing, the intent layer's job; reducers see only the result.
+- **Check what the browser doesn't.** `required` accepts a name made of spaces, so the parser
+  trims first. `tooShort` is set only after the user types, not for a value set by script or
+  rendered by a server, so the parser checks the length too.
+- **Errors are state**: one string per field, `''` for none. The view writes `aria-invalid` and
+  the message, and `aria-describedby` links the message to its field.
+- **Focus goes to the first invalid field**, through a `focus()` command from `Rejected`,
+  and the `role="alert"` paragraph announces how many fields to fix.
+- **An error clears as soon as the field is fixed.** Each field sends `Checked` on input (the
+  checkbox on change). The reducer updates only a field that already shows an error, so nothing
+  turns red while someone is still typing.
+- **Enter submits.** The form has a submit button, so Enter in any field submits it, like a
+  click.
+- **No password in state.** `SignedUp` carries the name and the email. To send the form to a
+  server, keep the raw `FormData` in the message and post it with a command, as in
+  [Submitting to the server](https://gyral.dev/docs/forms/#submitting-to-the-server).
+
+The reducers are tested without a browser:
+
+```ts
+// src/account-form.test.ts
+import { expect, it } from 'vitest';
+import { focusTargetsIn, run, step } from '@gyral/testing';
+import { AccountForm, NO_ERRORS } from './account-form.js';
+
+const rejected = {
+  name: '',
+  email: 'Enter an email address like ada@example.com.',
+  password: 'Use at least 8 characters.',
+  consent: '',
+};
+
+it('shows every error, announces how many and focuses the first invalid field', () => {
+  const { state, commands } = step(
+    AccountForm.spec,
+    { errors: NO_ERRORS, summary: '', account: undefined },
+    { _tag: 'Rejected', errors: rejected },
+  );
+  expect(state.errors).toEqual(rejected);
+  expect(state.summary).toBe('Fix 2 fields to continue.');
+  expect(focusTargetsIn(commands)).toEqual([{ selector: '#email' }]);
+});
+
+it('clears an error as soon as the field is fixed, and leaves untouched fields alone', () => {
+  const { state } = run(AccountForm.spec, [
+    { _tag: 'Rejected', errors: rejected },
+    { _tag: 'Checked', field: 'email', error: '' },
+    { _tag: 'Checked', field: 'name', error: 'Enter your name.' },
+  ]);
+  expect(state.errors).toEqual({ ...rejected, email: '' });
+});
+
+it('welcomes the new user and forgets old errors', () => {
+  const { state } = run(AccountForm.spec, [
+    { _tag: 'Rejected', errors: rejected },
+    { _tag: 'SignedUp', name: 'Ada', email: 'ada@example.com' },
+  ]);
+  expect(state).toEqual({
+    errors: NO_ERRORS,
+    summary: '',
+    account: { name: 'Ada', email: 'ada@example.com' },
+  });
+});
+```
+
+The submit parser reads the form's fields, so test it in a browser too. In a `basic` app,
+`npm test` runs both files in Chromium. `mount()` sets values with script, which is why the
+parser's own length check matters:
+
+```ts
+// src/account-form.browser.test.ts
+import { expect, it } from 'vitest';
+import { mount } from '@gyral/testing';
+import { AccountForm } from './account-form.js';
+
+it('reads the browser’s checks on submit and focuses the first invalid field', async () => {
+  const form = await mount(AccountForm);
+  await form.type('#email', 'ada');
+  await form.type('#password', 'short');
+  await form.click('button');
+
+  expect(form.$('[role="alert"]')?.textContent).toBe('Fix 4 fields to continue.');
+  expect(form.$('#name-error')?.textContent).toBe('Enter your name.');
+  expect(form.$('#email-error')?.textContent).toBe('Enter an email address like ada@example.com.');
+  expect(form.$('#password-error')?.textContent).toBe('Use at least 8 characters.');
+  expect(form.$('#consent-error')?.textContent).toBe('Accept the privacy policy to continue.');
+  expect(form.el.shadowRoot?.activeElement?.id).toBe('name');
+
+  await form.type('#name', '  Ada  ');
+  expect(form.$('#name-error')?.textContent).toBe('');
+  await form.type('#email', 'ada@example.com');
+  await form.type('#password', 'correct horse');
+  await form.click('#consent');
+  expect(form.$('#consent-error')?.textContent).toBe('');
+  await form.click('button');
+  expect(form.$('[role="status"]')?.textContent).toBe(
+    'Welcome, Ada! We’ll write to ada@example.com.',
+  );
+  form.dispose();
+});
+```
+
+To validate on the server with the same rules, use one schema for both sides:
+[Forms](https://gyral.dev/docs/forms/#one-schema-for-both-sides).
+
+## Troubleshooting
+
+### Toggling an item in a filtered list changes the wrong item
+
+**What you see.** With a filter on, ticking a row ticks a different item, often one that isn't
+shown.
+
+**Why.** The control carries the row's position, and the reducer uses it as an index into the
+whole list:
+
+```ts
+// Wrong: in the view, `n` is the row's place in the filtered list…
+${visible(s.todos, s.filter).map(
+  (t, n) => html`<input type="checkbox" value=${n} data-intent=${i.Toggle} />`,
+)}
+
+// …and the reducer reads it as a place in the whole list.
+Toggle: (s, m) => ({
+  ...s,
+  todos: s.todos.map((t, n) => (n === m.index ? { ...t, done: !t.done } : t)),
+}),
+```
+
+With "Active" showing, the second row on screen may be the fourth todo, so the reducer changes
+`s.todos[1]` instead. A sort or a search breaks it the same way.
+
+**Fix.** Carry the id, and find the item by id:
+
+- Put `value=${todo.id}` on the control, and parse `value` as an id.
+- Match by id in the reducer: `t.id === m.id`.
+- Key the list by id: `each(shown, (t) => t.id, Row)`.
+
+A key alone doesn't fix it. The key keeps each element with its item; the message still has to
+say which item. The [todo list](#a-todo-list-with-filters) recipe does all three.
+
+### Custom error messages never show
+
+**What you see.** Submitting an empty form shows the browser's bubble ("Please fill out this
+field"), and your parser never runs.
+
+**Why.** Without `novalidate`, the browser checks `required`, `type="email"`, `minlength` and
+`pattern` before it fires `submit`. When one fails, there is no `submit` event, so there is no
+intent.
+
+**Fix.** Add `novalidate` to the `<form>` and keep the constraints on the fields. Read each
+field's `validity` in the submit parser, as the
+[signup form](#a-signup-form-with-native-validation) does.
+
+## Where each export comes from
+
+The most used exports, by package. This block is typechecked against the released packages, so
+every name in it exists:
+
+```ts
+// src/imports.ts
+// @gyral/core: components, templates, commands, stores, forms
+export {
+  define, // define<State, Msg, Props?, Outputs?>()('my-tag', spec)
+  html, // view templates; also css (styles), svg, nothing, raw
+  css,
+  nothing,
+  each, // each(items, key, row, pick?) or (…, { pick, equals }): keyed lists with pure rows
+  keyed, // keyed(key, template): fresh elements when the key changes
+  intentsOf, // const i = intentsOf<typeof C>(): intent names for list rows
+  on, // on('keydown', { keys?, modifiers? }, parser): a parser typed by its event
+  defineHook, // behaviour on one element: defineHook({ client, server?, dispose? })
+  focus, // focus(selector, { wait?, select?, preventScroll? }): a command
+  call, // call(selector, method, ...args): a command
+  command, // command(driver, input, { onSuccess, onFailure })
+  defineDriver, // defineDriver<I, O, E?>({ name, run }), or a token: defineDriver<I, O, E?>('name')
+  subscription, // subscription(nameOrToken, subscribe, { select?, equals?, coalesce? })
+  outputs, // const emit = outputs<Out>(): a child's outputs to its parent
+  child, // child(Child, (out) => msg): a parent's intent for a child's outputs
+  prop, // prop.string({ default }), prop.number(…), prop.value(guard): props
+  defineStore, // shared state: defineStore<S, M>('name', { init, update })
+  send, // send(store, msg): a command
+  changed, // changed(store, storeChangedMsg) in a StoreChanged reducer
+  settled, // await settled(): every component rendered
+  provideDrivers, // provideDrivers(element, [driver, token.provide(run)]): substitute drivers
+  defineForm, // schema forms: defineForm(standardSchema, { secret? })
+  form, // form(definition, toMsg): a schema-checked submit intent
+  field, // field(schema, toMsg): one schema-checked control
+  fieldErrors, // fieldErrors(issues): errors by field name
+  invalid, // invalid(errors): mirrors errors into native validity
+  OUTPUT_EVENT, // 'gyral-output', for non-Gyral parents
+} from '@gyral/core';
+export type {
+  TemplateResult, // the return type of a list row
+  Command, // Command<Msg>
+  Next, // State | [State, Command<Msg>[]]
+  IntentInput, // what a parser receives: value, checked, formData, key, target, event…
+  IntentRejected, // the framework message for failed schema checks
+  Stateless, // the State of a component with no state
+  Reducer, // Reducer<State, Msg, Variant<Msg, 'Add'>>: a reducer written outside the spec
+  Variant, // Variant<Msg, 'Add'>: one member of the message union
+  ParseResult, // what a parser returns: a message, IntentRejected or undefined
+} from '@gyral/core';
+export { gyral } from '@gyral/core/vite'; // vite.config.ts: { plugins: [gyral()] }
+
+// @gyral/testing: model tests (no DOM) and browser tests
+export {
+  step, // step(C.spec, state, msg): { state, commands }
+  run, // run(C.spec, msgs, { state?, props? }): from init or from state
+  parse, // parse(C, 'Save', { key: 's', modifiers: { ctrl: true } }): one parser, no DOM
+  focusTargetsIn, // where reducers asked focus to go
+  outputsIn, // what a child sent its parent
+  inputsFor, // inputsFor(commands, driver): the inputs of one driver's commands
+  resolve, // resolve(command, output): the message a command would send back
+  subscriptionsFor, // subscriptionsFor(C.spec, state): what should be running
+  viewOf, // viewOf(C, state): the view, no DOM; renderToString from @gyral/ssr makes HTML
+  mount, // await mount(C, { drivers: [fake] }): $, type, click, settled, dispose
+  fakeDriver, // fakeDriver(driverOrToken, run?): records calls, under the driver's name
+  virtualTime, // fake timers for delay, debounce and every
+} from '@gyral/testing';
+
+// @gyral/time: timers as commands
+export { delay, debounce, every } from '@gyral/time'; // every sends the time, not a count
+
+// @gyral/http: requests as commands (optional package)
+export { get, request, submitForm, redirectedTo } from '@gyral/http';
+
+// @gyral/router: URLs (optional package)
+export { navigate, listen } from '@gyral/router';
+
+// @gyral/ssr: server rendering and the no-JavaScript form path (server only)
+export { renderPage, formAction, rejectWith, seeOther } from '@gyral/ssr';
+```
+
+Next: the [full docs index](https://gyral.dev/llms.txt), the [API reference](https://gyral.dev/docs/api/) and
+[all docs in one file](https://gyral.dev/llms-full.txt).

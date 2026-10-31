@@ -1,5 +1,6 @@
 import { assert, describe, it } from "@effect/vitest"
 import { checkTaste } from "../src/rules/taste.js"
+import { formatViolation } from "../src/rules/violation.js"
 
 const rules = (path: string, text: string) =>
   checkTaste([{ path, text }]).map((violation) => violation.rule)
@@ -61,5 +62,14 @@ describe("checkTaste", () => {
   it("says how to fix what it finds", () => {
     const [violation] = checkTaste([{ path: "apps/web/src/styles.css", text: "a { left: 0; }" }])
     assert.include(violation?.fix ?? "", "inset-inline-start")
+  })
+})
+
+describe("formatViolation", () => {
+  it("leads with the file and rule, then gives the fix on its own line", () => {
+    assert.strictEqual(
+      formatViolation({ rule: "r", file: "f.ts", message: "Wrong.", fix: "Do this." }),
+      "f.ts: [r] Wrong.\n  Fix: Do this.",
+    )
   })
 })
