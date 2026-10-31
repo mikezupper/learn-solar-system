@@ -17,7 +17,7 @@ with teachers: forward-only playback and these four speeds are enough.
    speed.
 2. The student chooses "Inner planets", then "1 month per second". Earth goes around once every 12 seconds.
 3. The date reaches 2027. The next tile has already arrived, so nothing pauses.
-4. The student chooses "Stopped" on 2027-05-02. A link to that moment appears, to share with the class.
+4. The student stops time on 2027-05-02. A link to that moment appears, to share with the class.
 5. Later, the student runs time to the end of 2050. Time stops, and the page says why.
 
 ## Slice backlog
@@ -49,7 +49,7 @@ Then  a run starting 2026-12-20 reaches 2027 with the stage still showing
 
 VIEW  PlanetReadings · time stops at the end of the data, and says why
 Given ⟪TilePublished⟫ planets-2027 is the last tile
-Then  a run starting 2027-12-20 stops in 2027, with "Stopped" selected and a note naming the last year
+Then  a run starting 2027-12-20 stops in 2027, with the big button ready to run again and a note naming the last year
 ```
 
 These run in `packages/classroom/test/orbit.test.ts`, `moment.test.ts`, `apps/web/test/time-travel.test.ts` and
@@ -68,5 +68,5 @@ These run in `packages/classroom/test/orbit.test.ts`, `moment.test.ts`, `apps/we
 
 - ⚠ Should the page start moving by itself? It does not, so that "right now" stays true on arrival and motion
   stays the learner's choice. A teacher's view on this would settle it.
-- ⚠ Do teachers want to run time backward, or jump to a date with a control?
+- ⚠ Do teachers want to run time backward? They can now jump to a date, on the timeline.
 - ? Are 2000 through 2050 the right years for a classroom?

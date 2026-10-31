@@ -19,10 +19,13 @@ pure document has no CSS at all.
 
 - Page content uses light DOM (`shadow: false`), so that crawlers and the document stylesheet reach it.
 - A widget with a lifecycle gets its own element. `sky-stage` takes one property, `view`, and reports
-  through `gyral-output` events that the page decodes with `Schema`.
+  through `gyral-output` events that the page decodes with `Schema`. `moment-clock` runs the date between the page's ticks,
+  because redrawing the whole page that often would be wasteful.
 - A component never imports the stage or the Effect runtime. It names driver tokens from
   `runtime/tokens.ts`, so model tests run in Node in milliseconds.
-- Check accessibility with axe in both color schemes, and confirm the scan reached the content.
+- Check accessibility with axe, and confirm the scan reached the content. The page is dark only, and the tests still run in
+  both color schemes, so that a reader's preference cannot break it.
+- A control that looks unusual stays a real form control underneath: the speed steps are radio buttons, the timeline a range.
 - The explanation below the live view is static HTML in `index.html`, so that it reads with no script. A number
   stated there needs a test in `apps/web/test/explanation.test.ts`.
 

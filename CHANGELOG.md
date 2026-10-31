@@ -9,7 +9,16 @@ has no releases yet, so everything sits under Unreleased.
 
 - A page showing the Sun and eight planets at their true positions and true scale, in a 3D view and a table of
   distances and light travel times, calculated from NASA JPL's DE440 data.
-- Time running at four speeds, a framing for the inner planets, and links that hold one moment for a whole class.
+- Mission Clock, a full redesign for a younger audience: a full-screen sky, a giant year, a clock in lit dots, and an accent
+  color that heats up with speed. The page is now dark only.
+- Time as a media player: a play button, a Right now button, a ramp of four speeds, and a timeline to drag to any date.
+- A short replay of the year so far when the page opens on the present.
+- Ride along, which keeps the camera beside a chosen planet.
+- A labeled view with planets enlarged, so that their sizes can be compared, including Saturn's rings at their true tilt.
+- Trails behind moving planets, a ring that flies in to the inner planets, and a drawn path for a planet's light.
+- Keyboard control of the picture: arrow keys turn it, and plus and minus zoom.
+- Buttons in the explanation that set up the view a sentence describes.
+- Links that hold one moment for a whole class.
 - A line for each planet showing the path it is following around the Sun.
 - A full explanation on the main page: what it does, how to use it, how it works and the science behind it, which
   reads without JavaScript and survives a failure to load the data. Tests hold its numbers against JPL's data.

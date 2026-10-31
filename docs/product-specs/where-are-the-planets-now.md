@@ -129,5 +129,5 @@ These run in `packages/ephemeris/test/verify-publish.test.ts`, `load-tile.test.t
 
 - ⚠ What age range and which curriculum goals should the copy serve? Needs a teacher.
 - ⚠ Do teachers need to name and save a moment, or is a link enough?
-- ⚠ What must a keyboard user be able to do on the stage? See the debt tracker.
+- ⚠ Is turning and zooming enough for a keyboard user on the stage?
 - ? Translation: the copy is ready for it, but no language is planned.

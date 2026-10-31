@@ -10,7 +10,7 @@ Coverage is lines and branches from `pnpm coverage`. Grades are judgment; the ga
 | `packages/classroom` | A | 100% / 96% | No readings for moons |
 | `packages/providers` | B | 80% / none | The live OTLP path is proven only by `pnpm obs:check` |
 | `apps/worker` | B+ | 98% / 100% | The kernel test needs a 33 MB download, so it runs only in `verify:full` |
-| `apps/web` | B | 86% / 74% | `stage.ts`, `stage-scene.ts` and the runtime are excluded from unit coverage and covered only by e2e. No keyboard camera |
+| `apps/web` | B | 86% / 74% | The stage's files, `moment-clock.ts` and the runtime are excluded from unit coverage and covered only by e2e, which cannot judge how a picture looks. Tested in Chromium only |
 | `tools/harness` | B+ | 99% / 89% | `commands/` is excluded and exercised by running it |
 | Docs | B | | Written with the scaffold, so they have not yet caught drift in practice |
 

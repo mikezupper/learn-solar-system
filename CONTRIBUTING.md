@@ -131,6 +131,7 @@ without access to the private skills should follow this guide instead.
 | To | Do this |
 |---|---|
 | Change on-screen wording | Edit `apps/web/src/ui/copy.ts` or `apps/web/index.html`, then update any test that pins the sentence |
+| Change the look | Styles are in `apps/web/src/styles/`, in cascade layers. Read [docs/DESIGN.md](docs/DESIGN.md) first: flash may never cost the truth |
 | Add a metric | Add it to `packages/providers/src/instruments.ts`, then run `pnpm gen-docs` |
 | Add a package | Give it a row in `docs/QUALITY_SCORE.md` and an edge in `tools/harness/src/rules/layers.ts` |
 | Publish other years | `TILE_YEARS=2051-2060 pnpm tiles:build`. See [the deployment guide](docs/guides/deployment.md) |

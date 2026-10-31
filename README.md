@@ -44,7 +44,7 @@ calculated from NASA JPL's planetary data and checked against JPL Horizons to wi
 
 <br/>
 
-<img src="docs/images/classroom-all-planets.png" alt="The page showing all eight planets at true scale on a black background, with an orbit line for each, beside controls for how fast time runs and what to show." width="820" />
+<img src="docs/images/classroom-all-planets.png" alt="The page: a full-screen starfield with a giant 2026 behind the planets' true orbits, a dock below with a timeline, a play button and a clock in lit dots, and tiles for what to show." width="880" />
 
 <sub>The positions on August 12, 2026, the day of a total solar eclipse. Every distance in the picture is real.</sub>
 
@@ -78,23 +78,34 @@ look crowded. This page keeps every distance real, so you can see how empty the 
 
 | You can | How |
 |---|---|
-| **See where every planet is right now** | A 3D view you can turn and zoom, with a dot for each planet and a line for the path it is following |
-| **Watch the real motion** | Run time at a day, a week, a month or a year per second. Every frame asks JPL's data where each planet is on that date, so nothing is animated or estimated |
+| **See where every planet is right now** | A full-screen 3D view you can turn and zoom, with a dot for each planet and a line for the path it is following |
+| **Watch the real motion** | Press play, and run time at a day, a week, a month or a year per second. Every frame asks JPL's data where each planet is on that date, so nothing is animated or estimated, and a fading trail shows where each planet just was |
+| **Jump to any date** | Drag the timeline anywhere from 2000 to 2050. Crossing into another year fetches its data first, and the picture waits rather than guess |
+| **Ride along with a planet** | Keep the camera beside any planet and watch the rest go around it. Only the viewpoint moves |
+| **Compare planet sizes** | A view clearly labeled as enlarged, with Saturn's rings at their true tilt. It is off by default, and a badge states the factors |
+| **Follow a planet's light** | Pick a planet to draw the path its light takes to Earth, with the travel time |
 | **Read the numbers** | A table gives each planet's distance from the Sun and from Earth, and how long its light takes to reach us |
-| **Frame the inner planets** | With all eight in view, the inner four share a few dozen pixels. A control moves the camera closer without changing any distance |
 | **Show a class one moment** | A link such as `/?at=2026-08-12T17:46:00Z` holds one moment, so that everyone sees the same positions and numbers |
-| **Learn how it all works** | The page explains how to use it, how it works and the science behind it, in language for readers with no astronomy background |
+| **Learn how it all works** | The page explains how to use it, how it works and the science behind it, in language for readers with no astronomy background, with buttons that set up what a sentence describes |
 
 <div align="center">
-<img src="docs/images/classroom-inner-planets.png" alt="The inner view: Mercury, Venus, Earth and Mars on their orbit lines around the Sun, with each planet labeled." width="620" />
+<img src="docs/images/classroom-inner-planets.png" alt="The inner planets with time running at a week per second: trails behind Mercury, Venus, Earth and Mars on their orbit lines, and the accent color shifted to violet." width="720" />
 <br/>
-<sub>The inner view moves the camera closer. Neither view changes a distance.</sub>
+<sub>Time running: the accent color heats up with speed, and each trail is where the planet was just drawn.</sub>
+<br/><br/>
+<img src="docs/images/classroom-sizes.png" alt="All eight planets enlarged and shaded by the Sun, with Saturn's rings tilted, and a badge reading Not to scale, stating how much the planets and the Sun are enlarged, and that distances are still true." width="720" />
+<br/>
+<sub>The sizes view labels itself. Planets share one enlargement, so they stay true to one another.</sub>
+<br/><br/>
+<img src="docs/images/classroom-numbers.png" alt="The numbers panel over the pinned sky: a giant light travel time for Mars, a table of distances with bars, and a dashed path of light on the picture." width="720" />
+<br/>
+<sub>The numbers slide over the sky, so the picture and the table stay in view together.</sub>
 </div>
 
 ### Who it is for
 
-**Teachers and students**, with no astronomy background assumed, on an ordinary school laptop, with no account or
-install. [The guide for teachers](docs/guides/teaching.md) has ten-minute activities, which are untested so far.
+**Teachers and students, and young people who find it on their own**, with no astronomy background assumed, on an ordinary
+school laptop, with no account or install. [The guide for teachers](docs/guides/teaching.md) has ten-minute activities, which are untested so far.
 
 ### What it refuses to do
 
@@ -104,8 +115,10 @@ Accuracy is the product, which leads to some unusual behavior:
   and shows no numbers.
 - **The planets are dots.** At true scale, with all eight in view, one pixel covers about 18 million kilometers, so even
   the Sun would be less than a tenth of a pixel. A dot marks a position, and its size means nothing.
-- **It holds still at first.** At real speed, Earth needs about a week to cross one pixel. The page says so, and leaves
-  the choice to speed up to the learner.
+- **Flash never costs the truth.** Effects are real data or say that they are decoration. The stars are random and the page
+  says so, they do not twinkle because space has no air, and enlarged sizes are off by default and labeled.
+- **A shared link holds still.** The page opens with a short replay of the year so far, but never on a link, and never for
+  anyone who asked for less motion.
 - **The numbers never depend on the picture.** The table works whether or not the browser can start WebGL.
 
 ## Try it
@@ -277,7 +290,7 @@ measure how close JPL's model is to the real planets. For that, read the DE440 p
 ### What the page does not show
 
 Planet sizes; moons and spin; dwarf planets, asteroids and comets; where to look in your own sky; dates outside 2000 to 2050;
-and time running backward. [Known limits](#known-limits-and-what-comes-next) says which are on the way.
+and time running backward, though the timeline drags back to any date. The stars are decoration. [Known limits](#known-limits-and-what-comes-next) says which are on the way.
 
 ## Technical architecture
 
@@ -417,21 +430,27 @@ written down ([`classroom/types`](packages/classroom/src/types/index.ts)):
 
 ```mermaid
 stateDiagram-v2
-  [*] --> FollowingNow: no link in the address
+  [*] --> FollowingNow: no link, and less motion asked for
   [*] --> PinnedByLink: ?at= in the address
   FollowingNow --> Travelling: choose a speed
   PinnedByLink --> Travelling: choose a speed
   Paused --> Travelling: choose a speed
   Travelling --> Travelling: choose another speed
-  Travelling --> Paused: Stopped, or the end of the data
-  FollowingNow --> Paused: Stopped
-  PinnedByLink --> FollowingNow: Right now
-  Paused --> FollowingNow: Right now
-  Travelling --> FollowingNow: Right now
+  Travelling --> Paused: stop, drag the timeline, or the end of the data
+  FollowingNow --> Paused: drag the timeline
+  PinnedByLink --> CatchingUp: Right now
+  Paused --> CatchingUp: Right now
+  Travelling --> CatchingUp: Right now
+  CatchingUp --> FollowingNow: arrives at the present
+  [*] --> CatchingUp: no link, and motion is welcome
 ```
 
 A tick counts at most one real second, so a laptop waking from sleep makes time wait and does not leap years ahead past
-tiles it never loaded.
+tiles it never loaded. `CatchingUp` runs only within one year, because crossing years in a second would need dozens of tiles. From
+another year, the page loads the present's tile and goes straight there.
+
+The timeline follows the same rule. Within the loaded year it moves at once. Across years, the clock shows the requested date and the
+picture and table dim and keep their numbers until the tile lands, so the page never shows a date that disagrees with its planets.
 
 ### Packages and layers
 
@@ -546,7 +565,8 @@ Versions are pinned exactly in [`pnpm-workspace.yaml`](pnpm-workspace.yaml), and
 | Domain and errors | [Effect](https://effect.website/) 4 | Typed errors, `Schema` at the boundaries, and capabilities as services. The same rules hold on Node and in browsers |
 | UI components | [Gyral](https://gyral.dev/) 0.3 | Model-View-Intent custom elements. Reducers are pure, so component logic tests in Node in milliseconds |
 | 3D | [Three.js](https://threejs.org/) 0.187, WebGL | Confined to the stage by lint |
-| Styling | Modern CSS, no framework | Cascade layers, container queries, logical properties, oklch, `light-dark()` |
+| Styling | Modern CSS, no framework | Cascade layers, container queries, `:has()`, logical properties, oklch, a registered custom property for the accent color |
+| Type | [Unbounded](https://github.com/googlefonts/unbounded) and [Doto](https://github.com/oliverlalan/Doto), self-hosted | So that a school network calls no other site. Both under the SIL Open Font License |
 | Build | [Vite](https://vite.dev/) 8 | One static page plus a plain document |
 | Runtime | [Node.js](https://nodejs.org/) 24 | The worker and tooling. There is no server in production |
 | Workspace | [pnpm](https://pnpm.io/) 10 | Workspace, shared version catalog, build-script allowlist |
@@ -557,7 +577,7 @@ Versions are pinned exactly in [`pnpm-workspace.yaml`](pnpm-workspace.yaml), and
 | CI | GitHub Actions, CodeQL | See [What CI runs](#what-ci-runs) |
 | Data | [NAIF SPICE kernels](https://naif.jpl.nasa.gov/naif/), [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/) | The system of record, and an independent check |
 
-The page ships about 213 KiB of gzipped JavaScript, most of it Three.js, against a 240 KiB budget that fails the build. The SPK reader
+The page ships about 226 KiB of gzipped JavaScript, most of it Three.js, against a 240 KiB budget that fails the build. The SPK reader
 is a [small file in this repository](packages/ephemeris/src/service/spk.ts) and not a dependency, so that everything stays in one
 toolchain and can be read and tested here.
 
@@ -699,14 +719,16 @@ tests send nothing**, because with no endpoint, `telemetryLayer` is the empty la
 │   ├── web/                        The page
 │   │   ├── index.html              The page's shell and its full explanation, as static HTML
 │   │   ├── about-the-data.html     A plain document with no CSS or script, on purpose
+│   │   ├── public/fonts/           The self-hosted typefaces, with their licenses
 │   │   ├── src/
 │   │   │   ├── config/             Build-time settings and allowed hosts
 │   │   │   ├── runtime/            app-runtime.ts, the one place Effects run; driver tokens
 │   │   │   ├── service/            load-sky.ts: catalog, tile, Sky
 │   │   │   ├── types/
-│   │   │   ├── ui/                 classroom.ts and classroom-model.ts (component and reducers),
-│   │   │   │                       stage.ts and stage-scene.ts (WebGL), copy.ts (every rendered sentence)
-│   │   │   └── styles.css          Cascade layers, oklch tokens
+│   │   │   ├── ui/                 classroom*.ts (component, state, reducers, view), moment-clock.ts,
+│   │   │   │                       stage*.ts (element, scene, camera rig, painter, overlay, stars),
+│   │   │   │                       copy.ts (every rendered sentence)
+│   │   │   └── styles/             Cascade layers and oklch tokens: base, controls, reading
 │   │   ├── test/                   Model tests, browser tests, and tests of the page's text
 │   │   └── e2e/                    Acceptance tests against the built page
 │   └── worker/                     The Node batch job that publishes tiles
@@ -795,10 +817,11 @@ Open an issue: [a number looks wrong](https://github.com/mikezupper/learn-solar-
 | Limit | Why it matters |
 |---|---|
 | No public deployment | The page has no home yet |
-| No keyboard control of the 3D view | Keyboard users cannot turn or zoom it, though the table carries every number |
 | No moons, spin or textures | The main promises beyond positions, and the next slices |
 | Mars through Neptune are barycenters | Off by a few hundred kilometers; matters only for close views, and moon kernels would fix it |
-| Time runs forward only, with no date picker | A teacher reaches a date by writing a link |
+| Time runs forward only | The timeline can drag back to any date, but nobody can watch a planet retrace its path |
+| The stars are random decoration | A real catalog would be more honest |
+| Untested on a projector, Firefox, Safari, or a real phone | The redesign is tested in Chromium only, and a dark page could wash out in a lit classroom |
 | Data covers 2000 to 2050 | Uranus and Neptune cannot finish an orbit |
 | Leap seconds are a table in the code | A new one would need a release, though none has been added since 2017 |
 | No strict Content-Security-Policy | Needed before public deployment |
@@ -820,6 +843,7 @@ This project's code and documents are released under the [MIT License](LICENSE).
 - **JPL's data**: the kernels, and tiles and fixtures derived from them, remain subject to JPL's own terms.
 - **The submodules under `skills/`** are separate repositories with their own terms. They are not part of this project's code.
 - **Dependencies** each have their own licenses.
+- **The fonts in `apps/web/public/fonts/`** are under the SIL Open Font License, included beside them.
 - **[The harness-engineering summary](docs/references/harness-engineering.md)** is in our own words, and the article it describes belongs to its authors.
 
 ### Credits

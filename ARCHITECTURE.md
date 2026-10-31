@@ -39,8 +39,10 @@ and `telemetryLayer` is the only place telemetry leaves a process.
 
 **`apps/worker`**: the Node entry point, with adapters for the kernel cache and the tile directory.
 
-**`apps/web`**: the Vite app. `ui/classroom.ts` is the Gyral component and `ui/classroom-model.ts` its pure
-reducers. `ui/stage.ts` is the custom element and `ui/stage-scene.ts` the Three.js scene behind it.
+**`apps/web`**: the Vite app. `ui/classroom.ts` is the Gyral component, `ui/classroom-state.ts` its state, `ui/classroom-model.ts`
+its pure reducers and `ui/classroom-view.ts` its templates. `ui/stage.ts` is the custom element, with `ui/stage-scene.ts` the
+Three.js scene, `ui/stage-rig.ts` the camera, `ui/stage-painter.ts` each frame, and `ui/stage-overlay.ts` the 2D canvas above it.
+`ui/moment-clock.ts` runs the date between ticks. `public/fonts/` holds the self-hosted typefaces and their licenses.
 `ui/copy.ts` holds every sentence a component renders, and `runtime/app-runtime.ts` the single place Effects
 run in the browser. `index.html` holds the page's long explanation as static markup, so that it reads with no
 script and when the data fails to load. `about-the-data.html` is a plain document with no CSS or script, on purpose.
@@ -96,6 +98,9 @@ These hold everywhere, so check them before changing anything nearby.
 - **Real hostnames stay out of git.** The servers read `ALLOWED_HOSTS` from a `.env` that git ignores.
 - **Numbers in the page's static text are under test.** No type checks that HTML, so
   `apps/web/test/explanation.test.ts` holds it against JPL's data and Kepler's third law.
+- **Only the viewpoint ever moves.** Flights, riding along and the sizes view change the camera or what is drawn at a position,
+  never a position. Every view reads the same tracks.
+- **A dragged date never shows the wrong sky.** Until its year's tile lands, the picture and table keep their own date, dimmed.
 - **Tile requests are plain.** They carry no trace headers, so that a host on another origin need not
   answer a CORS preflight.
 

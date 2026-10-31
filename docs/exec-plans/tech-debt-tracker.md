@@ -5,10 +5,12 @@ Each entry says what triggers paying it down.
 | Debt | Why it matters | Pay it when |
 |---|---|---|
 | No deployment or tile bucket. `tileStoreFile` writes to a local directory. | The page has no public home | The first teacher is due to try it |
-| The stage has no keyboard camera controls. | Keyboard users cannot turn or zoom; the table does carry every number | Before any classroom pilot |
 | Mars through Neptune use barycenters. | Off by a few hundred kilometers from the planet's center; needed for close views | Moon kernels land |
 | No moons, spin or textures. | The product's main promises beyond positions | Next product slices |
-| Time runs forward only, with no way to scrub to a date. | A teacher reaches a date by pasting a link | A teacher asks, or the next slice touches the controls |
+| Time runs forward only, though the timeline can drag back to any date. | Nobody can watch a planet retrace its path | A teacher asks |
+| The stars are random decoration. | A real catalog would be more honest, and could be a static data file that costs no JavaScript budget | The next visual pass |
+| The dark page is untested on a projector in a lit room. | It could wash out, and classrooms are the main audience | Before any classroom pilot |
+| The redesign is tested in Chromium only, and on no real phone or school laptop. | Trails are smooth only at a good frame rate, and Firefox and Safari draw range inputs and meters differently | Before public deployment |
 | Data covers 2000 to 2050, so Uranus and Neptune cannot finish an orbit. | About 31 MB and 2,700 Horizons requests would cover all of DE440s; verification needs batching first | Someone wants a full Neptune orbit |
 | Each worktree publishes its own tiles, about two minutes on first run. | Tiles are immutable and could be shared across worktrees, as kernels are | Worktrees become routine |
 | Leap seconds are a table in the code. | A new leap second would need a release; none has been added since 2017 | IERS announces one |

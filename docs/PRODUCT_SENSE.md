@@ -4,8 +4,9 @@
 
 ## Who this is for
 
-Teachers and the students in their classes. Assume a reader with no astronomy background and a teacher
-with a few minutes to prepare, projecting from an ordinary school laptop.
+Teachers and the students in their classes, and young people who find the page on their own. It has to be exciting enough
+to hold them. Assume a reader with no astronomy background and a teacher with a few minutes to prepare, projecting from an
+ordinary school laptop.
 
 The audience is a decision. The details below it are working assumptions, not findings, because no
 teacher has used this yet. Treat each as a question to test:
@@ -28,5 +29,5 @@ teacher has used this yet. Treat each as a question to test:
 
 ## What this is not
 
-It is not a space game, and it does not trade accuracy for spectacle. Enlarging planets or compressing
-distances is acceptable only as a clearly labeled view over true positions.
+It may look as exciting as a space game, but it does not trade accuracy for spectacle. Enlarging planets is acceptable only as
+a clearly labeled view over true positions, never as the default, and compressing distances is not acceptable at all.

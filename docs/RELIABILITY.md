@@ -11,7 +11,7 @@
 | Eclipse time and gamma | 1 s, 0.0002 | within both | `golden.test.ts` |
 | A planet's distance from its line, over a year | 1 pixel | 0.0004 AU at most | `orbit.test.ts` |
 | A planet's distance from its line, over a full orbit | 0.006 AU inner, 0.2 AU outer | 0.14 AU, Uranus | `orbit-fidelity.kernel.test.ts` |
-| Page JavaScript, gzipped | 240 KiB | 213 KiB | `pnpm budget` |
+| Page JavaScript, gzipped | 240 KiB | 226 KiB | `pnpm budget` |
 | One year of planets | none yet | 104,400 bytes; 5.4 MB for 2000 to 2050 | |
 
 ## Failure modes
@@ -31,6 +31,8 @@
 | The year rolls over, or time runs into the next year | The next tile is fetched ahead; time waits at the boundary if it is late, without a jump | `classroom-model.ts` |
 | Time runs past the last published year | Time stops, and the page says through which year it has data | `classroom-model.ts` |
 | The next year's tile fails to load | Time stops and says so; choosing a speed tries again | `classroom-model.ts` |
+| A dragged date's tile is on its way | The clock shows that date, the status says so, and the picture and table dim and keep their numbers | `classroom-model.ts` |
+| A dragged date's tile fails to load | The picture stays where it was, and the status says so | `classroom-model.ts` |
 | A laptop sleeps while time runs | Time waits: a single tick counts at most one real second | `moment.ts` |
 
 ## Limits
