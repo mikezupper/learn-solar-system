@@ -10,32 +10,16 @@ calculated from NASA JPL's planetary data and checked against JPL Horizons to wi
 <br/>
 
 [![CI](https://github.com/mikezupper/learn-solar-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mikezupper/learn-solar-system/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/mikezupper/learn-solar-system/actions/workflows/codeql.yml/badge.svg)](https://github.com/mikezupper/learn-solar-system/actions/workflows/codeql.yml)
-[![Gardening](https://github.com/mikezupper/learn-solar-system/actions/workflows/gardening.yml/badge.svg)](https://github.com/mikezupper/learn-solar-system/actions/workflows/gardening.yml)
 [![License](https://img.shields.io/github/license/mikezupper/learn-solar-system?color=blue)](LICENSE)
 [![Version](https://img.shields.io/github/package-json/v/mikezupper/learn-solar-system?label=version)](package.json)
 [![Last commit](https://img.shields.io/github/last-commit/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/commits/main)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/pulse)
-[![Created](https://img.shields.io/github/created-at/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system)
 
 [![Stars](https://img.shields.io/github/stars/mikezupper/learn-solar-system?style=flat)](https://github.com/mikezupper/learn-solar-system/stargazers)
 [![Forks](https://img.shields.io/github/forks/mikezupper/learn-solar-system?style=flat)](https://github.com/mikezupper/learn-solar-system/forks)
 [![Watchers](https://img.shields.io/github/watchers/mikezupper/learn-solar-system?style=flat)](https://github.com/mikezupper/learn-solar-system/watchers)
 [![Contributors](https://img.shields.io/github/contributors/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/graphs/contributors)
-[![Open issues](https://img.shields.io/github/issues/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/issues)
-[![Closed issues](https://img.shields.io/github/issues-closed/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/issues?q=is%3Aissue+is%3Aclosed)
-[![Open pull requests](https://img.shields.io/github/issues-pr/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/pulls)
-[![Closed pull requests](https://img.shields.io/github/issues-pr-closed/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/pulls?q=is%3Apr+is%3Aclosed)
-[![Discussions](https://img.shields.io/github/discussions/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/discussions)
-[![Good first issues](https://img.shields.io/github/issues/mikezupper/learn-solar-system/good%20first%20issue?label=good%20first%20issues&color=7057ff)](https://github.com/mikezupper/learn-solar-system/labels/good%20first%20issue)
-[![Pull requests welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa)](CODE_OF_CONDUCT.md)
-
 [![Top language](https://img.shields.io/github/languages/top/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system/search?l=typescript)
-[![Languages](https://img.shields.io/github/languages/count/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system)
-[![Code size](https://img.shields.io/github/languages/code-size/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system)
-[![Repository size](https://img.shields.io/github/repo-size/mikezupper/learn-solar-system)](https://github.com/mikezupper/learn-solar-system)
-[![Files](https://img.shields.io/github/directory-file-count/mikezupper/learn-solar-system?type=file&label=top-level%20files)](https://github.com/mikezupper/learn-solar-system)
 
 [![Data](https://img.shields.io/badge/data-JPL%20DE440s-0b3d91)](#the-data-jpl-de440)
 [![Checked against](https://img.shields.io/badge/checked%20against-JPL%20Horizons-0b3d91)](#how-the-numbers-are-checked)
@@ -55,23 +39,8 @@ calculated from NASA JPL's planetary data and checked against JPL Horizons to wi
 [![Vite](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fpnpm-workspace.yaml&query=%24.catalog.vite&label=Vite&logo=vite&logoColor=white&color=646CFF)](https://vite.dev/)
 [![Vitest](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fpnpm-workspace.yaml&query=%24.catalog.vitest&label=Vitest&logo=vitest&logoColor=white&color=6E9F18)](https://vitest.dev/)
 [![Playwright](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fpnpm-workspace.yaml&query=%24.catalog.playwright&label=Playwright&logo=playwright&logoColor=white&color=2EAD33)](https://playwright.dev/)
-[![axe](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fpnpm-workspace.yaml&query=%24.catalog%5B%27%40axe-core%2Fplaywright%27%5D&label=axe&color=663399)](https://github.com/dequelabs/axe-core)
 [![ESLint](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fpackage.json&query=%24.devDependencies.eslint&label=ESLint&logo=eslint&logoColor=white&color=4B32C3)](eslint.config.js)
-[![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](observability/compose.yaml)
-[![OpenTelemetry](https://img.shields.io/badge/telemetry-OpenTelemetry-425CC7?logo=opentelemetry&logoColor=white)](docs/design-docs/observability.md)
-[![Vector](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fobservability%2Fcompose.yaml&query=%24.services.vector.image&label=collector&color=orange)](observability/vector.yaml)
-[![VictoriaMetrics](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fobservability%2Fcompose.yaml&query=%24.services.metrics.image&label=metrics&color=621773)](observability/compose.yaml)
-[![VictoriaLogs](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fobservability%2Fcompose.yaml&query=%24.services.logs.image&label=logs&color=621773)](observability/compose.yaml)
-[![VictoriaTraces](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmikezupper%2Flearn-solar-system%2Fmain%2Fobservability%2Fcompose.yaml&query=%24.services.traces.image&label=traces&color=621773)](observability/compose.yaml)
-
-[![Coverage gate](https://img.shields.io/badge/coverage%20gate-%E2%89%A585%25%20lines-success)](vitest.config.ts)
-[![JavaScript budget](https://img.shields.io/badge/JavaScript%20budget-240%20KiB%20gzipped-success)](docs/RELIABILITY.md)
-[![Accessibility](https://img.shields.io/badge/accessibility-axe%20in%20both%20color%20schemes-success)](apps/web/e2e/where-are-the-planets.spec.ts)
-[![Architecture](https://img.shields.io/badge/layers-enforced%20by%20lint-success)](tools/harness/src/rules/layers.ts)
-[![Works without WebGL](https://img.shields.io/badge/without%20WebGL-the%20table%20still%20works-success)](docs/RELIABILITY.md)
 [![Harness engineering](https://img.shields.io/badge/method-harness%20engineering-informational)](docs/references/harness-engineering.md)
-[![AGENTS.md](https://img.shields.io/badge/agents-AGENTS.md-informational)](AGENTS.md)
-[![Citation](https://img.shields.io/badge/cite-CITATION.cff-informational)](CITATION.cff)
 
 <br/>
 
