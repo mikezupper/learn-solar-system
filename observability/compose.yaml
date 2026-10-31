@@ -1,0 +1,21 @@
+# One stack per worktree: `pnpm obs:up` names the project and picks the ports; nothing persists.
+services:
+  vector:
+    image: timberio/vector:0.61.0-alpine
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+    ports:
+      - "127.0.0.1:${HARNESS_OTLP_PORT:?}:4318"
+    depends_on: [logs, metrics, traces]
+  logs:
+    image: victoriametrics/victoria-logs:v1.53.0
+    ports:
+      - "127.0.0.1:${HARNESS_LOGS_PORT:?}:9428"
+  metrics:
+    image: victoriametrics/victoria-metrics:v1.155.0
+    ports:
+      - "127.0.0.1:${HARNESS_METRICS_PORT:?}:8428"
+  traces:
+    image: victoriametrics/victoria-traces:v0.12.1
+    ports:
+      - "127.0.0.1:${HARNESS_TRACES_PORT:?}:10428"

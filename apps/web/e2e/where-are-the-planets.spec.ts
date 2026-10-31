@@ -61,6 +61,7 @@ test.describe("a teacher opens a shared link", () => {
 
   test("the link holds still and says so", async ({ page }) => {
     await page.goto(`/?at=${momentOfRow}`)
+    await expect(page.locator("time")).toContainText("UTC")
     await expect(page.getByText("everyone who opens it sees the same sky")).toBeVisible()
     await expect(page.locator("time")).toHaveAttribute("datetime", momentOfRow)
     await expect(page.getByRole("link", { name: "Go to the present moment" })).toHaveAttribute("href", "/")
@@ -97,6 +98,33 @@ test.describe("a teacher opens a shared link", () => {
     }, november.toString("base64"))
     expect(litPixels).toBeGreaterThan(100)
     expect(errors).toEqual([])
+  })
+})
+
+test.describe("a student explores the view", () => {
+  test("zooming in separates the inner planets, and their labels return", async ({ page }) => {
+    await page.goto(`/?at=${momentOfRow}`)
+    const stage = page.locator("sky-stage")
+    const mercury = stage.locator("li", { hasText: "Mercury" })
+    await expect(stage.locator("li", { hasText: "Neptune" })).toBeVisible()
+    await expect(mercury).toBeHidden()
+    await stage.hover()
+    await expect(async () => {
+      await page.mouse.wheel(0, -600)
+      await expect(mercury).toBeVisible({ timeout: 200 })
+    }).toPass({ timeout: 10_000 })
+  })
+
+  test("on a phone, Neptune's label stays inside the view", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto("/?at=2026-08-12T17:46:00Z")
+    const stage = page.locator("sky-stage")
+    const label = stage.locator("li", { hasText: "Neptune" })
+    await expect(label).toBeVisible()
+    const stageBox = await stage.boundingBox()
+    const labelBox = await label.boundingBox()
+    if (stageBox === null || labelBox === null) throw new Error("Expected boxes")
+    expect(labelBox.x + labelBox.width).toBeLessThanOrEqual(stageBox.x + stageBox.width)
   })
 })
 

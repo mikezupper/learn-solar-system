@@ -17,6 +17,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js"
 import {
   cameraRelative,
   fitDistance,
+  labelSide,
   labelsWithRoom,
   skyPositionsAt,
   type BodyName,
@@ -28,7 +29,8 @@ import { COPY } from "./copy.js"
 /** One scene unit, once positions are relative to the camera and small enough for 32-bit floats. */
 const KM_PER_UNIT = 1e6
 const VERTICAL_FOV_DEGREES = 45
-const NEPTUNE_ORBIT_KM = 30.4 * KM_PER_AU
+/** Neptune's farthest point from the Sun, plus room for its label on a narrow screen. */
+const FRAMED_RADIUS_KM = 30.4 * KM_PER_AU * 1.25
 const NEAREST_ZOOM_KM = 0.15 * KM_PER_AU
 /** The room a label needs. Labels sit to the right of their dots, so they are wider than tall. */
 const LABEL_BOX_PIXELS = { width: 64, height: 18 }
@@ -64,7 +66,7 @@ const STAGE_STYLES = `
   canvas:focus-visible { outline: 3px solid oklch(80% 0.14 240); outline-offset: -3px; }
   ol { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; pointer-events: none; overflow: clip; }
   li { position: absolute; inset-block-start: 0; inset-inline-start: 0; color: oklch(95% 0.01 265);
-       font: 500 0.8125rem/1 system-ui, sans-serif; padding-inline-start: 0.625rem; white-space: nowrap; }
+       font: 500 0.8125rem/1 system-ui, sans-serif; padding-inline: 0.625rem; white-space: nowrap; }
 `
 
 /** A soft round dot, so that points are not drawn as squares. */
@@ -227,7 +229,7 @@ export class SkyStage extends HTMLElement {
     stage.renderCamera.updateProjectionMatrix()
     stage.controlCamera.aspect = aspect
     stage.controlCamera.updateProjectionMatrix()
-    const distance = fitDistance(NEPTUNE_ORBIT_KM, VERTICAL_FOV_DEGREES, aspect)
+    const distance = fitDistance(FRAMED_RADIUS_KM, VERTICAL_FOV_DEGREES, aspect)
     stage.controls.maxDistance = distance * 3
     if (!this.#framed) {
       // Look down on the plane of the orbits from 30 degrees off the pole, so depth still reads.
@@ -307,9 +309,9 @@ export class SkyStage extends HTMLElement {
     this.#labels.forEach((item, name) => {
       const label = kept.find((candidate) => candidate.name === name)
       item.hidden = label === undefined
-      if (label !== undefined) {
-        item.style.transform = `translate(${String(label.x)}px, ${String(label.y - 6)}px)`
-      }
+      if (label === undefined) return
+      const shift = labelSide(label.x, inlineSize, LABEL_BOX_PIXELS.width) === "before" ? "-100%" : "0"
+      item.style.transform = `translate(${String(label.x)}px, ${String(label.y - 6)}px) translateX(${shift})`
     })
   }
 

@@ -41,3 +41,10 @@ export const labelsWithRoom = (
         : [...kept, label],
     [],
   )
+
+/** Which side of its dot a label goes, so that a planet near the edge keeps its name in view. */
+export const labelSide = (
+  x: number,
+  viewWidth: number,
+  labelWidth: number,
+): "after" | "before" => (x + labelWidth > viewWidth ? "before" : "after")

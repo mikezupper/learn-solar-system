@@ -1,0 +1,37 @@
+# Receives OTLP from the app and fans it out to one store per signal, as local telemetry for agents.
+sources:
+  otlp:
+    type: opentelemetry
+    use_otlp_decoding: true
+    grpc:
+      address: 0.0.0.0:4317
+    http:
+      address: 0.0.0.0:4318
+sinks:
+  logs:
+    type: opentelemetry
+    inputs: [otlp.logs]
+    protocol:
+      type: http
+      uri: http://logs:9428/insert/opentelemetry/v1/logs
+      method: post
+      encoding:
+        codec: otlp
+  metrics:
+    type: opentelemetry
+    inputs: [otlp.metrics]
+    protocol:
+      type: http
+      uri: http://metrics:8428/opentelemetry/v1/metrics
+      method: post
+      encoding:
+        codec: otlp
+  traces:
+    type: opentelemetry
+    inputs: [otlp.traces]
+    protocol:
+      type: http
+      uri: http://traces:10428/insert/opentelemetry/v1/traces
+      method: post
+      encoding:
+        codec: otlp

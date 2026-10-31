@@ -27,9 +27,20 @@ const serveTiles = (): Plugin => ({
   },
 })
 
+// In a worktree's dev server, the browser sends telemetry here to reach that worktree's collector.
+const otlpTarget = process.env.HARNESS_OTLP_TARGET
+
 export default defineConfig({
   // This app renders only in the browser, so builds leave out Gyral's hydration code.
   plugins: [gyral({ clientOnly: true }), serveTiles()],
+  server:
+    otlpTarget === undefined
+      ? {}
+      : {
+          proxy: {
+            "/otlp": { target: otlpTarget, rewrite: (path) => path.replace(/^\/otlp/, "") },
+          },
+        },
   build: {
     target: "es2022",
     chunkSizeWarningLimit: 1200,

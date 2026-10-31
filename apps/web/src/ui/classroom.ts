@@ -68,7 +68,8 @@ const decodeReport = Schema.decodeUnknownOption(StageReport)
 const formatMoment = (state: State, moment: number): string =>
   new Intl.DateTimeFormat(state.locale, {
     dateStyle: "long",
-    timeStyle: "medium",
+    // "long" names the time zone, which a shared link needs: the class may not be in the sender's.
+    timeStyle: "long",
     timeZone: state.timeZone,
   }).format(moment)
 

@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest"
-import { fitDistance, labelsWithRoom } from "../src/service/framing.js"
+import { fitDistance, labelSide, labelsWithRoom } from "../src/service/framing.js"
 
 describe("fitDistance", () => {
   it("fits a radius to a square view by simple trigonometry", () => {
@@ -42,5 +42,19 @@ describe("labelsWithRoom", () => {
       names(labelsWithRoom([at("a", 0), at("b", 40), at("c", 80)], LABEL)),
       ["a", "c"],
     )
+  })
+})
+
+describe("labelSide", () => {
+  it("puts a label after its dot when there is room", () => {
+    assert.strictEqual(labelSide(100, 390, 64), "after")
+  })
+
+  it("puts a label before its dot when it would run off the view", () => {
+    assert.strictEqual(labelSide(340, 390, 64), "before")
+  })
+
+  it("allows a label that exactly reaches the edge", () => {
+    assert.strictEqual(labelSide(326, 390, 64), "after")
   })
 })
