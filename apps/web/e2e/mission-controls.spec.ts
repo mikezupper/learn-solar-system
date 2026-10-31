@@ -244,6 +244,22 @@ test.describe("phones and small laptops", () => {
   }
 })
 
+test.describe("a reader's own font", () => {
+  // The body text uses the system's font, and some are far wider than others. The narrowest phone with a
+  // wide font is the hardest case, and a machine with a narrower default would otherwise never see it.
+  test("a wide font still fits the narrowest phone", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 })
+    await opened(page)
+    await page.addStyleTag({
+      content: `body { --text: "DejaVu Sans", Verdana, sans-serif; }
+        body, table, th, td, button, p, li { font-family: "DejaVu Sans", Verdana, sans-serif; }`,
+    })
+    await page.waitForTimeout(200)
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+    expect(overflow).toBeLessThanOrEqual(0)
+  })
+})
+
 test.describe("every learner can use the new controls", () => {
   test("the page passes axe with time running, riding along, and sizes showing", async ({ page }) => {
     await opened(page)
