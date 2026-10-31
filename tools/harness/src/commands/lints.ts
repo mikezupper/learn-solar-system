@@ -1,6 +1,6 @@
 import { Clock, Effect, DateTime, FileSystem, Option } from "effect"
 import { gzipSync } from "node:zlib"
-import { checkDocs, checkFreshness } from "../rules/docs.js"
+import { checkDocs, checkFreshness, isDocument } from "../rules/docs.js"
 import { checkLayers } from "../rules/layers.js"
 import { checkTaste } from "../rules/taste.js"
 import type { Violation } from "../rules/violation.js"
@@ -17,12 +17,9 @@ export const lintTaste = Effect.gen(function* () {
   yield* report("lint-taste", files.length, checkTaste(files))
 })
 
-const isDoc = (path: string) =>
-  path === "AGENTS.md" || path === "ARCHITECTURE.md" || (path.startsWith("docs/") && /\.(md|txt)$/.test(path))
-
 export const lintDocs = Effect.gen(function* () {
   const paths = yield* listRepositoryFiles
-  const pages = yield* readTextFiles(paths.filter(isDoc))
+  const pages = yield* readTextFiles(paths.filter(isDocument))
   yield* report("lint-docs", pages.length, checkDocs(pages, paths))
 })
 
@@ -30,9 +27,7 @@ const PACKAGE_DIRECTORY = /^((?:packages|apps|tools)\/[^/]+)\/package\.json$/
 
 export const quality = Effect.gen(function* () {
   const paths = yield* listRepositoryFiles
-  const pages = yield* readTextFiles(paths.filter(isDoc))
-  const millis = yield* Clock.currentTimeMillis
-  const today = DateTime.formatIso(DateTime.makeUnsafe(millis)).slice(0, 10)
+  const pages = yield* readTextFiles(paths.filter(isDocument))
   const score = pages.find((page) => page.path === "docs/QUALITY_SCORE.md")?.text ?? ""
   const ungraded = paths
     .flatMap((path) => Option.toArray(Option.fromNullishOr(PACKAGE_DIRECTORY.exec(path)?.[1])))
@@ -45,7 +40,20 @@ export const quality = Effect.gen(function* () {
         fix: "Add a row for it, with the gaps you know about.",
       }),
     )
-  yield* report("quality", pages.length, [...checkFreshness(pages, today), ...ungraded])
+  yield* report("quality", pages.length, ungraded)
+})
+
+/**
+ * Whether anyone has re-checked the design documents lately. This depends on the date and not on a
+ * change, so it runs on a schedule and never in a pull request: a contributor's green branch must not
+ * turn red because a maintainer's calendar ran out.
+ */
+export const lintFreshness = Effect.gen(function* () {
+  const paths = yield* listRepositoryFiles
+  const pages = yield* readTextFiles(paths.filter(isDocument))
+  const millis = yield* Clock.currentTimeMillis
+  const today = DateTime.formatIso(DateTime.makeUnsafe(millis)).slice(0, 10)
+  yield* report("lint-freshness", pages.length, checkFreshness(pages, today))
 })
 
 /** Three.js is most of this. Growth past the budget should be a decision, not an accident. */

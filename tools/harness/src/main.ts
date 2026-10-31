@@ -2,7 +2,7 @@ import { NodeHttpClient, NodeRuntime, NodeServices } from "@effect/platform-node
 import { Effect, Layer } from "effect"
 import { dev, stop, where } from "./commands/dev.js"
 import { genDocs } from "./commands/gen-docs.js"
-import { budget, lintDocs, lintLayers, lintTaste, quality } from "./commands/lints.js"
+import { budget, lintDocs, lintFreshness, lintLayers, lintTaste, quality } from "./commands/lints.js"
 import { obs } from "./commands/obs.js"
 import { HarnessFailure } from "./commands/shared.js"
 
@@ -16,6 +16,8 @@ const program = Effect.suspend(() => {
       return lintDocs
     case "lint-taste":
       return lintTaste
+    case "lint-freshness":
+      return lintFreshness
     case "quality":
       return quality
     case "budget":
@@ -33,7 +35,7 @@ const program = Effect.suspend(() => {
     default:
       return Effect.fail(
         new HarnessFailure({
-          message: `Unknown command "${command}". Use: lint-layers, lint-docs, lint-taste, quality, budget, gen-docs, obs, dev, stop, where.`,
+          message: `Unknown command "${command}". Use: lint-layers, lint-docs, lint-freshness, lint-taste, quality, budget, gen-docs, obs, dev, stop, where.`,
         }),
       )
   }

@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest"
-import { checkDocs, checkFreshness } from "../src/rules/docs.js"
+import { checkDocs, checkFreshness, isDocument } from "../src/rules/docs.js"
 
 const page = (path: string, text: string) => ({ path, text })
 const stamped = (body = "") => `# T\n\n- **Status:** accepted · **Verified:** 2026-10-31\n\n${body}`
@@ -95,5 +95,39 @@ describe("checkFreshness", () => {
       checkFreshness([doc("2026-09-30")], "2026-10-31").map((violation) => violation.rule),
       ["stale-doc"],
     )
+  })
+})
+
+describe("isDocument", () => {
+  it.each([
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "README.md",
+    "CONTRIBUTING.md",
+    "CODE_OF_CONDUCT.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "CHANGELOG.md",
+    "docs/DESIGN.md",
+    "docs/references/gyral-llms.txt",
+  ])("checks %s, because a reader follows its links", (path) => {
+    assert.isTrue(isDocument(path))
+  })
+
+  it.each(["package.json", "apps/web/index.html", "docs/images/classroom.png", "skills/drive-the-app/SKILL.md"])(
+    "leaves %s alone",
+    (path) => {
+      assert.isFalse(isDocument(path))
+    },
+  )
+})
+
+describe("checkDocs, on the guides at the repository's root", () => {
+  it("finds a broken link in the README", () => {
+    assert.deepStrictEqual(rules(...base, page("README.md", "[gone](docs/GONE.md)")), ["broken-link"])
+  })
+
+  it("does not ask the README to be reachable or stamped", () => {
+    assert.deepStrictEqual(rules(...base, page("README.md", "[a](docs/DESIGN.md)")), [])
   })
 })

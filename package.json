@@ -1,5 +1,17 @@
 {
   "name": "solar-system",
+  "version": "0.1.0",
+  "description": "A classroom page that shows where the Sun and planets really are, at true scale, calculated from NASA JPL's DE440 data and checked against JPL Horizons.",
+  "license": "MIT",
+  "author": "Mike Zupper",
+  "homepage": "https://github.com/mikezupper/learn-solar-system#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikezupper/learn-solar-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mikezupper/learn-solar-system/issues"
+  },
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.33.2",
@@ -10,10 +22,12 @@
     "harness": "tsx tools/harness/src/main.ts",
     "bootstrap": "git submodule update --init --recursive && pnpm install",
     "dev": "pnpm harness dev",
+    "dev:quick": "TILE_STORE_DIR=fixtures/tiles pnpm --filter @solar/web dev",
     "typecheck": "pnpm -r --parallel typecheck",
     "lint": "eslint . --max-warnings=0",
     "lint:layers": "pnpm harness lint-layers",
     "lint:docs": "pnpm harness lint-docs",
+    "lint:freshness": "pnpm harness lint-freshness",
     "lint:taste": "pnpm harness lint-taste",
     "gen-docs": "pnpm harness gen-docs",
     "quality": "pnpm harness quality",
@@ -32,7 +46,7 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm lint:layers && pnpm lint:docs && pnpm lint:taste && pnpm gen-docs --check && pnpm quality --check && pnpm coverage && pnpm test:browser && pnpm build && pnpm budget && pnpm e2e",
     "budget": "pnpm harness budget",
     "obs:check": "pnpm harness obs check",
-    "verify:full": "pnpm verify && pnpm test:kernel && pnpm obs:check",
+    "verify:full": "pnpm verify && pnpm lint:freshness && pnpm test:kernel && pnpm obs:check",
     "dev:stop": "pnpm harness stop"
   },
   "devDependencies": {

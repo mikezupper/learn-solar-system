@@ -14,7 +14,14 @@ describe("renderWorkspace", () => {
   it("lists each package with its path and layers", () => {
     assert.include(text, "`@solar/ephemeris`")
     assert.include(text, "`packages/ephemeris`")
-    assert.include(text, "types (5), service (9)")
+    assert.include(text, "(5)")
+    assert.include(text, "(9)")
+  })
+
+  // Git lists untracked files first, so arrival order changes when a file is committed. A document
+  // generated before a commit must still match after it, or the first CI run fails on it.
+  it("orders layers by name, whatever order they arrive in", () => {
+    assert.include(text, "service (9), types (5)")
   })
 
   it("warns readers not to edit it", () => {

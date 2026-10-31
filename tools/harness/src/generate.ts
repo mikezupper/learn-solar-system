@@ -15,7 +15,7 @@ export const renderWorkspace = (packages: ReadonlyArray<WorkspacePackage>): stri
     "|---|---|---|---|",
     ...packages.map(
       ({ name, path, layers, dependencies }) =>
-        `| \`${name}\` | \`${path}\` | ${layers.map(({ layer, files }) => `${layer} (${String(files)})`).join(", ")} | ${dependencies.map((dependency) => `\`${dependency}\``).join(", ")} |`,
+        `| \`${name}\` | \`${path}\` | ${layers.toSorted((a, b) => a.layer.localeCompare(b.layer)).map(({ layer, files }) => `${layer} (${String(files)})`).join(", ")} | ${dependencies.map((dependency) => `\`${dependency}\``).join(", ")} |`,
     ),
     "",
   ].join("\n")

@@ -5,6 +5,21 @@ const MAX_AGENTS_LINES = 100
 const MAX_AGE_DAYS = 30
 const ROOTS = ["AGENTS.md", "ARCHITECTURE.md"]
 const MILLIS_PER_DAY = 86_400_000
+/** The guides people open first. They need no stamp and no route from AGENTS.md, but their links must work. */
+const ROOT_DOCUMENTS = [
+  "AGENTS.md",
+  "ARCHITECTURE.md",
+  "README.md",
+  "CONTRIBUTING.md",
+  "CODE_OF_CONDUCT.md",
+  "SECURITY.md",
+  "SUPPORT.md",
+  "CHANGELOG.md",
+]
+
+/** Whether the docs lint reads a file. */
+export const isDocument = (path: string): boolean =>
+  ROOT_DOCUMENTS.includes(path) || (path.startsWith("docs/") && /\.(md|txt)$/.test(path))
 
 const withoutCode = (text: string): string =>
   text.replace(/```[\s\S]*?```/g, "").replace(/`[^`\n]*`/g, "")
