@@ -73,6 +73,27 @@ const speedsAcrossYear = (name: string): ReadonlyArray<number> => {
   })
 }
 
+// A stylesheet imported from JavaScript reaches the dev server's page only after every module has loaded,
+// so the browser paints the bare HTML first. A link in the HTML holds the first paint in every mode.
+describe("the page's first paint", () => {
+  const entry = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8")
+
+  it.each(["base", "controls", "reading"])("links the %s stylesheet from the HTML", (name) => {
+    assert.include(page, `<link rel="stylesheet" href="/src/styles/${name}.css" />`)
+  })
+
+  it("loads no stylesheet from JavaScript", () => {
+    assert.notMatch(entry, /\.css/)
+  })
+
+  it("links the stylesheets before the script, and in cascade order", () => {
+    const at = (text: string) => page.indexOf(text)
+    assert.isBelow(at("styles/base.css"), at("styles/controls.css"))
+    assert.isBelow(at("styles/controls.css"), at("styles/reading.css"))
+    assert.isBelow(at("styles/reading.css"), at("/src/main.ts"))
+  })
+})
+
 describe("the table of orbit sizes", () => {
   const rows = tableRows("Kepler's third law")
 

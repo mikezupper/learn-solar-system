@@ -32,5 +32,7 @@ has no releases yet, so everything sits under Unreleased.
 
 - Tiles can now load from a host on another origin. Trace headers on those requests had triggered a CORS preflight
   that an ordinary static host refuses.
+- The page no longer paints as bare HTML on the dev server. Its stylesheets were imported from JavaScript, so they arrived only
+  after every module had loaded. They are now linked from the HTML, which holds the first paint.
 - Two downloads of the kernel can now run at once. They had shared one partial file, so on an empty cache the second
   could fail.

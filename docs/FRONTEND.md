@@ -25,6 +25,8 @@ pure document has no CSS at all.
   `runtime/tokens.ts`, so model tests run in Node in milliseconds.
 - Check accessibility with axe, and confirm the scan reached the content. The page is dark only, and the tests still run in
   both color schemes, so that a reader's preference cannot break it.
+- Stylesheets are linked from `index.html`, never imported from JavaScript. On the dev server an imported stylesheet arrives
+  only after every module has loaded, so the browser paints the bare HTML first.
 - A control that looks unusual stays a real form control underneath: the speed steps are radio buttons, the timeline a range.
 - The explanation below the live view is static HTML in `index.html`, so that it reads with no script. A number
   stated there needs a test in `apps/web/test/explanation.test.ts`.
