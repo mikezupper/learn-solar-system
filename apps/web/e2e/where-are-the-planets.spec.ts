@@ -29,8 +29,11 @@ const momentOfRow = new Date(
 const distance = (a: Vector, b: Vector = [0, 0, 0]) =>
   Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
+/** The live component, as distinct from the tables and text in the page's explanation below it. */
+const classroom = (page: Page) => page.locator("solar-classroom")
+
 const rowCells = (page: Page, planet: string) =>
-  page.getByRole("row", { name: new RegExp(`^${planet}\\b`) }).getByRole("cell")
+  classroom(page).getByRole("row", { name: new RegExp(`^${planet}\\b`) }).getByRole("cell")
 
 /** Fails any test in which the page throws or logs an error. */
 const watchForErrors = (page: Page): ReadonlyArray<string> => {
@@ -46,7 +49,7 @@ test.describe("a teacher opens a shared link", () => {
   test("every distance matches JPL Horizons at the printed precision", async ({ page }) => {
     const errors = watchForErrors(page)
     await page.goto(`/?at=${momentOfRow}`)
-    await expect(page.getByRole("table")).toBeVisible()
+    await expect(classroom(page).getByRole("table")).toBeVisible()
 
     for (const name of ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]) {
       const expected = (distance(rowOf(name).positionKm) / KM_PER_AU).toFixed(3)
@@ -61,9 +64,9 @@ test.describe("a teacher opens a shared link", () => {
 
   test("the link holds still and says so", async ({ page }) => {
     await page.goto(`/?at=${momentOfRow}`)
-    await expect(page.locator("time")).toContainText("UTC")
+    await expect(classroom(page).locator("time")).toContainText("UTC")
     await expect(page.getByText("everyone who opens it sees the same sky")).toBeVisible()
-    await expect(page.locator("time")).toHaveAttribute("datetime", momentOfRow)
+    await expect(classroom(page).locator("time")).toHaveAttribute("datetime", momentOfRow)
     await expect(page.getByRole("link", { name: "Go to the present moment" })).toHaveAttribute("href", "/")
   })
 
@@ -145,7 +148,7 @@ const countLit = (page: Page, shot: Buffer) =>
     return lit
   }, shot.toString("base64"))
 
-const shownMoment = (page: Page) => page.locator("time").getAttribute("datetime")
+const shownMoment = (page: Page) => classroom(page).locator("time").getAttribute("datetime")
 
 test.describe("a student watches the planets move", () => {
   test("each planet's path is drawn as a line around the Sun", async ({ page }) => {
@@ -219,7 +222,7 @@ test.describe("a student watches the planets move", () => {
   test("Right now returns to the present without reloading the page", async ({ page }) => {
     await page.clock.install({ time: new Date("2026-10-31T12:00:00Z") })
     await page.goto("/?at=2026-03-01T00:00:00Z")
-    await expect(page.getByRole("table")).toBeVisible()
+    await expect(classroom(page).getByRole("table")).toBeVisible()
     await page.getByRole("radio", { name: "Right now" }).check()
     await expect.poll(async () => (await shownMoment(page)) ?? "").toMatch(/^2026-10-31T12:00/)
     await expect(page.getByText("updated every second")).toBeVisible()
@@ -249,7 +252,7 @@ test.describe("a student opens the page with no link", () => {
     await page.clock.install({ time: new Date("2026-10-31T12:00:00Z") })
     await page.goto("/")
     await expect(page.getByText("updated every second")).toBeVisible()
-    const shown = () => page.locator("time").getAttribute("datetime")
+    const shown = () => classroom(page).locator("time").getAttribute("datetime")
     const first = await shown()
     expect(first).toMatch(/^2026-10-31T12:00:/)
     await expect.poll(shown).not.toBe(first)
@@ -261,7 +264,7 @@ test.describe("when the page cannot show the sky", () => {
   test("a date outside the published years is explained", async ({ page }) => {
     await page.goto("/?at=1990-01-01")
     await expect(page.getByRole("alert")).toContainText("2026 through 2027")
-    await expect(page.getByRole("table")).toHaveCount(0)
+    await expect(classroom(page).getByRole("table")).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Go to the present moment" })).toBeVisible()
   })
 
@@ -280,7 +283,7 @@ test.describe("when the page cannot show the sky", () => {
     })
     await page.goto(`/?at=${momentOfRow}`)
     await expect(page.getByRole("alert")).toContainText("arrived damaged")
-    await expect(page.getByRole("table")).toHaveCount(0)
+    await expect(classroom(page).getByRole("table")).toHaveCount(0)
   })
 
   test("a missing catalog is reported in plain words", async ({ page }) => {
@@ -295,7 +298,7 @@ test.describe("every learner can use it", () => {
     test(`the page passes axe in the ${colorScheme} color scheme`, async ({ page }) => {
       await page.emulateMedia({ colorScheme })
       await page.goto(`/?at=${momentOfRow}`)
-      await expect(page.getByRole("table")).toBeVisible()
+      await expect(classroom(page).getByRole("table")).toBeVisible()
       const results = await new AxeBuilder({ page }).analyze()
       expect(results.violations).toEqual([])
       // A scan of the wrong root would pass silently, so check that it reached the table.
@@ -321,9 +324,9 @@ test.describe("every learner can use it", () => {
 
   test("the table states the moment in words and in a form machines can read", async ({ page }) => {
     await page.goto(`/?at=${momentOfRow}`)
-    await expect(page.locator("time")).toContainText("2026")
-    await expect(page.getByRole("columnheader", { name: /Distance from the Sun/ })).toBeVisible()
-    await expect(page.getByRole("rowheader", { name: "Neptune" })).toBeVisible()
+    await expect(classroom(page).locator("time")).toContainText("2026")
+    await expect(classroom(page).getByRole("columnheader", { name: /Distance from the Sun/ })).toBeVisible()
+    await expect(classroom(page).getByRole("rowheader", { name: "Neptune" })).toBeVisible()
   })
 
   test("the data page works with no stylesheet, class or script", async ({ page }) => {

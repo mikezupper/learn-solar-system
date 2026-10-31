@@ -1,6 +1,7 @@
 /**
- * Every sentence a teacher or student reads, in one place, ready for translation. Written for a
- * reader with no astronomy background. docs/FRONTEND.md holds the writing brief.
+ * Every sentence a component renders, in one place, ready for translation. Written for a reader with
+ * no astronomy background. docs/FRONTEND.md holds the writing brief. The long explanation below the
+ * live view is static HTML in index.html, so that it reads with no script.
  */
 export const COPY = {
   skyHeading: "The Sun and planets, to scale",

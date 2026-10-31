@@ -6,7 +6,7 @@
     <title>Where are the planets right now? Solar System Classroom</title>
     <meta
       name="description"
-      content="See the Sun and the eight planets where they really are at this moment, at true scale, with the distances and light travel times to explore with a class."
+      content="See the Sun and the eight planets where they really are at this moment, at true scale, with the distances and light travel times to explore with a class. Learn how to use the page, how it works and the science behind it."
     />
     <meta name="color-scheme" content="light dark" />
     <meta property="og:type" content="website" />
@@ -20,10 +20,11 @@
         "@context": "https://schema.org",
         "@type": "LearningResource",
         "name": "Where are the planets right now?",
-        "description": "An interactive view of the planets' true positions and distances, for teachers and students.",
+        "description": "An interactive view of the planets' true positions and distances, with an explanation of how they are calculated, for teachers and students.",
         "learningResourceType": "interactive resource",
         "about": "Solar System",
-        "inLanguage": "en"
+        "inLanguage": "en",
+        "isAccessibleForFree": true
       }
     </script>
     <script type="module" src="/src/main.ts"></script>
@@ -36,15 +37,513 @@
         The Sun and the eight planets where they really are, worked out from the planetary data NASA's
         Jet Propulsion Laboratory publishes for navigating spacecraft.
       </p>
+      <nav aria-label="On this page">
+        <ul>
+          <li><a href="#what-it-does">What this page does</a></li>
+          <li><a href="#how-to-use">How to use it</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#science">The science behind the page</a></li>
+          <li><a href="#leaves-out">What this page leaves out</a></li>
+          <li><a href="#sources">Sources</a></li>
+        </ul>
+      </nav>
     </header>
     <main id="main">
       <solar-classroom></solar-classroom>
-      <noscript><p>This page calculates each planet's position in your browser, which needs JavaScript. The page <a href="/about-the-data.html">Where these numbers come from</a> works without it.</p></noscript>
+      <noscript><p>The planets' positions are calculated in your browser, which needs JavaScript. The explanation below still works without it, and so does the page <a href="/about-the-data.html">Where these numbers come from</a>.</p></noscript>
+
+      <article aria-label="About this page">
+        <section aria-labelledby="what-it-does">
+          <h2 id="what-it-does">What this page does</h2>
+          <p>
+            This page shows where the Sun and the eight planets are at this moment, at their true distances
+            from one another. It is a calculation, not an artist's picture. The diagrams in most textbooks
+            squeeze the planets together so that they fit on a page, which makes the solar system look
+            crowded. Here every distance is real, and you can see how empty the solar system actually is.
+          </p>
+          <p>You can use it to:</p>
+          <ul>
+            <li>see where every planet is right now, in a three-dimensional view you can turn and zoom;</li>
+            <li>watch the planets travel along their paths, with time running as fast as a year per second;</li>
+            <li>read how far each planet is from the Sun and from Earth, and how long its light takes to reach us;</li>
+            <li>open any moment from 2000 through 2050 and share it as a link, so that a whole class looks at the same positions.</li>
+          </ul>
+          <p>
+            It is written for teachers and students, and it assumes no knowledge of astronomy. There is
+            nothing to install, and you do not need an account.
+          </p>
+        </section>
+
+        <section aria-labelledby="how-to-use">
+          <h2 id="how-to-use">How to use it</h2>
+
+          <h3>Turn and zoom the picture</h3>
+          <p>
+            Drag the picture to turn it. Scroll, or pinch on a touch screen, to zoom in and out. The view
+            always circles the center of the solar system, so you cannot lose your way by sliding off to one
+            side.
+          </p>
+          <p>
+            Under <strong>What to show</strong>, "All eight planets" frames the whole solar system. "Inner
+            planets, Mercury to Mars" moves the camera closer, until those four are far enough apart to tell
+            from one another. Neither choice changes a distance: only your viewpoint moves.
+          </p>
+          <p>
+            Each dot marks where a planet is, and a dot's size says nothing about how big the planet is.
+            Each line is the path that planet is following around the Sun. When labels would overlap, some
+            stay hidden until you zoom in.
+          </p>
+
+          <h3>Make time run</h3>
+          <p>Under <strong>How fast time runs</strong>, choose one of these:</p>
+          <dl>
+            <dt>Right now</dt>
+            <dd>
+              The page follows your computer's clock, and the planets look still. That is true to life.
+              Earth travels about 30 kilometers every second, but with all eight planets in view one pixel
+              covers about 18 million kilometers, so Earth needs about a week to cross a single pixel.
+            </dd>
+            <dt>Stopped</dt>
+            <dd>The date holds still, and a link to that moment appears.</dd>
+            <dt>1 day per second</dt>
+            <dd>Mercury goes around in about 88 seconds. Try it with the inner planets in view.</dd>
+            <dt>1 week per second</dt>
+            <dd>Mercury goes around in about 13 seconds and Earth in about 52 seconds.</dd>
+            <dt>1 month per second</dt>
+            <dd>Earth goes around in about 12 seconds and Mars in about 23 seconds.</dd>
+            <dt>1 year per second</dt>
+            <dd>Jupiter goes around in about 12 seconds and Saturn in about 29 seconds, while the inner planets race around too fast to follow.</dd>
+          </dl>
+          <p>
+            Time runs forward only, for now, and it stops at the end of the data. The page tells you when
+            that happens.
+          </p>
+
+          <h3>Show a class one moment</h3>
+          <p>
+            Choose <strong>Stopped</strong>, then share the link that appears. Anyone who opens it sees the
+            same positions and the same numbers, whatever their time zone.
+          </p>
+          <p>
+            You can also write such a link yourself, by adding <code>?at=</code> and a date to the page's
+            address. For example,
+            <a href="/?at=2026-08-12T17:46:00Z"><code>?at=2026-08-12T17:46:00Z</code></a> opens 17:46
+            Coordinated Universal Time on <time datetime="2026-08-12">August 12, 2026</time>, the minute the
+            total solar eclipse of that day is at its greatest. The Z at the end means Coordinated Universal
+            Time. A date on its own, such as <code>?at=2026-08-12</code>, means midnight at the start of that
+            day in the same time scale.
+          </p>
+
+          <h3>Read the table</h3>
+          <p>
+            The table gives the same positions as numbers, for the moment shown above it, and it follows the
+            picture as time runs. A distance is the straight line through space between two bodies at that
+            moment, in astronomical units (AU), a measure explained below. Distances are rounded to three
+            decimal places, so the last digit stands for about 150,000 kilometers. The last column divides
+            each planet's distance from Earth by the speed of light.
+          </p>
+
+          <h3>Use it with a keyboard or a screen reader</h3>
+          <p>
+            The speed and view controls are ordinary radio buttons: press Tab to reach a group, and the arrow
+            keys to change the choice. The table holds every number behind the picture, and it stays on the
+            page even if a computer cannot start the 3D view. The picture itself cannot yet be turned or
+            zoomed from the keyboard, which is a known gap.
+          </p>
+
+          <h3>Things to try</h3>
+          <ol>
+            <li>
+              <strong>Watch Mercury hurry.</strong> Choose the inner planets and 1 week per second. Mercury
+              speeds up as it swings close to the Sun, then slows as it climbs away. Kepler's laws, below,
+              explain why.
+            </li>
+            <li>
+              <strong>Time the laps.</strong> At 1 month per second, count how many seconds Earth and Mars
+              take to go once around. Then compare your counts with the table of orbit sizes below.
+            </li>
+            <li>
+              <strong>Follow a message to Mars.</strong> Run time at 1 week per second and watch the last
+              column of Mars's row. Between 2000 and 2050, light or a radio signal takes from about 3 minutes
+              to about 22 minutes to cross the gap. Why does that mean nobody can steer a Mars rover with a
+              joystick?
+            </li>
+            <li>
+              <strong>See how slowly the outer planets move.</strong> Open
+              <a href="/?at=2000-01-01">January 1, 2000</a> and choose 1 year per second. By the end of 2050,
+              Saturn has gone around 1.7 times, and Neptune has not yet gone a third of the way.
+            </li>
+            <li>
+              <strong>Turn the solar system on edge.</strong> Drag until you are looking along the plane of
+              Earth's orbit. Earth's line flattens to a straight stroke, and Mercury's stands out at a tilt of
+              7 degrees.
+            </li>
+            <li>
+              <strong>Walk it outdoors.</strong> Suppose the Sun were a ball 10 centimeters across. Earth would
+              be a 1-millimeter bead 11 meters away, Jupiter a 1-centimeter marble 56 meters away, and Neptune
+              a 4-millimeter bead about 325 meters away. The nearest other star would be about 2,900 kilometers
+              away.
+            </li>
+          </ol>
+        </section>
+
+        <section aria-labelledby="how-it-works">
+          <h2 id="how-it-works">How it works</h2>
+          <p>
+            You might expect a page like this to keep asking a server where the planets are. It does not,
+            because a planet's position is not news. JPL has already calculated the paths for many years
+            ahead, so the page downloads JPL's formulas and does the arithmetic itself. Here is the chain
+            from JPL to your screen.
+          </p>
+          <ol>
+            <li>
+              <strong>JPL publishes the paths.</strong> NASA's Jet Propulsion Laboratory (JPL) publishes a
+              model of the solar system called DE440. It stores each planet's path as a long chain of
+              polynomials: short formulas, each good for a few days or weeks.
+            </li>
+            <li>
+              <strong>A small program copies out one year at a time.</strong> This site's program downloads
+              JPL's file and confirms that it is the exact file expected. It then copies each year's
+              polynomials into a file of about 100 kilobytes, without changing a digit.
+            </li>
+            <li>
+              <strong>The program checks each year against JPL.</strong> It asks JPL Horizons, a calculator JPL
+              runs for the public, where the eight planets and the Moon are at twelve moments in the year. If
+              any answer differs from the file by more than 1 kilometer, that year is rejected and never
+              reaches this site.
+            </li>
+            <li>
+              <strong>Your browser downloads the year it needs.</strong> Before reading a single number, it
+              compares the file with a digital fingerprint recorded when the file was published. If they
+              differ, the page says the data arrived damaged and shows no numbers, because a picture of the
+              wrong sky is worse than none.
+            </li>
+            <li>
+              <strong>Your computer does the arithmetic.</strong> Every time it draws the picture, your browser
+              works out each planet's position from the polynomials. No server is asked and nothing is filled
+              in between frames, so even at a year per second, each frame shows where JPL's data puts the
+              planets on that date.
+            </li>
+            <li>
+              <strong>The next year arrives ahead of time.</strong> While time runs, the browser fetches the
+              next year's file before it is needed, so that the motion does not stall at New Year.
+            </li>
+          </ol>
+          <p>
+            All of the code is open source, so anyone can read how this works or check the numbers:
+            <a href="https://github.com/mikezupper/learn-solar-system">the project on GitHub</a>.
+          </p>
+        </section>
+
+        <section aria-labelledby="science">
+          <h2 id="science">The science behind the page</h2>
+
+          <h3>Where a planet's position comes from</h3>
+          <p>
+            Nobody reads these positions off a telescope. JPL calculates them. Its model, DE440, starts from
+            the laws of gravity and steps the whole solar system forward through time, adding up the pull on
+            each body from the Sun, the planets, the Moon, 343 asteroids, 30 large objects beyond Neptune, and
+            a ring standing in for the rest of the Kuiper belt out there.
+          </p>
+          <p>
+            A calculation like that is only as good as its starting point, so JPL adjusts the starting
+            positions and masses until the results fit decades of measurements. Those include radio signals
+            timed to and from spacecraft such as MESSENGER at Mercury, Venus Express, the orbiters at Mars,
+            Juno at Jupiter and Cassini at Saturn, as well as lasers bounced off reflectors on the Moon. The
+            fit is remarkably close: DE440's distances to MESSENGER differ from the radio measurements by only
+            about 0.7 meters, typically.
+          </p>
+
+          <h3>Why orbits are ellipses: Kepler's laws</h3>
+          <p>
+            Early in the 1600s, Johannes Kepler found three rules in the planets' motion. Later that century,
+            Isaac Newton showed that all three follow from one idea: gravity weakens with the square of
+            distance. You can see each of them on this page.
+          </p>
+          <ol>
+            <li>
+              <strong>Each orbit is an ellipse, with the Sun at one focus.</strong> An ellipse is a stretched
+              circle, and its eccentricity measures the stretch, where 0 is a perfect circle. Most planets'
+              orbits are so nearly circles that they look round here. Mercury's, at about 0.21, does not.
+            </li>
+            <li>
+              <strong>A planet moves fastest when it is closest to the Sun.</strong> A line from the Sun to a
+              planet sweeps out equal areas in equal times, so the planet must speed up where the line is
+              short. Mercury ranges from about 39 to about 59 kilometers per second.
+            </li>
+            <li>
+              <strong>The farther out a planet is, the longer its year, by an exact rule.</strong> Take its
+              average distance <var>a</var>, the midpoint of its closest and farthest distances from the Sun,
+              in AU. Take the time <var>T</var> for one orbit, in years. Then <var>T</var> squared equals
+              <var>a</var> cubed, as the last two columns of the second table show.
+            </li>
+          </ol>
+          <table>
+            <caption>How each orbit is shaped</caption>
+            <thead>
+              <tr>
+                <th scope="col">Planet</th>
+                <th scope="col">Eccentricity</th>
+                <th scope="col">Slowest speed (<abbr title="kilometers per second">km/s</abbr>)</th>
+                <th scope="col">Fastest speed (<abbr title="kilometers per second">km/s</abbr>)</th>
+                <th scope="col">Tilt from Earth's orbit (degrees)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Mercury</th><td>0.2056</td><td>38.86</td><td>58.97</td><td>7.00</td></tr>
+              <tr><th scope="row">Venus</th><td>0.0068</td><td>34.78</td><td>35.26</td><td>3.39</td></tr>
+              <tr><th scope="row">Earth</th><td>0.0167</td><td>29.29</td><td>30.29</td><td>0.00</td></tr>
+              <tr><th scope="row">Mars</th><td>0.0935</td><td>21.97</td><td>26.50</td><td>1.85</td></tr>
+              <tr><th scope="row">Jupiter</th><td>0.0487</td><td>12.44</td><td>13.72</td><td>1.30</td></tr>
+              <tr><th scope="row">Saturn</th><td>0.0520</td><td>9.14</td><td>10.14</td><td>2.49</td></tr>
+              <tr><th scope="row">Uranus</th><td>0.0469</td><td>6.49</td><td>7.13</td><td>0.77</td></tr>
+              <tr><th scope="row">Neptune</th><td>0.0097</td><td>5.37</td><td>5.47</td><td>1.77</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <caption>Orbit sizes, and Kepler's third law: the last two columns nearly match</caption>
+            <thead>
+              <tr>
+                <th scope="col">Planet</th>
+                <th scope="col">Average distance, <var>a</var> (<abbr title="astronomical units">AU</abbr>)</th>
+                <th scope="col">One orbit, <var>T</var> (years)</th>
+                <th scope="col"><var>a</var> cubed</th>
+                <th scope="col"><var>T</var> squared</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">Mercury</th><td>0.387</td><td>0.241</td><td>0.058</td><td>0.058</td></tr>
+              <tr><th scope="row">Venus</th><td>0.723</td><td>0.615</td><td>0.378</td><td>0.378</td></tr>
+              <tr><th scope="row">Earth</th><td>1.000</td><td>1.000</td><td>1.000</td><td>1.000</td></tr>
+              <tr><th scope="row">Mars</th><td>1.524</td><td>1.881</td><td>3.54</td><td>3.54</td></tr>
+              <tr><th scope="row">Jupiter</th><td>5.203</td><td>11.86</td><td>140.9</td><td>140.7</td></tr>
+              <tr><th scope="row">Saturn</th><td>9.537</td><td>29.45</td><td>867.4</td><td>867.3</td></tr>
+              <tr><th scope="row">Uranus</th><td>19.19</td><td>84.01</td><td>7,067</td><td>7,058</td></tr>
+              <tr><th scope="row">Neptune</th><td>30.07</td><td>164.8</td><td>27,190</td><td>27,159</td></tr>
+            </tbody>
+          </table>
+          <p>
+            These values come from NASA's planetary fact sheets. Every time the site's code changes, a test
+            compares them with the orbits worked out from JPL's data.
+          </p>
+
+          <h3>What the lines really are</h3>
+          <p>
+            Each line is an <dfn>osculating orbit</dfn>, from the Latin word for kissing: the ellipse that
+            touches a planet's real path at the moment shown. The page takes the planet's position and velocity
+            at that moment, adds the pull of the Sun, and works out the ellipse the planet would follow if
+            nothing else pulled on it.
+          </p>
+          <p>
+            Something else always does pull on it, so the real path slowly drifts away from any one ellipse.
+            Over a year the drift is at most 0.0004 AU, or about 60,000 kilometers, far less than a pixel. Over
+            a full orbit it is largest for Uranus, at about 0.14 AU, which is under 1% of its distance from the
+            Sun. The page redraws each line every 30 simulated days, so a planet stays on its line as time
+            runs. The dots come straight from JPL's data; the lines are a guide for the eye.
+          </p>
+
+          <h3>Measuring in astronomical units and light</h3>
+          <p>
+            One <dfn>astronomical unit</dfn> (AU) is exactly 149,597,870.7 kilometers, a value the International
+            Astronomical Union fixed in 2012, close to Earth's average distance from the Sun. Earth's orbit is an
+            ellipse, so its real distance swings between 0.983 and 1.017 AU during the year.
+          </p>
+          <p>
+            Light travels exactly 299,792.458 kilometers every second. So sunlight takes between 8.2 and 8.5
+            minutes to reach Earth, and Neptune's light takes about four hours. You always see the sky as
+            it was, and the table's last column says how long ago. The table divides the distance at the moment
+            shown by the speed of light, without allowing for how far the planets move during the trip.
+          </p>
+
+          <h3>Keeping time</h3>
+          <p>
+            Your computer's clock keeps Coordinated Universal Time (UTC), which now and then gains a leap second
+            to stay in step with Earth's slightly uneven spin. The planets' motion has no use for leap seconds,
+            so JPL's calculations use a smooth time scale called Barycentric Dynamical Time (TDB). In 2026, TDB
+            runs about 69 seconds ahead of UTC. That sounds like nothing, yet Earth travels about 2,000
+            kilometers in 69 seconds, so the page converts every moment before it asks where a planet is.
+          </p>
+
+          <h3>Where the center is</h3>
+          <p>
+            The Sun is not quite the center of the solar system. The Sun and the planets all orbit their shared
+            center of mass, the <dfn>barycenter</dfn>, and the giant planets, above all Jupiter, keep moving it.
+            Between 2000 and 2050 it lies anywhere from about 93,000 to about 1.38 million kilometers from the
+            center of the Sun. The Sun's radius is about 696,000 kilometers, so the point the Sun circles
+            sometimes sits outside the Sun altogether.
+          </p>
+          <p>
+            The picture is centered on this barycenter, as JPL's data is, so if you zoom all the way in with
+            time running, you can watch the Sun's dot drift. The table measures from the Sun's center. Earth and
+            the Moon do the same thing on a smaller scale: Earth's center circles their shared center of mass
+            each month, at a distance of about 4,700 kilometers. Earth's line follows that point, so it does not
+            wobble.
+          </p>
+
+          <h3>Which way is up</h3>
+          <p>
+            JPL's coordinates are anchored to quasars so distant that their directions do not measurably change,
+            in a system called the International Celestial Reference Frame. Its axes lie close to Earth's
+            equator. This page turns them by 23.44 degrees, the angle between Earth's equator and its orbit, so
+            that Earth's orbit lies flat and up on the screen is the north side of that plane.
+          </p>
+
+          <h3>How a few numbers hold a whole orbit</h3>
+          <p>
+            Storing a position for every instant would take endless numbers. So JPL cuts each path into short
+            spans and fits one polynomial per axis to each span, using a family called Chebyshev polynomials. A
+            fast, tightly curving path needs more numbers: Mercury gets 14 per axis every 8 days. Neptune, moving
+            slowly along a wide curve, needs only 6 per axis every 32 days. A whole year of the solar system comes to
+            about 13,000 numbers.
+          </p>
+          <details>
+            <summary>The math, for the curious</summary>
+            <p>
+              A position along one axis at time <var>t</var>, inside a span that starts at <var>t</var><sub>0</sub>
+              and lasts Δ<var>t</var>, uses the coefficients <var>c</var><sub><var>k</var></sub> stored for that span:
+            </p>
+            <math display="block">
+              <mrow>
+                <mi>x</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo>
+                <munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></munderover>
+                <msub><mi>c</mi><mi>k</mi></msub><msub><mi>T</mi><mi>k</mi></msub><mo>(</mo><mi>s</mi><mo>)</mo>
+                <mo>,</mo><mspace width="1em"></mspace>
+                <mi>s</mi><mo>=</mo>
+                <mfrac><mrow><mn>2</mn><mo>(</mo><mi>t</mi><mo>−</mo><msub><mi>t</mi><mn>0</mn></msub><mo>)</mo></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac>
+                <mo>−</mo><mn>1</mn>
+              </mrow>
+            </math>
+            <p>The Chebyshev polynomials build on one another, and your browser evaluates the sum with Clenshaw's recurrence, which is fast and resists rounding error:</p>
+            <math display="block">
+              <mrow>
+                <msub><mi>T</mi><mn>0</mn></msub><mo>=</mo><mn>1</mn><mo>,</mo><mspace width="1em"></mspace>
+                <msub><mi>T</mi><mn>1</mn></msub><mo>=</mo><mi>s</mi><mo>,</mo><mspace width="1em"></mspace>
+                <msub><mi>T</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo>
+                <mn>2</mn><mi>s</mi><msub><mi>T</mi><mi>k</mi></msub><mo>−</mo><msub><mi>T</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub>
+              </mrow>
+            </math>
+            <p>
+              An orbit line comes from the position <var>r</var> and velocity <var>v</var> relative to the Sun, and
+              <var>μ</var>, the combined gravity of the Sun and the planet. These give the orbit's size <var>a</var> and
+              its distance from the Sun at each angle <var>θ</var> past the closest point:
+            </p>
+            <math display="block">
+              <mrow>
+                <mfrac><mn>1</mn><mi>a</mi></mfrac><mo>=</mo>
+                <mfrac><mn>2</mn><mrow><mo>|</mo><mi>r</mi><mo>|</mo></mrow></mfrac><mo>−</mo>
+                <mfrac><msup><mrow><mo>|</mo><mi>v</mi><mo>|</mo></mrow><mn>2</mn></msup><mi>μ</mi></mfrac>
+                <mo>,</mo><mspace width="1em"></mspace>
+                <mi>ρ</mi><mo>(</mo><mi>θ</mi><mo>)</mo><mo>=</mo>
+                <mfrac><mrow><msup><mi>h</mi><mn>2</mn></msup><mo>/</mo><mi>μ</mi></mrow><mrow><mn>1</mn><mo>+</mo><mi>e</mi><mo>cos</mo><mi>θ</mi></mrow></mfrac>
+              </mrow>
+            </math>
+            <p>
+              Here <var>h</var> is the size of the cross product of <var>r</var> and <var>v</var>, and <var>e</var>
+              is the eccentricity.
+            </p>
+            <p>
+              One practical problem remains. A graphics card stores positions as 32-bit numbers, which near
+              Neptune can tell apart only points at least 512 kilometers from each other. So the page subtracts
+              the camera's position while the numbers are still 64-bit, and hands the card only small distances
+              from the camera.
+            </p>
+          </details>
+
+          <h3>How we know the numbers are right</h3>
+          <ul>
+            <li>
+              <strong>Against JPL Horizons.</strong> Every year's file was compared with Horizons at 12 moments,
+              for 9 bodies, across 51 years: 5,508 comparisons. The largest difference was 4.7 meters. Horizons
+              runs DE441, a sister model to DE440, so this is a comparison with a separate calculation and not
+              with the same file.
+            </li>
+            <li>
+              <strong>Against a real eclipse.</strong> NASA's eclipse catalog gives the total solar eclipse of
+              <time datetime="2026-08-12">August 12, 2026</time> its greatest moment at 17:47:06 Dynamical Time,
+              with the axis of the Moon's shadow passing 0.8977 Earth radii from Earth's center. Worked out from
+              this site's file for 2026, the same moment comes out within a second, and the same distance within
+              0.0002 Earth radii. Neither figure comes from Horizons.
+            </li>
+            <li>
+              <strong>Against NASA's published orbits.</strong> The size, stretch and tilt of each orbit, and
+              the top and bottom speeds of Mercury and Earth, agree with NASA's fact sheets. Mercury's speed,
+              for example, comes out between 38.86 and 58.98 kilometers per second, against NASA's 38.86 and
+              58.97.
+            </li>
+          </ul>
+          <p>
+            These checks show that this site copies and evaluates JPL's data faithfully. They do not measure
+            how close JPL's model is to the real planets. For that, read the DE440 paper listed under Sources.
+          </p>
+        </section>
+
+        <section aria-labelledby="leaves-out">
+          <h2 id="leaves-out">What this page leaves out</h2>
+          <ul>
+            <li>
+              <strong>Planet sizes.</strong> With all eight planets in view, one pixel covers about 18 million
+              kilometers. The Sun is 1.4 million kilometers across, so at true scale even the Sun would cover
+              less than a tenth of a pixel, and Earth about a thousandth. That is why each dot marks a position
+              and says nothing about size.
+            </li>
+            <li>
+              <strong>Where to look in your own sky.</strong> The page shows where the planets are in space, not
+              where to point a telescope. That would need your location and a correction for the time light
+              takes to arrive.
+            </li>
+            <li>
+              <strong>The exact center of Mars through Neptune.</strong> For those planets the data gives the
+              center of mass of the planet and its moons, at most a few hundred kilometers from the planet's
+              center. The last digit in the table stands for about 150,000 kilometers.
+            </li>
+            <li>
+              <strong>Moons, spin, dwarf planets, asteroids and comets.</strong> These are not on the page yet.
+            </li>
+            <li>
+              <strong>Dates outside 2000 through 2050, and running time backward.</strong> Uranus and Neptune
+              therefore cannot finish an orbit here, since they take 84 and 165 years.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="sources">
+          <h2 id="sources">Sources</h2>
+          <ul>
+            <li>
+              Park, R. S., Folkner, W. M., Williams, J. G., and Boggs, D. H. (2021).
+              <a href="https://doi.org/10.3847/1538-3881/abd414"><cite>The JPL Planetary and Lunar Ephemerides DE440 and DE441</cite></a>.
+              The Astronomical Journal, 161:105.
+            </li>
+            <li>
+              <a href="https://naif.jpl.nasa.gov/naif/">NASA's Navigation and Ancillary Information Facility</a>,
+              which publishes the data file this site reads, <code>de440s.bsp</code>.
+            </li>
+            <li><a href="https://ssd.jpl.nasa.gov/horizons/">JPL Horizons</a>, the public calculator used for checking.</li>
+            <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/">NASA's planetary fact sheets</a>, for the tables above.</li>
+            <li>
+              <a href="https://eclipse.gsfc.nasa.gov/SEsearch/SEsearchmap.php?Ecl=20260812">NASA's Eclipse Web Site, by Fred Espenak</a>,
+              on the total solar eclipse of 2026.
+            </li>
+            <li>
+              <a href="https://www.iau.org/Iau/Publications/List-of-Resolutions">International Astronomical Union resolutions</a>:
+              Resolution B2 of 2012 defines the astronomical unit.
+            </li>
+            <li><a href="/about-the-data.html">Where these numbers come from</a>, a shorter account of this page's data.</li>
+          </ul>
+        </section>
+      </article>
     </main>
     <footer>
       <nav aria-label="About this site">
-        <p><a href="/about-the-data.html">Where these numbers come from</a></p>
+        <p>
+          <a href="/about-the-data.html">Where these numbers come from</a> ·
+          <a href="https://github.com/mikezupper/learn-solar-system">Source code</a>
+        </p>
       </nav>
+      <p>
+        This site uses data published by NASA's Jet Propulsion Laboratory. It is an independent, open-source
+        project, not affiliated with or endorsed by NASA or JPL.
+      </p>
     </footer>
   </body>
 </html>
