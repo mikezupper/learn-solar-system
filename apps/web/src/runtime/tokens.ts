@@ -7,4 +7,4 @@ import type { FramesMeasured, PageFacts, SkyLoad } from "../types/index.js"
  */
 export const pageFacts = defineDriver<undefined, PageFacts>("page-facts")
 export const skyLoader = defineDriver<{ readonly moment: number }, SkyLoad>("sky-loader")
-export const frameRecorder = defineDriver<FramesMeasured, void>("frame-recorder")
+export const frameRecorder = defineDriver<FramesMeasured, undefined>("frame-recorder")

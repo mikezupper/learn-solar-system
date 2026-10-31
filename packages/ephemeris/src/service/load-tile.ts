@@ -1,4 +1,4 @@
-import { Array, Effect, Option, pipe, Schema } from "effect"
+import { Array, Effect, type Option, pipe, Schema } from "effect"
 import { Digest, TileSource } from "../repo/index.js"
 import { TileCatalog, type TileEntry } from "../types/catalog.js"
 import { CatalogUnavailableError, TileCorruptError } from "../types/errors.js"

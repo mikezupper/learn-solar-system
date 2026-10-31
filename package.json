@@ -32,7 +32,8 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm lint:layers && pnpm lint:docs && pnpm lint:taste && pnpm gen-docs --check && pnpm quality --check && pnpm coverage && pnpm test:browser && pnpm build && pnpm budget && pnpm e2e",
     "budget": "pnpm harness budget",
     "obs:check": "pnpm harness obs check",
-    "verify:full": "pnpm verify && pnpm test:kernel && pnpm obs:check"
+    "verify:full": "pnpm verify && pnpm test:kernel && pnpm obs:check",
+    "dev:stop": "pnpm harness stop"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -42,6 +43,7 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "8.72.1",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@gyral/core": "catalog:"
   }
 }

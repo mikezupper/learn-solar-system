@@ -1,6 +1,7 @@
 import { NodeServices } from "@effect/platform-node"
 import { assert, describe, it } from "@effect/vitest"
-import { Effect, FileSystem, Layer, Path, Ref, type Scope } from "effect"
+import type { Path} from "effect";
+import { Effect, FileSystem, Layer, Ref, type Scope } from "effect"
 import { HttpClient, HttpClientResponse } from "effect/http"
 import { KernelSource, TileStore } from "@solar/ephemeris/repo"
 import {

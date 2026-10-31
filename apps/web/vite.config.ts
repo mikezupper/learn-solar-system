@@ -11,7 +11,10 @@ const tileDir = resolve(repositoryRoot, process.env.TILE_STORE_DIR ?? ".harness/
 const tileMiddleware: Connect.NextHandleFunction = (request, response, next) => {
   const name = basename(new URL(request.url ?? "/", "http://local").pathname)
   const file = join(tileDir, name)
-  if (!existsSync(file)) return next()
+  if (!existsSync(file)) {
+    next()
+    return
+  }
   response.setHeader("Content-Type", name.endsWith(".json") ? "application/json" : "application/octet-stream")
   response.setHeader("Cache-Control", name === "catalog.json" ? "no-cache" : "public, max-age=31536000, immutable")
   createReadStream(file).pipe(response)
@@ -44,7 +47,7 @@ export default defineConfig({
   build: {
     target: "es2022",
     chunkSizeWarningLimit: 1200,
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         main: resolve(import.meta.dirname, "index.html"),
         about: resolve(import.meta.dirname, "about-the-data.html"),

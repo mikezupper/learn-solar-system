@@ -1,5 +1,5 @@
 import type { DriverList } from "@gyral/core"
-import { Layer, ManagedRuntime } from "effect"
+import { Effect, Layer, ManagedRuntime } from "effect"
 import { FetchHttpClient } from "effect/http"
 import { Moment } from "@solar/classroom/types"
 import { DigestWebCrypto, tileSourceHttp } from "@solar/ephemeris/repo"
@@ -31,5 +31,5 @@ export const appDrivers: DriverList = [
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   })),
   skyLoader.provide(({ moment }, { signal }) => runtime.runPromise(loadSky(Moment(moment)), { signal })),
-  frameRecorder.provide((stats) => runtime.runPromise(recordFrames(stats))),
+  frameRecorder.provide((stats) => runtime.runPromise(recordFrames(stats).pipe(Effect.as(undefined)))),
 ]

@@ -3,8 +3,9 @@ import { Horizons } from "../repo/index.js"
 import { Naif, type NaifId } from "../types/bodies.js"
 import { KernelCoverageError, type HorizonsError } from "../types/errors.js"
 import { TdbSeconds } from "../types/time.js"
+import type { Tile } from "../types/tile.js"
 import { decideVerification, type VerificationOutcome, type VerificationSample } from "./decisions.js"
-import { trackFor, type Tile } from "./tile.js"
+import { trackFor } from "./tile.js"
 
 /** What a tile must agree with Horizons on. Each entry names the same pair in both vocabularies. */
 export const PLANET_CHECKS: ReadonlyArray<{

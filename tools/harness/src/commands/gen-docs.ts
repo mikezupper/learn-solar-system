@@ -51,8 +51,8 @@ const expectedDocuments = Effect.gen(function* () {
   )
   const stage = yield* capture("git", ["ls-files", "-s", "skills"])
   const skills = stage.split("\n").flatMap((line) => {
-    const match = SUBMODULE.exec(line)
-    return match === null ? [] : [{ path: match[2] ?? "", commit: (match[1] ?? "").slice(0, 12) }]
+    const [, commit, path] = SUBMODULE.exec(line) ?? []
+    return commit === undefined || path === undefined ? [] : [{ path, commit: commit.slice(0, 12) }]
   })
   const instruments = yield* fs
     .readFileString("packages/providers/src/instruments.ts")

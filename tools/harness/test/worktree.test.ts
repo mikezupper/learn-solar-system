@@ -21,6 +21,12 @@ describe("worktreeIdentity", () => {
   it("uses five distinct unprivileged ports", () => {
     const ports = Object.values(identity.ports)
     assert.strictEqual(new Set(ports).size, 5)
-    assert.isTrue(ports.every((port) => port > 1024 && port < 65_536))
+    assert.isTrue(ports.every((port) => port > 1024))
+  })
+
+  // Linux hands out ports from 32768 upward for outgoing connections, so a fixed port in that range
+  // is occasionally taken by whatever happens to be connecting at that moment.
+  it("stays below the range the kernel uses for outgoing connections", () => {
+    assert.isTrue(Object.values(identity.ports).every((port) => port < 32_768))
   })
 })
