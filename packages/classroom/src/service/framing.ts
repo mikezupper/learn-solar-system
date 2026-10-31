@@ -24,17 +24,18 @@ export interface ProjectedLabel {
 }
 
 /**
- * Keeps the labels that have room, in priority order. Four inner planets share a few pixels when
- * the whole system is in view; a learner zooms in to separate them, and their labels return.
+ * Keeps the labels that have room, in priority order. Four inner planets share a few pixels when the
+ * whole system is in view; a learner zooms in to separate them, and their labels return.
  */
 export const labelsWithRoom = (
   labels: ReadonlyArray<ProjectedLabel>,
-  minimumGapPixels: number,
+  box: { readonly width: number; readonly height: number },
 ): ReadonlyArray<ProjectedLabel> =>
   labels.reduce<ReadonlyArray<ProjectedLabel>>(
     (kept, label) =>
       kept.some(
-        (other) => Math.hypot(other.x - label.x, other.y - label.y) < minimumGapPixels,
+        (other) =>
+          Math.abs(other.x - label.x) < box.width && Math.abs(other.y - label.y) < box.height,
       )
         ? kept
         : [...kept, label],

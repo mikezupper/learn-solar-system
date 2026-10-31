@@ -17,6 +17,7 @@ const sample = (body: string, errorKm: number) => ({
 const entry = (id: string, sha256: string, startSeconds: number): TileEntry => ({
   id,
   system: "planets",
+  year: 2026,
   startSeconds: TdbSeconds(startSeconds),
   endSeconds: TdbSeconds(startSeconds + 1),
   blob: `${id}-${sha256}.bin`,

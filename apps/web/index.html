@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Where are the planets right now? Solar System Classroom</title>
+    <meta
+      name="description"
+      content="See the Sun and the eight planets where they really are at this moment, at true scale, with the distances and light travel times to explore with a class."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Where are the planets right now?" />
+    <meta
+      property="og:description"
+      content="The Sun and planets at their true positions and true scale, calculated from NASA JPL's planetary data."
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LearningResource",
+        "name": "Where are the planets right now?",
+        "description": "An interactive view of the planets' true positions and distances, for teachers and students.",
+        "learningResourceType": "interactive resource",
+        "about": "Solar System",
+        "inLanguage": "en"
+      }
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a href="#main">Skip to main content</a>
+    <header>
+      <h1>Where are the planets right now?</h1>
+      <p>
+        The Sun and the eight planets where they really are, worked out from the planetary data NASA's
+        Jet Propulsion Laboratory publishes for navigating spacecraft.
+      </p>
+    </header>
+    <main id="main">
+      <solar-classroom></solar-classroom>
+      <noscript><p>This page calculates each planet's position in your browser, which needs JavaScript. The page <a href="/about-the-data.html">Where these numbers come from</a> works without it.</p></noscript>
+    </main>
+    <footer>
+      <nav aria-label="About this site">
+        <p><a href="/about-the-data.html">Where these numbers come from</a></p>
+      </nav>
+    </footer>
+  </body>
+</html>

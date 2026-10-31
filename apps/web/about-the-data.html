@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Where these numbers come from: Solar System Classroom</title>
+  <meta name="description" content="How Solar System Classroom calculates each planet's position, how the numbers were checked against NASA JPL, and what the page does not show.">
+</head>
+<body>
+  <a href="#main">Skip to main content</a>
+  <header>
+    <p><a href="/">Solar System Classroom</a></p>
+    <h1>Where these numbers come from</h1>
+  </header>
+  <main id="main">
+    <article>
+      <p>Every position on this site comes from <cite>DE440</cite>, the planetary model that NASA's Jet Propulsion Laboratory (JPL) publishes. JPL fits the model to decades of radar, spacecraft and telescope measurements, then uses it to navigate missions.</p>
+
+      <section aria-labelledby="how">
+        <h2 id="how">How your browser gets a position</h2>
+        <ol>
+          <li>JPL stores each planet's path as a series of polynomials, each covering a few days or weeks.</li>
+          <li>Our server copies the polynomials for one calendar year into a small file, about 100 kilobytes, without changing them.</li>
+          <li>Your browser downloads that file and evaluates the polynomials at the current time. Nothing is estimated or rounded along the way.</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="checked">
+        <h2 id="checked">How the numbers were checked</h2>
+        <p>A file reaches this site only after it agrees with <a href="https://ssd.jpl.nasa.gov/horizons/">JPL Horizons</a>, the calculator JPL runs for the public, to within 1 kilometer. Across twelve moments in 2026, the largest difference we measured was about 3 meters.</p>
+        <p>As a check that does not rely on Horizons, the same file predicts the total solar eclipse of <time datetime="2026-08-12">August 12, 2026</time> at the time and distance that eclipse catalogs published.</p>
+      </section>
+
+      <section aria-labelledby="limits">
+        <h2 id="limits">What the page does not show</h2>
+        <ul>
+          <li><strong>Planet sizes.</strong> At true scale, Earth would be far smaller than one pixel with the whole solar system in view, so each dot marks a position and says nothing about size.</li>
+          <li><strong>The exact center of Mars through Neptune.</strong> For those planets the data gives the center of mass of the planet and its moons. That point sits at most a few hundred kilometers from the planet's center, while the last digit in our table stands for about 150,000 kilometers.</li>
+          <li><strong>Moons, orbits and spin.</strong> These are not on the page yet.</li>
+        </ul>
+      </section>
+    </article>
+  </main>
+  <footer>
+    <p><a href="/">Back to the planets</a></p>
+  </footer>
+</body>
+</html>

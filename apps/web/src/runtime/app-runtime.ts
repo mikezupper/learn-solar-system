@@ -1,0 +1,35 @@
+import type { DriverList } from "@gyral/core"
+import { Layer, ManagedRuntime } from "effect"
+import { FetchHttpClient } from "effect/http"
+import { Moment } from "@solar/classroom/types"
+import { DigestWebCrypto, tileSourceHttp } from "@solar/ephemeris/repo"
+import { telemetryLayer } from "@solar/providers"
+import { readWebConfig } from "../config/index.js"
+import { loadSky, recordFrames } from "../service/load-sky.js"
+import { frameRecorder, pageFacts, skyLoader } from "./tokens.js"
+
+const config = readWebConfig(import.meta.env)
+
+/** The page's single Effect runtime. Every Effect in the browser runs through a driver below. */
+const runtime = ManagedRuntime.make(
+  Layer.mergeAll(
+    tileSourceHttp(config.tileBaseUrl).pipe(Layer.provide(FetchHttpClient.layer)),
+    DigestWebCrypto,
+    telemetryLayer({
+      serviceName: "solar-web",
+      otlpBaseUrl: config.otlpBaseUrl,
+      worktree: config.worktree,
+    }),
+  ),
+)
+
+export const appDrivers: DriverList = [
+  pageFacts.provide(() => ({
+    linkedMoment: new URLSearchParams(location.search).get("at") ?? undefined,
+    nowMillis: Date.now(),
+    locale: navigator.language,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  })),
+  skyLoader.provide(({ moment }, { signal }) => runtime.runPromise(loadSky(Moment(moment)), { signal })),
+  frameRecorder.provide((stats) => runtime.runPromise(recordFrames(stats))),
+]

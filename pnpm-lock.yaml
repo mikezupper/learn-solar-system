@@ -21,6 +21,9 @@ catalogs:
     '@gyral/core':
       specifier: 0.3.9
       version: 0.3.9
+    '@gyral/ssr':
+      specifier: 0.3.9
+      version: 0.3.9
     '@gyral/testing':
       specifier: 0.3.9
       version: 0.3.9
@@ -126,6 +129,9 @@ importers:
       '@effect/vitest':
         specifier: 'catalog:'
         version: 4.1.1(effect@4.1.1)(vitest@5.0.5)
+      '@gyral/ssr':
+        specifier: 'catalog:'
+        version: 0.3.9(@gyral/core@0.3.9(eslint@10.14.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
       '@gyral/testing':
         specifier: 'catalog:'
         version: 0.3.9(@gyral/core@0.3.9(eslint@10.14.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)))(vitest@5.0.5)
@@ -550,6 +556,15 @@ packages:
         optional: true
       parse5:
         optional: true
+      vite:
+        optional: true
+
+  '@gyral/ssr@0.3.9':
+    resolution: {integrity: sha512-8ACi0pTdvLjDyw50YuGmvjsRdFA/8dmnPz7JJ2WVouy5G56cLrtYgwkprq5gCfUj2hkdc18QHuMqcE4/EkpSdA==}
+    peerDependencies:
+      '@gyral/core': 0.3.9
+      vite: ^8.0.0
+    peerDependenciesMeta:
       vite:
         optional: true
 
@@ -1686,6 +1701,13 @@ snapshots:
       '@standard-schema/spec': 1.1.0
     optionalDependencies:
       eslint: 10.14.0
+      vite: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
+
+  '@gyral/ssr@0.3.9(@gyral/core@0.3.9(eslint@10.14.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)))(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))':
+    dependencies:
+      '@gyral/core': 0.3.9(eslint@10.14.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
+      '@standard-schema/spec': 1.1.0
+    optionalDependencies:
       vite: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
 
   '@gyral/testing@0.3.9(@gyral/core@0.3.9(eslint@10.14.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)))(vitest@5.0.5)':

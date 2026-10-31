@@ -3,8 +3,36 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": { },
-  "scripts": { "typecheck": "gyral-types && tsc -p tsconfig.json", "dev": "vite", "build": "gyral-types && vite build", "preview": "vite preview", "e2e": "playwright test" },
-  "dependencies": { "@gyral/core": "catalog:", "@gyral/time": "catalog:", "@solar/classroom": "workspace:*", "@solar/ephemeris": "workspace:*", "@solar/providers": "workspace:*", "effect": "catalog:", "three": "catalog:" },
-  "devDependencies": { "@axe-core/playwright": "catalog:", "@effect/language-service": "catalog:", "@effect/vitest": "catalog:", "@gyral/testing": "catalog:", "@playwright/test": "catalog:", "@types/node": "catalog:", "@types/three": "catalog:", "@vitest/browser-playwright": "catalog:", "playwright": "catalog:", "typescript": "catalog:", "vite": "catalog:", "vitest": "catalog:" }
+  "exports": {},
+  "scripts": {
+    "typecheck": "gyral-types && tsc -p tsconfig.json",
+    "dev": "vite",
+    "build": "gyral-types && vite build",
+    "preview": "vite preview",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@gyral/core": "catalog:",
+    "@gyral/time": "catalog:",
+    "@solar/classroom": "workspace:*",
+    "@solar/ephemeris": "workspace:*",
+    "@solar/providers": "workspace:*",
+    "effect": "catalog:",
+    "three": "catalog:"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "catalog:",
+    "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
+    "@gyral/testing": "catalog:",
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:",
+    "@types/three": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "playwright": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "@gyral/ssr": "catalog:"
+  }
 }

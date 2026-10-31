@@ -53,6 +53,7 @@ export const buildYearTile = Effect.fn("Tile.buildYear")(function* (pin: KernelP
   const entry: TileEntry = {
     id: tileId,
     system: "planets",
+    year,
     startSeconds,
     endSeconds,
     blob: `${tileId}-${sha256.slice(0, 16)}.bin`,

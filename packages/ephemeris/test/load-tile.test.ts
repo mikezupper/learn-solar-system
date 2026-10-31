@@ -13,6 +13,7 @@ const coefficients = new Uint8Array(new Float64Array([7, 8, 9]).buffer)
 const entry = (overrides: Partial<TileEntry>): TileEntry => ({
   id: "planets-2026",
   system: "planets",
+  year: 2026,
   startSeconds: TdbSeconds(100),
   endSeconds: TdbSeconds(200),
   blob: "planets-2026-abc.bin",

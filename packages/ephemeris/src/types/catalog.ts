@@ -38,6 +38,7 @@ export type TileVerification = typeof TileVerification.Type
 export const TileEntry = Schema.Struct({
   id: Schema.String,
   system: Schema.Literal("planets"),
+  year: Schema.Int,
   startSeconds: TdbSecondsSchema,
   endSeconds: TdbSecondsSchema,
   blob: Schema.String,
