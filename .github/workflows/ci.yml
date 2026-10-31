@@ -1,0 +1,52 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      # The skills are for agents, and some are private. No gate reads them.
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @solar/web exec playwright install --with-deps chromium
+      - run: pnpm verify
+
+  kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/solar-system/kernels
+          key: kernels-${{ hashFiles('data/kernels.lock.json') }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:kernel
+
+  telemetry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/solar-system/kernels
+          key: kernels-${{ hashFiles('data/kernels.lock.json') }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm obs:check

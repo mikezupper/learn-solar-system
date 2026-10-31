@@ -1,6 +1,8 @@
 import { defineConfig } from "@playwright/test"
 
-const PORT = 4610
+/** Derived from the checkout's path, so that two worktrees can run this suite at the same time. */
+const PORT =
+  4600 + new TextEncoder().encode(import.meta.dirname).reduce((sum, byte) => sum + byte, 0) % 800
 
 export default defineConfig({
   testDir: "e2e",

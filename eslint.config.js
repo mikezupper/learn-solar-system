@@ -121,19 +121,9 @@ export default defineConfig(
     rules: { "no-restricted-syntax": ["error", ...without(NO_NULL, NO_CAST)] },
   },
   {
-    // The Gyral view reads an instant it was given, through `new Date(moment)`.
-    files: ["apps/web/src/ui/classroom.ts"],
-    rules: { "@typescript-eslint/no-unnecessary-type-parameters": "off" },
-  },
-  {
     // The edge where the page's facts enter, and the single place Effects run in a browser.
     files: ["apps/web/src/runtime/app-runtime.ts"],
     rules: { "no-restricted-syntax": ["error", ...without(NO_CLOCK)] },
-  },
-  {
-    // Harness entry: the only place a tool reads its arguments. `case` dispatch needs no exceptions.
-    files: ["tools/harness/src/**/*.ts"],
-    rules: { "no-restricted-syntax": ["error", ...without(NO_CONSOLE)] },
   },
   {
     // Tests state facts directly and may fail loudly; Playwright and Vitest browser mode are async.

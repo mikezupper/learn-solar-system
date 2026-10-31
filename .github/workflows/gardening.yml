@@ -1,0 +1,21 @@
+# Reports documents that nobody has re-checked in 30 days, and generated files that have drifted.
+name: Gardening
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm quality --check
+      - run: pnpm gen-docs --check
+      - run: pnpm lint:docs

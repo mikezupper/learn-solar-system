@@ -9,7 +9,7 @@ import { KernelCoverageError, HorizonsError, TileRejectedError } from "../src/ty
 import { TdbSeconds } from "../src/types/time.js"
 import { horizonsAgreeing, horizonsDown, kernelOf, memoryStore, PIN, stillKernel } from "./fakes.js"
 
-const world = (horizons: Layer.Layer<never, never, never> | ReturnType<typeof horizonsAgreeing>) =>
+const world = (horizons: Layer.Layer<never> | ReturnType<typeof horizonsAgreeing>) =>
   Effect.gen(function* () {
     const store = yield* memoryStore
     const layer = Layer.mergeAll(kernelOf(stillKernel()), horizons, DigestWebCrypto, store.layer)
@@ -62,7 +62,7 @@ describe("buildYearTile", () => {
       const { store, layer } = yield* world(horizonsAgreeing(PUBLISH_LIMIT_KM + 0.5))
       const error = yield* buildYearTile(PIN, 2026).pipe(Effect.provide(layer), Effect.flip)
       assert.instanceOf(error, TileRejectedError)
-      assert.closeTo((error as TileRejectedError).errorKm, PUBLISH_LIMIT_KM + 0.5, 1e-6)
+      assert.closeTo((error).errorKm, PUBLISH_LIMIT_KM + 0.5, 1e-6)
       assert.deepStrictEqual(yield* Ref.get(store.writes), [])
     }),
   )
@@ -95,7 +95,7 @@ describe("verifyTile", () => {
         limitKm: 1,
       }).pipe(Effect.provide(horizonsAgreeing()), Effect.flip)
       assert.instanceOf(error, KernelCoverageError)
-      assert.include((error as KernelCoverageError).message, "Mercury")
+      assert.include((error).message, "Mercury")
     }),
   )
 })

@@ -52,7 +52,7 @@ describe("buildCatalog", () => {
           Effect.flip,
         )
         assert.instanceOf(error, KernelReadError)
-        assert.include((error as KernelReadError).reason, "de440s.bsp")
+        assert.include((error).reason, "de440s.bsp")
       }),
     ),
   )
