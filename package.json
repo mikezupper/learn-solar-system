@@ -19,7 +19,7 @@
     "test:browser": "vitest run --project browser",
     "test:kernel": "vitest run --project kernel",
     "coverage": "vitest run --project unit --coverage",
-    "tiles:build": "pnpm --filter @solar/worker tiles:build",
+    "tiles:build": "tsx apps/worker/src/main.ts",
     "build": "pnpm --filter @solar/web build",
     "e2e": "pnpm --filter @solar/web e2e",
     "obs:up": "pnpm harness obs up",
