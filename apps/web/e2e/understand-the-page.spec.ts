@@ -21,7 +21,7 @@ test.describe("a reader wants to understand the page", () => {
     for (const name of EXPLANATION) {
       await expect(page.getByRole("heading", { level: 2, name, exact: true })).toBeVisible()
     }
-    for (const name of ["Make time run", "Show a class one moment", "Things to try", "How we know the numbers are right"]) {
+    for (const name of ["Choose what to show", "Make time run", "Show a class one moment", "Things to try", "How we know the numbers are right"]) {
       await expect(page.getByRole("heading", { level: 3, name })).toBeVisible()
     }
   })
@@ -29,10 +29,18 @@ test.describe("a reader wants to understand the page", () => {
   test("the list of contents reaches every section", async ({ page }) => {
     await page.goto(`/?at=${MOMENT}`)
     const contents = page.getByRole("navigation", { name: "On this page" })
-    await expect(contents.getByRole("link")).toHaveText(EXPLANATION)
-    for (const name of EXPLANATION) {
-      await contents.getByRole("link", { name, exact: true }).click()
-      await expect(page.getByRole("heading", { level: 2, name, exact: true })).toBeInViewport()
+    const places: ReadonlyArray<readonly [string, string]> = [
+      ["What it does", "What this page does"],
+      ["How to use it", "How to use it"],
+      ["How it works", "How it works"],
+      ["The science", "The science behind the page"],
+      ["What it leaves out", "What this page leaves out"],
+      ["Sources", "Sources"],
+      ["Numbers", "The numbers behind the picture"],
+    ]
+    for (const [link, heading] of places) {
+      await contents.getByRole("link", { name: link, exact: true }).click()
+      await expect(page.getByRole("heading", { level: 2, name: heading, exact: true })).toBeInViewport()
     }
   })
 
@@ -57,6 +65,14 @@ test.describe("a reader wants to understand the page", () => {
     await page.goto(`/?at=${MOMENT}`)
     await page.getByRole("link", { name: "?at=2026-08-12T17:46:00Z" }).click()
     await expect(classroom(page).locator("time")).toHaveAttribute("datetime", "2026-08-12T17:46:00.000Z")
+  })
+
+  test("the buttons in the text are hidden when no script could answer them", async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, ...(baseURL === undefined ? {} : { baseURL }) })
+    const page = await context.newPage()
+    await page.goto("/")
+    await expect(page.getByRole("button", { name: "Watch Mercury hurry" })).toBeHidden()
+    await context.close()
   })
 
   test("the math waits until a reader asks for it", async ({ page }) => {

@@ -1,22 +1,35 @@
 import { Result } from "effect"
 import {
   AdditiveBlending,
+  AmbientLight,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   Color,
+  DoubleSide,
+  Group,
   LineBasicMaterial,
   LineLoop,
+  Material,
+  Mesh,
+  MeshBasicMaterial,
+  MeshLambertMaterial,
   PerspectiveCamera,
+  PointLight,
   Points,
   PointsMaterial,
+  RingGeometry,
   Scene,
+  SphereGeometry,
+  Vector3,
   WebGLRenderer,
   type Texture,
 } from "three"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
-import type { PlanetName } from "@solar/classroom/types"
+import { eclipticFromIcrf } from "@solar/classroom/service"
+import { PLANETS, SUN_DIAMETER_KM, type BodyName, type PlanetName } from "@solar/classroom/types"
 import type { Vector3Km } from "@solar/ephemeris/types"
+import { starField } from "./stage-stars.js"
 
 /** One scene unit, once positions are relative to the camera and small enough for 32-bit floats. */
 export const KM_PER_UNIT = 1e6
@@ -26,6 +39,18 @@ export const ORBIT_POINTS = 360
 const PLANET_DOT_PIXELS = 11
 const SUN_DOT_PIXELS = 16
 const SUN_GLOW_PIXELS = 36
+/** Far enough that stars never shift as the camera turns: the render camera sits at the origin. */
+const STAR_RADIUS_UNITS = 5e5
+const FAINT_STARS = 3200
+const BRIGHT_STARS = 260
+
+/** Saturn's rings, from NASA's fact sheets: the C ring's inner edge to the A ring's outer edge. */
+const SATURN_EQUATOR_KM = 60_268
+const RING_INNER_KM = 74_658
+const RING_OUTER_KM = 136_780
+/** Saturn's north pole at J2000, from NASA's Saturn fact sheet. */
+const SATURN_POLE_RA_DEGREES = 40.589
+const SATURN_POLE_DEC_DEGREES = 83.537
 
 /** Colors a learner would recognize. Uranus and Neptune are both pale, as Irwin et al. (2024) showed. */
 export const PLANET_COLORS: ReadonlyArray<readonly [PlanetName, string]> = [
@@ -43,12 +68,12 @@ const SUN_COLOR = "#ffd86b"
 /** Ecliptic north points up the screen. Three.js axes are x right, y up, z toward the viewer. */
 export const toScreenAxes = ([x, y, z]: Vector3Km): Vector3Km => [x, z, -y]
 
-const dotTexture = (paint: (context: CanvasRenderingContext2D) => void): CanvasTexture => {
+const dotTexture = (paint: (context: CanvasRenderingContext2D, color: string) => void, color = "#ffffff"): CanvasTexture => {
   const canvas = document.createElement("canvas")
   canvas.width = 64
   canvas.height = 64
   const context = canvas.getContext("2d")
-  if (context !== null) paint(context)
+  if (context !== null) paint(context, color)
   return new CanvasTexture(canvas)
 }
 
@@ -59,12 +84,18 @@ const solidDot = (context: CanvasRenderingContext2D) => {
   context.fill()
 }
 
-const softGlow = (context: CanvasRenderingContext2D) => {
+const softGlow = (context: CanvasRenderingContext2D, color: string) => {
   const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32)
-  gradient.addColorStop(0, "rgba(255, 216, 107, 0.55)")
-  gradient.addColorStop(1, "rgba(255, 216, 107, 0)")
+  gradient.addColorStop(0, color === "#ffffff" ? "rgba(255, 255, 255, 1)" : "rgba(255, 216, 107, 0.55)")
+  gradient.addColorStop(1, color === "#ffffff" ? "rgba(255, 255, 255, 0)" : "rgba(255, 216, 107, 0)")
   context.fillStyle = gradient
   context.fillRect(0, 0, 64, 64)
+}
+
+export interface SizedBody {
+  readonly name: BodyName
+  readonly mesh: Mesh
+  readonly radiusKm: number
 }
 
 export interface OrbitLine {
@@ -85,6 +116,13 @@ export interface Scene3D {
   readonly planetPositions: BufferAttribute
   readonly sunPosition: BufferAttribute
   readonly orbitLines: ReadonlyArray<OrbitLine>
+  /** The lines and dots, hidden until the first answer arrives. Only the stars show before then. */
+  readonly bodies: Group
+  /** Dots mark true positions. The sized bodies replace them only in the labeled view. */
+  readonly dots: Group
+  readonly sized: ReadonlyArray<SizedBody>
+  readonly sizedGroup: Group
+  readonly sunlight: PointLight
   readonly dispose: () => void
 }
 
@@ -100,6 +138,26 @@ const pointsOf = (
   points.frustumCulled = false
   points.renderOrder = order
   return { points, positions, geometry }
+}
+
+/** Saturn's rings, in units of the sphere's radius, tilted by its pole, which real rings follow. */
+const saturnRings = (): Mesh => {
+  const geometry = new RingGeometry(RING_INNER_KM / SATURN_EQUATOR_KM, RING_OUTER_KM / SATURN_EQUATOR_KM, 96)
+  const material = new MeshBasicMaterial({
+    color: new Color("#d8c9a0"),
+    transparent: true,
+    opacity: 0.6,
+    side: DoubleSide,
+    depthWrite: false,
+  })
+  const rings = new Mesh(geometry, material)
+  const ra = (SATURN_POLE_RA_DEGREES * Math.PI) / 180
+  const dec = (SATURN_POLE_DEC_DEGREES * Math.PI) / 180
+  const [x, y, z] = toScreenAxes(
+    eclipticFromIcrf([Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra), Math.sin(dec)]),
+  )
+  rings.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(x, y, z))
+  return rings
 }
 
 const dotMaterial = (texture: Texture, size: number, color: string | undefined) =>
@@ -118,15 +176,17 @@ const dotMaterial = (texture: Texture, size: number, color: string | undefined) 
 /** Builds the scene. WebGL can refuse to start on old machines, and the page handles that answer. */
 export const buildScene = (canvas: HTMLCanvasElement): Result.Result<Scene3D, unknown> =>
   Result.try(() => {
-    const renderer = new WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true })
-    renderer.setPixelRatio(window.devicePixelRatio)
+    // Clear, so that the giant year shows through from behind.
+    const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, logarithmicDepthBuffer: true })
+    renderer.setClearColor(0x000000, 0)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     const controlCamera = new PerspectiveCamera(VERTICAL_FOV_DEGREES, 1, 1, 1e12)
     const renderCamera = new PerspectiveCamera(VERTICAL_FOV_DEGREES, 1, 1e-3, 1e6)
     const controls = new OrbitControls(controlCamera, canvas)
     controls.enablePan = false
 
     const dotMap = dotTexture(solidDot)
-    const glowMap = dotTexture(softGlow)
+    const glowMap = dotTexture(softGlow, SUN_COLOR)
     const planetMaterial = dotMaterial(dotMap, PLANET_DOT_PIXELS, undefined)
     const sunMaterial = dotMaterial(dotMap, SUN_DOT_PIXELS, SUN_COLOR)
     const glowMaterial = dotMaterial(glowMap, SUN_GLOW_PIXELS, "#ffffff")
@@ -159,11 +219,62 @@ export const buildScene = (canvas: HTMLCanvasElement): Result.Result<Scene3D, un
       return { planet, line, positions, material }
     })
 
-    const scene = new Scene()
-    orbitLines.forEach(({ line }) => {
-      scene.add(line)
+    const starMap = dotTexture(softGlow, "#ffffff")
+    const stars = [
+      { count: FAINT_STARS, size: 3, faintest: 0.18 },
+      { count: BRIGHT_STARS, size: 6, faintest: 0.55 },
+    ].map(({ count, size, faintest }) => {
+      const field = starField(count, STAR_RADIUS_UNITS, faintest)
+      const geometry = new BufferGeometry()
+      geometry.setAttribute("position", new BufferAttribute(field.positions, 3))
+      geometry.setAttribute("color", new BufferAttribute(field.colors, 3))
+      const material = new PointsMaterial({
+        size,
+        sizeAttenuation: false,
+        map: starMap,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        vertexColors: true,
+        blending: AdditiveBlending,
+      })
+      const points = new Points(geometry, material)
+      points.frustumCulled = false
+      points.renderOrder = -1
+      return { points, geometry, material }
     })
-    scene.add(glow, sun.points, planets.points)
+
+    const sphere = new SphereGeometry(1, 40, 28)
+    const planetBodies = PLANET_COLORS.map(([name, color]): SizedBody => {
+      const material = new MeshLambertMaterial({ color: new Color(color) })
+      const mesh = new Mesh(sphere, material)
+      mesh.frustumCulled = false
+      const diameterKm = PLANETS.find((planet) => planet.name === name)?.diameterKm ?? 0
+      return { name, mesh, radiusKm: diameterKm / 2 }
+    })
+    const rings = saturnRings()
+    planetBodies.find(({ name }) => name === "Saturn")?.mesh.add(rings)
+    const sunBody: SizedBody = {
+      name: "Sun",
+      mesh: new Mesh(sphere, new MeshBasicMaterial({ color: new Color(SUN_COLOR) })),
+      radiusKm: SUN_DIAMETER_KM / 2,
+    }
+    sunBody.mesh.frustumCulled = false
+    const sunlight = new PointLight("#ffffff", 3.2, 0, 0)
+    const sizedGroup = new Group()
+    sizedGroup.add(...planetBodies.map(({ mesh }) => mesh), sunBody.mesh, sunlight, new AmbientLight("#ffffff", 0.22))
+    sizedGroup.visible = false
+
+    const dots = new Group()
+    dots.add(glow, sun.points, planets.points)
+    const bodies = new Group()
+    orbitLines.forEach(({ line }) => {
+      bodies.add(line)
+    })
+    bodies.add(dots, sizedGroup)
+    bodies.visible = false
+    const scene = new Scene()
+    scene.add(...stars.map(({ points }) => points), bodies)
 
     return {
       renderer,
@@ -174,8 +285,23 @@ export const buildScene = (canvas: HTMLCanvasElement): Result.Result<Scene3D, un
       planetPositions: planets.positions,
       sunPosition: sun.positions,
       orbitLines,
+      bodies,
+      dots,
+      sized: [...planetBodies, sunBody],
+      sizedGroup,
+      sunlight,
       dispose: () => {
         controls.dispose()
+        stars.forEach(({ geometry, material }) => {
+          geometry.dispose()
+          material.dispose()
+        })
+        starMap.dispose()
+        sphere.dispose()
+        rings.geometry.dispose()
+        planetBodies.forEach(({ mesh }) => {
+          if (mesh.material instanceof Material) mesh.material.dispose()
+        })
         planets.geometry.dispose()
         sun.geometry.dispose()
         orbitLines.forEach(({ line, material }) => {

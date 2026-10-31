@@ -1,0 +1,318 @@
+@layer components {
+  /* Legends share one quiet voice, so that the controls themselves can be loud. */
+  legend {
+    margin-block-end: 0.25rem;
+    color: var(--ink-2);
+    font: 600 0.6875rem/1.2 var(--display);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* What to show */
+  [data-view] > label {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.875rem minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    align-content: center;
+    min-block-size: 3.25rem;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.875rem;
+    background: var(--panel-soft);
+    cursor: pointer;
+  }
+  [data-view] > label input {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    margin: 0;
+    appearance: none;
+    border-radius: inherit;
+    cursor: pointer;
+  }
+  [data-view] svg { grid-row: 1 / 3; inline-size: 100%; max-inline-size: 3rem; opacity: 0.55; }
+  [data-view] circle { fill: none; stroke: var(--c); stroke-width: 1.5; }
+  [data-view] circle[data-planet="Sun"] { fill: var(--c); stroke: none; }
+  [data-view] circle[data-rider-dot] { fill: var(--warp); stroke: none; }
+  [data-view] b { font: 600 0.6875rem/1.2 var(--display); }
+  [data-view] small { color: var(--ink-2); font-size: 0.6875rem; line-height: 1.25; }
+  [data-view] > label:hover { border-color: var(--warp); }
+  [data-view] > label:has(:checked) {
+    border-color: var(--warp);
+    background: oklch(22% 0.06 var(--warp-hue) / 0.93);
+    box-shadow: 0 0 0 1px var(--warp), 0 0 1.5rem var(--warp-soft);
+  }
+  [data-view] > label:has(:checked) svg { opacity: 1; }
+  [data-view] > label:has(:focus-visible) { outline: 3px solid var(--warp); outline-offset: 3px; }
+
+  [data-view-options] { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.375rem; align-items: stretch; }
+  [data-view-options] label {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 0.125rem 0.5rem;
+    align-items: center;
+    min-block-size: 2.75rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--line);
+    border-radius: 0.875rem;
+    background: var(--panel-soft);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  [data-view-options] select {
+    min-block-size: 2rem;
+    padding-inline: 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 0.5rem;
+    background: var(--raised);
+    font-size: 0.8125rem;
+  }
+  [data-sizes] input { inline-size: 1.125rem; block-size: 1.125rem; margin: 0; accent-color: var(--warp); }
+  [data-sizes]:has(:checked) { border-color: oklch(86% 0.17 90); }
+
+  /* The timeline */
+  [data-scrub] { grid-area: scrub; display: grid; position: relative; }
+  [data-scrub]::after {
+    content: "now" / "";
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-start: var(--now, 50%);
+    translate: -50% 0;
+    color: var(--ink);
+    font: 700 0.625rem/1 var(--display);
+    pointer-events: none;
+  }
+  [data-scrub] b, [data-speed] small {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: clip;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  [data-scrub] input {
+    appearance: none;
+    inline-size: 100%;
+    block-size: 1.75rem;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  [data-scrub] input::-webkit-slider-runnable-track {
+    block-size: 1.75rem;
+    background:
+      linear-gradient(var(--ink), var(--ink)) var(--now, 50%) center / 2px 0.875rem no-repeat,
+      linear-gradient(var(--warp), var(--warp)) left center / var(--p, 50%) 0.25rem no-repeat,
+      linear-gradient(var(--line), var(--line)) center / 100% 0.25rem no-repeat;
+  }
+  [data-scrub] input::-moz-range-track {
+    block-size: 1.75rem;
+    background:
+      linear-gradient(var(--ink), var(--ink)) var(--now, 50%) center / 2px 0.875rem no-repeat,
+      linear-gradient(var(--warp), var(--warp)) left center / var(--p, 50%) 0.25rem no-repeat,
+      linear-gradient(var(--line), var(--line)) center / 100% 0.25rem no-repeat;
+  }
+  [data-scrub] input::-webkit-slider-thumb {
+    appearance: none;
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+    margin-block-start: 0.3125rem;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 3px var(--warp), 0 0 1rem var(--warp);
+  }
+  [data-scrub] input::-moz-range-thumb {
+    inline-size: 1.125rem;
+    block-size: 1.125rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 3px var(--warp), 0 0 1rem var(--warp);
+  }
+  [data-scrub] ol {
+    display: flex;
+    justify-content: space-between;
+    margin-block-start: -0.125rem;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-2);
+    font: 500 0.625rem/1 var(--display);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Play and stop */
+  [data-play] {
+    grid-area: play;
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: 3.75rem;
+    block-size: 3.75rem;
+    margin: 0.25rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--warp);
+    color: var(--on-warp);
+    cursor: pointer;
+    box-shadow: 0 0 1.75rem var(--warp-soft);
+  }
+  [data-play]:hover { scale: 1.06; }
+  [data-play]:active { scale: 0.95; }
+  [data-play] svg { inline-size: 1.75rem; fill: currentColor; }
+  [data-play]::before {
+    content: "";
+    position: absolute;
+    inset: -0.3125rem;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0 55%, var(--warp));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), oklch(0% 0 0) calc(100% - 3px));
+    opacity: 0;
+  }
+  [data-mode="running"] [data-play]::before { opacity: 1; }
+
+  /* The clock */
+  [data-clock] { grid-area: clock; display: grid; min-inline-size: 0; }
+  moment-clock { display: block; }
+  [data-clock] time { display: grid; }
+  [data-clock] time b {
+    font: 900 clamp(1.5rem, 0.2rem + 7cqi, 2.5rem)/1 var(--dots);
+    font-variant-numeric: tabular-nums;
+    word-spacing: -0.3em;
+    white-space: nowrap;
+  }
+  [data-clock] small {
+    color: var(--ink-2);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  [data-clock] > a { color: var(--warp); font-size: 0.75rem; font-weight: 600; }
+
+  /* How fast time runs: a rising ramp of LEDs */
+  [data-speed] {
+    grid-area: speed;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.25rem 0.375rem;
+    min-inline-size: 0;
+  }
+  [data-speed] legend { margin-block-end: 0.125rem; font-size: 0.625rem; letter-spacing: 0.02em; }
+  [data-speed] legend::after { content: ", per second"; }
+  [data-speed] label {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    gap: 0.125rem 0.3125rem;
+    min-block-size: 2.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+  }
+  [data-speed] label:has(:focus-visible) { outline: 3px solid var(--warp); outline-offset: 3px; }
+  /* Each radio is a block of LED dots: whole rows, so that a dot is never cut in half. */
+  [data-speed] input {
+    flex: 0 0 100%;
+    block-size: calc(0.5rem * var(--rows));
+    margin: 0;
+    appearance: none;
+    background: oklch(100% 0 0 / 0.24);
+    mask: radial-gradient(circle, oklch(0% 0 0) 0.1875rem, transparent 0.2125rem) left bottom / 0.5rem 0.5rem round;
+    cursor: pointer;
+  }
+  [data-speed] input:focus-visible { outline: none; }
+  [data-speed] b { font: 700 0.6875rem/1.15 var(--display); white-space: nowrap; }
+  [data-speed] label:hover input { background-color: oklch(80% 0.15 var(--h) / 0.8); }
+  [data-speed] label:has(:checked) input,
+  [data-speed] label:has(~ label :checked) input {
+    background-color: oklch(80% 0.15 var(--h));
+    background-image: linear-gradient(90deg, transparent 40%, oklch(99% 0.02 var(--h)) 50%, transparent 60%);
+    background-size: 220% 100%;
+    background-repeat: no-repeat;
+    background-position: 130% 0;
+  }
+  [data-speed] label:has(:checked) b { color: oklch(84% 0.14 var(--h)); }
+  /* What Play will use, once time is stopped. */
+  [data-speed] label[data-armed] input { background-color: oklch(80% 0.15 var(--h) / 0.72); }
+  [data-dock] output { grid-area: say; color: var(--ink); font-size: 0.75rem; line-height: 1.3; }
+
+  /* Right now */
+  [data-now] {
+    grid-area: now;
+    display: inline-flex;
+    gap: 0.375rem;
+    align-items: center;
+    min-block-size: 2.75rem;
+    padding-inline: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  [data-now]:hover { border-color: oklch(80% 0.18 150); }
+  [data-now]::before {
+    content: "";
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+    border: 2px solid var(--ink-2);
+    border-radius: 50%;
+  }
+  [data-now][aria-pressed="true"] { border-color: oklch(80% 0.18 150); background: oklch(30% 0.08 150); }
+  [data-now][aria-pressed="true"]::before { border-color: transparent; background: oklch(86% 0.2 150); }
+
+  /* On a narrow track the word would sit on the year labels, so the tick speaks for itself. */
+  @container page (inline-size < 62rem) {
+    [data-scrub]::after { content: none; }
+  }
+
+  @container page (inline-size < 24rem) {
+    [data-speed] b { font-size: 0.5625rem; }
+    [data-clock] time small { display: none; }
+  }
+
+  @container page (inline-size >= 62rem) {
+    [data-view] > label { grid-template-columns: 3rem minmax(0, 1fr); column-gap: 0.75rem; padding: 0.5rem 0.875rem; }
+    [data-view] b { font-size: 0.8125rem; }
+    [data-view] small { font-size: 0.75rem; }
+    [data-play] { inline-size: 4.75rem; block-size: 4.75rem; }
+    [data-play] svg { inline-size: 2.25rem; }
+    [data-speed] b { font-size: 0.75rem; }
+    [data-speed] small { position: static; inline-size: auto; block-size: auto; clip-path: none; color: var(--ink-2); font-size: 0.75rem; line-height: 1.15; }
+    [data-speed] legend::after { content: none; }
+    [data-speed] legend { font-size: 0.6875rem; letter-spacing: 0.06em; }
+    [data-dock] output { font-size: 0.8125rem; }
+    [data-clock] small { font-size: 0.8125rem; }
+    [data-clock] time b { font-size: clamp(2rem, 1.5rem + 1.6cqi, 3.25rem); }
+    [data-scrub] ol { font-size: 0.6875rem; }
+  }
+
+  @media (height < 46rem) and (width < 40rem) {
+    [data-view] legend, [data-view] small, [data-speed] legend, [data-dock] output { display: none; }
+    [data-view] > label { min-block-size: 2.75rem; }
+    [data-view] svg { display: none; }
+    [data-view] > label { grid-template-columns: minmax(0, 1fr); }
+    [data-clock] time { grid-template-columns: auto auto; column-gap: 0.5rem; align-items: baseline; }
+    [data-play] { inline-size: 3rem; block-size: 3rem; }
+  }
+
+  @media (height < 32rem) and (width >= 40rem) {
+    [data-view] legend, [data-dock] output, [data-speed] legend, [data-clock] small { display: none; }
+    [data-dock] {
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "scrub scrub scrub scrub"
+        "play clock speed now";
+      column-gap: 1rem;
+    }
+    [data-play] { inline-size: 3rem; block-size: 3rem; }
+  }
+
+  @media (forced-colors: active) {
+    [data-speed] input, [data-view] > label input { appearance: auto; }
+  }
+}

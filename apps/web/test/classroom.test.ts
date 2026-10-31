@@ -26,6 +26,7 @@ const facts = (overrides: Partial<PageFacts> = {}): PageFacts => ({
   nowMillis: JUNE,
   locale: "en-US",
   timeZone: "UTC",
+  reducedMotion: true,
   ...overrides,
 })
 
@@ -34,7 +35,14 @@ const pageRead = (overrides: Partial<PageFacts> = {}): Msg => ({
   facts: facts(overrides),
 })
 const skyAnswered = (load: SkyLoad): Msg => ({ _tag: "SkyAnswered", load })
-const loaded = SkyLoad.Loaded({ sky, endSeconds: entry.endSeconds, year: 2026 })
+const loaded = SkyLoad.Loaded({
+  sky,
+  startSeconds: entry.startSeconds,
+  endSeconds: entry.endSeconds,
+  year: 2026,
+  firstYear: 2026,
+  lastYear: 2027,
+})
 
 const render = (state: State) => renderToString(viewOf(SolarClassroom, state), { dev: false })
 
@@ -162,18 +170,17 @@ describe("what the page says", () => {
     const markup = await render(ready)
     assert.include(markup, "<table")
     assert.include(markup, '<th scope="col"')
-    assert.include(markup, '<th scope="row">Neptune</th>')
+    assert.match(markup, /<th scope="row">\s*<button[^>]*value="Neptune"/)
   })
 
-  it("marks the moment up as a time a machine can read", async () => {
-    const markup = await render(ready)
-    assert.include(markup, 'datetime="2026-06-01T12:00:00.000Z"')
+  it("leaves the running date to its own element", async () => {
+    assert.include(await render(ready), "<moment-clock")
   })
 
   it("tells a class it is looking at a fixed moment, and how to leave it", async () => {
     const markup = await render(ready)
     assert.include(markup, COPY.pinnedNote)
-    assert.include(markup, 'href="/"')
+    assert.match(markup, /<button[^>]*data-now[^>]*aria-pressed="false"/)
   })
 
   it("explains what a learner cannot infer from the picture alone", async () => {

@@ -1,85 +1,39 @@
 import { command, type Command } from "@gyral/core"
-import { Data, Option, Result } from "effect"
-import { advanceMoment, chooseMoment, readingsAt, startTravelling } from "@solar/classroom/service"
+import { Option, Result } from "effect"
+import {
+  advanceMoment,
+  chooseMoment,
+  readingsAt,
+  startCatchingUp,
+  startTravelling,
+} from "@solar/classroom/service"
 import {
   ChosenMoment,
+  EARTH_MEAN_SPEED_KM_PER_S,
   Moment,
-  type Reading,
-  type Sky,
+  type PlanetName,
   type SpeedName,
 } from "@solar/classroom/types"
 import { tdbFromUtcMillis } from "@solar/ephemeris/service"
-import type { TdbSeconds } from "@solar/ephemeris/types"
 import { clockReader, frameRecorder, pageFacts, skyLoader } from "../runtime/tokens.js"
-import { SkyLoad, type Framing, type PageFacts, type SkyProblem, type StageReport } from "../types/index.js"
-
-/** What is known about the next year's tile, while time runs toward it. */
-export type Upcoming = Data.TaggedEnum<{
-  NotAsked: {}
-  Asked: {}
-  Arrived: { readonly sky: Sky; readonly endSeconds: TdbSeconds; readonly year: number }
-  NoMore: { readonly lastYear: number }
-  Unavailable: {}
-}>
-export const Upcoming = Data.taggedEnum<Upcoming>()
-
-/** Where the page is in its life. Each variant holds only what can be true at that point. */
-export type Phase = Data.TaggedEnum<{
-  Starting: {}
-  BadLink: { readonly text: string }
-  Waiting: { readonly chosen: ChosenMoment }
-  Ready: {
-    readonly chosen: ChosenMoment
-    readonly sky: Sky
-    readonly endSeconds: TdbSeconds
-    readonly year: number
-    readonly at: TdbSeconds
-    readonly readings: ReadonlyArray<Reading>
-    readonly upcoming: Upcoming
-  }
-  OutsideCatalog: { readonly firstYear: number; readonly lastYear: number }
-  Failed: { readonly problem: SkyProblem }
-}>
-export const Phase = Data.taggedEnum<Phase>()
-type Ready = Extract<Phase, { readonly _tag: "Ready" }>
-
-/** Why time stopped by itself, if it did. */
-export type Notice =
-  | { readonly _tag: "NoNotice" }
-  | { readonly _tag: "EndOfData"; readonly lastYear: number }
-  | { readonly _tag: "NextYearUnavailable" }
-
-export interface State {
-  readonly phase: Phase
-  readonly locale: string
-  readonly timeZone: string
-  readonly stageAvailable: boolean
-  readonly framing: Framing
-  readonly notice: Notice
-}
-
-export type Msg =
-  | { readonly _tag: "PageRead"; readonly facts: PageFacts }
-  | { readonly _tag: "SkyAnswered"; readonly load: SkyLoad }
-  | { readonly _tag: "UpcomingAnswered"; readonly load: SkyLoad }
-  | { readonly _tag: "Tick"; readonly now: number }
-  | { readonly _tag: "SpeedChosen"; readonly speed: SpeedName }
-  | { readonly _tag: "Pause" }
-  | { readonly _tag: "BackToNow" }
-  | { readonly _tag: "ClockRead"; readonly now: number }
-  | { readonly _tag: "FramingChosen"; readonly framing: Framing }
-  | { readonly _tag: "StageReported"; readonly report: StageReport }
+import { SkyLoad, type PageFacts, type StageReport, type TryRequest } from "../types/index.js"
+import { momentFromDay } from "./classroom-format.js"
+import {
+  Phase,
+  Upcoming,
+  type Msg,
+  type Notice,
+  type Place,
+  type Ready,
+  type Scrub,
+  type State,
+} from "./classroom-state.js"
 
 type Next = State | [State, ReadonlyArray<Command<Msg>>]
 
-export const initialState: State = {
-  phase: Phase.Starting(),
-  locale: "en",
-  timeZone: "UTC",
-  stageAvailable: true,
-  framing: "all",
-  notice: { _tag: "NoNotice" },
-}
+const COLD_OPEN_MILLIS = 3200
+const CATCH_UP_MILLIS = 1200
+const CLOSE_ENOUGH_TO_SNAP_MILLIS = 86_400_000
 
 export const askThePage: Command<Msg> = command(pageFacts, undefined, {
   onSuccess: (facts): Msg => ({ _tag: "PageRead", facts }),
@@ -116,12 +70,9 @@ const askForTheYearAfter = (year: number): Command<Msg> =>
     },
   )
 
-const showing = (
-  chosen: ChosenMoment,
-  place: Pick<Ready, "sky" | "endSeconds" | "year" | "upcoming">,
-): Ready => {
+const showing = (chosen: ChosenMoment, place: Place): Ready => {
   const at = tdbFromUtcMillis(chosen.moment)
-  return Phase.Ready({ ...place, chosen, at, readings: readingsAt(place.sky, at) })
+  return Phase.Ready({ ...place, chosen, at, readings: readingsAt(place.sky, at), seeking: Option.none() })
 }
 
 /** While time runs, the next year's tile is fetched ahead of need, so that crossing does not stall. */
@@ -143,22 +94,82 @@ const holding = (phase: Ready, moved: ChosenMoment): Ready => ({
 })
 
 export const whenPageRead = (state: State, facts: PageFacts): Next => {
-  const located = { ...state, locale: facts.locale, timeZone: facts.timeZone }
+  const located = {
+    ...state,
+    locale: facts.locale,
+    timeZone: facts.timeZone,
+    reducedMotion: facts.reducedMotion,
+    openedAt: facts.nowMillis,
+  }
   return Result.match(chooseMoment(Option.fromNullishOr(facts.linkedMoment), Moment(facts.nowMillis)), {
     onFailure: (invalid): Next => ({ ...located, phase: Phase.BadLink({ text: invalid.text }) }),
-    onSuccess: (chosen): Next => [
-      { ...located, phase: Phase.Waiting({ chosen }) },
-      [askForTheSky(chosen.moment)],
-    ],
+    onSuccess: (linked): Next => {
+      const startOfYear = Moment(Date.UTC(new Date(facts.nowMillis).getUTCFullYear(), 0, 1))
+      const chosen =
+        linked._tag === "FollowingNow" && !facts.reducedMotion
+          ? startCatchingUp(startOfYear, facts.nowMillis, COLD_OPEN_MILLIS)
+          : linked
+      return [{ ...located, phase: Phase.Waiting({ chosen }) }, [askForTheSky(chosen.moment)]]
+    },
+  })
+}
+
+const placeFrom = (loaded: Extract<SkyLoad, { readonly _tag: "Loaded" }>): Place => ({
+  sky: loaded.sky,
+  startSeconds: loaded.startSeconds,
+  endSeconds: loaded.endSeconds,
+  year: loaded.year,
+  firstYear: loaded.firstYear,
+  lastYear: loaded.lastYear,
+  upcoming: Upcoming.NotAsked(),
+})
+
+const running = (state: State, phase: Ready, speed: SpeedName): Next => {
+  const chosen =
+    phase.chosen._tag === "Travelling"
+      ? { ...phase.chosen, speed }
+      : startTravelling(phase.chosen.moment, speed)
+  // A failed fetch may have been brief, so choosing to run again tries once more.
+  const upcoming = phase.upcoming._tag === "Unavailable" ? Upcoming.NotAsked() : phase.upcoming
+  return fetchingAhead({ ...state, notice: { _tag: "NoNotice" } }, { ...phase, chosen, upcoming })
+}
+
+/** Finishes a drag: time carries on if it was running before, and stays stopped if it was not. */
+const landing = (state: State, phase: Ready, resume: Option.Option<SpeedName>): Next => {
+  const settled = { ...state, scrub: { _tag: "NotDragging" } as const }
+  return Option.match(resume, {
+    onNone: (): Next => ({ ...settled, phase }),
+    onSome: (speed): Next => running(settled, phase, speed),
+  })
+}
+
+/** An answer to a drag along the timeline. Ignored once the learner has dragged back to a loaded year. */
+const whenSeekAnswered = (state: State, phase: Ready, load: SkyLoad): Next => {
+  if (Option.isNone(phase.seeking)) return state
+  const moment = phase.seeking.value
+  return SkyLoad.$match(load, {
+    Loaded: (loaded): Next => {
+      const arrived = showing(ChosenMoment.Paused({ moment }), placeFrom(loaded))
+      return state.scrub._tag === "Landing"
+        ? landing(state, arrived, state.scrub.resume)
+        : { ...state, phase: arrived }
+    },
+    OutsideCatalog: (): Next => ({ ...state, phase: { ...phase, seeking: Option.none() } }),
+    Failed: (): Next => ({
+      ...state,
+      scrub: { _tag: "NotDragging" },
+      notice: { _tag: "NextYearUnavailable" },
+      phase: { ...phase, seeking: Option.none() },
+    }),
   })
 }
 
 export const whenSkyAnswered = (state: State, load: SkyLoad): Next => {
+  if (state.phase._tag === "Ready") return whenSeekAnswered(state, state.phase, load)
   if (state.phase._tag !== "Waiting") return state
   const { chosen } = state.phase
   return SkyLoad.$match(load, {
-    Loaded: ({ sky, endSeconds, year }): Next =>
-      fetchingAhead(state, showing(chosen, { sky, endSeconds, year, upcoming: Upcoming.NotAsked() })),
+    Loaded: (loaded): Next => fetchingAhead(state, showing(chosen, placeFrom(loaded))),
     OutsideCatalog: ({ firstYear, lastYear }): Next => ({
       ...state,
       phase: Phase.OutsideCatalog({ firstYear, lastYear }),
@@ -170,22 +181,29 @@ export const whenSkyAnswered = (state: State, load: SkyLoad): Next => {
 export const whenUpcomingAnswered = (state: State, load: SkyLoad): Next => {
   if (state.phase._tag !== "Ready") return state
   const upcoming = SkyLoad.$match(load, {
-    Loaded: ({ sky, endSeconds, year }) => Upcoming.Arrived({ sky, endSeconds, year }),
+    Loaded: ({ sky, startSeconds, endSeconds, year }) => Upcoming.Arrived({ sky, startSeconds, endSeconds, year }),
     OutsideCatalog: ({ lastYear }) => Upcoming.NoMore({ lastYear }),
     Failed: () => Upcoming.Unavailable(),
   })
   return { ...state, phase: { ...state.phase, upcoming } }
 }
 
+/** How far Earth flew, in kilometers. Only real motion counts, not a replay or a jump. */
+const flownDuring = (before: ChosenMoment, after: ChosenMoment): number =>
+  before._tag === "CatchingUp" || after._tag === "CatchingUp"
+    ? 0
+    : (Math.abs(after.moment - before.moment) / 1000) * EARTH_MEAN_SPEED_KM_PER_S
+
 export const whenTicked = (state: State, now: number): Next => {
   const { phase } = state
   if (phase._tag !== "Ready") return state
   const moved = advanceMoment(phase.chosen, now)
   if (moved === phase.chosen) return state
-  if (tdbFromUtcMillis(moved.moment) < phase.endSeconds) return fetchingAhead(state, showing(moved, phase))
+  const flown = { ...state, flownKm: state.flownKm + flownDuring(phase.chosen, moved) }
+  if (tdbFromUtcMillis(moved.moment) < phase.endSeconds) return fetchingAhead(flown, showing(moved, phase))
   return Upcoming.$match(phase.upcoming, {
-    Arrived: ({ sky, endSeconds, year }): Next =>
-      fetchingAhead(state, showing(moved, { sky, endSeconds, year, upcoming: Upcoming.NotAsked() })),
+    Arrived: (next): Next =>
+      fetchingAhead(flown, showing(moved, { ...phase, ...next, upcoming: Upcoming.NotAsked() })),
     NoMore: ({ lastYear }): Next => stopped(state, phase, { _tag: "EndOfData", lastYear }),
     Unavailable: (): Next => stopped(state, phase, { _tag: "NextYearUnavailable" }),
     Asked: (): Next => ({ ...state, phase: holding(phase, moved) }),
@@ -197,19 +215,22 @@ export const whenTicked = (state: State, now: number): Next => {
 }
 
 export const whenSpeedChosen = (state: State, speed: SpeedName): Next => {
-  const { phase } = state
-  if (phase._tag !== "Ready") return state
-  const chosen =
-    phase.chosen._tag === "Travelling"
-      ? { ...phase.chosen, speed }
-      : startTravelling(phase.chosen.moment, speed)
-  // A failed fetch may have been brief, so choosing to run again tries once more.
-  const upcoming = phase.upcoming._tag === "Unavailable" ? Upcoming.NotAsked() : phase.upcoming
-  return fetchingAhead({ ...state, notice: { _tag: "NoNotice" } }, { ...phase, chosen, upcoming })
+  if (state.phase._tag !== "Ready") return state
+  return running({ ...state, chosenSpeed: Option.some(speed) }, state.phase, speed)
 }
 
-export const whenPaused = (state: State): State =>
-  state.phase._tag === "Ready" ? stopped(state, state.phase, { _tag: "NoNotice" }) : state
+/** What Play will use: the learner's choice, or else a speed that shows motion at this zoom. */
+export const armedSpeed = (state: State): SpeedName =>
+  Option.getOrElse(state.chosenSpeed, () =>
+    state.framing === "all" ? "year" : state.framing === "inner" ? "week" : "month",
+  )
+
+export const whenPlayPressed = (state: State): Next => {
+  if (state.phase._tag !== "Ready") return state
+  return state.phase.chosen._tag === "Travelling" || state.phase.chosen._tag === "CatchingUp"
+    ? stopped(state, state.phase, { _tag: "NoNotice" })
+    : running(state, state.phase, armedSpeed(state))
+}
 
 export const askTheClock: Command<Msg> = command(clockReader, undefined, {
   onSuccess: (now): Msg => ({ _tag: "ClockRead", now }),
@@ -218,14 +239,77 @@ export const askTheClock: Command<Msg> = command(clockReader, undefined, {
 export const whenClockRead = (state: State, now: number): Next => {
   const { phase } = state
   if (phase._tag !== "Ready") return state
-  const chosen = ChosenMoment.FollowingNow({ moment: Moment(now) })
-  const cleared = { ...state, notice: { _tag: "NoNotice" } as const }
-  return new Date(now).getUTCFullYear() === phase.year
-    ? { ...cleared, phase: showing(chosen, phase) }
-    : [{ ...cleared, phase: Phase.Waiting({ chosen }) }, [askForTheSky(now)]]
+  const cleared = { ...state, notice: { _tag: "NoNotice" } as const, scrub: { _tag: "NotDragging" } as const }
+  if (new Date(now).getUTCFullYear() !== phase.year) {
+    return [
+      { ...cleared, phase: Phase.Waiting({ chosen: ChosenMoment.FollowingNow({ moment: Moment(now) }) }) },
+      [askForTheSky(now)],
+    ]
+  }
+  const snap = state.reducedMotion || Math.abs(now - phase.chosen.moment) < CLOSE_ENOUGH_TO_SNAP_MILLIS
+  const chosen = snap
+    ? ChosenMoment.FollowingNow({ moment: Moment(now) })
+    : startCatchingUp(phase.chosen.moment, now, CATCH_UP_MILLIS)
+  return { ...cleared, phase: showing(chosen, phase) }
+}
+
+export const whenScrubbed = (state: State, millis: number): Next => {
+  const { phase } = state
+  if (phase._tag !== "Ready") return state
+  const moment = Moment(millis)
+  const at = tdbFromUtcMillis(moment)
+  const scrub: Scrub =
+    state.scrub._tag === "Dragging"
+      ? state.scrub
+      : {
+          _tag: "Dragging",
+          resume: phase.chosen._tag === "Travelling" ? Option.some(phase.chosen.speed) : Option.none(),
+        }
+  const dragging = { ...state, scrub, notice: { _tag: "NoNotice" } as const }
+  if (at >= phase.startSeconds && at < phase.endSeconds) {
+    return { ...dragging, phase: showing(ChosenMoment.Paused({ moment }), phase) }
+  }
+  return [
+    {
+      ...dragging,
+      phase: {
+        ...phase,
+        chosen: ChosenMoment.Paused({ moment: phase.chosen.moment }),
+        seeking: Option.some(moment),
+      },
+    },
+    [askForTheSky(moment)],
+  ]
+}
+
+export const whenScrubValue = (state: State, day: number): Next =>
+  state.phase._tag === "Ready" ? whenScrubbed(state, momentFromDay(day, state.phase.firstYear)) : state
+
+export const whenScrubReleased = (state: State): Next => {
+  const { phase, scrub } = state
+  if (phase._tag !== "Ready" || scrub._tag !== "Dragging") return state
+  return Option.isSome(phase.seeking)
+    ? { ...state, scrub: { _tag: "Landing", resume: scrub.resume } }
+    : landing(state, phase, scrub.resume)
+}
+
+export const whenPlanetPicked = (state: State, planet: PlanetName): State => ({
+  ...state,
+  heroPlanet: planet,
+  lightFrom: Option.getOrUndefined(state.lightFrom) === planet ? Option.none() : Option.some(planet),
+})
+
+export const whenTryRequested = (state: State, request: TryRequest): Next => {
+  const arranged: State = { ...state, framing: request.framing, highlight: request.highlight }
+  if (state.phase._tag !== "Ready") return arranged
+  return request.speed === "stop"
+    ? stopped(arranged, state.phase, { _tag: "NoNotice" })
+    : running({ ...arranged, chosenSpeed: Option.some(request.speed) }, state.phase, request.speed)
 }
 
 export const whenStageReported = (state: State, report: StageReport): Next =>
   report._tag === "StageUnavailable"
     ? { ...state, stageAvailable: false }
-    : [state, [command(frameRecorder, report)]]
+    : report._tag === "RingChosen"
+      ? { ...state, framing: "inner" }
+      : [state, [command(frameRecorder, report)]]

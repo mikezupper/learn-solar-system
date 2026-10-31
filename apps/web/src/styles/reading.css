@@ -1,0 +1,155 @@
+@layer components {
+  /* The numbers */
+  [data-numbers] h2 { font: 700 clamp(1.25rem, 1rem + 1.2vi, 2rem)/1.15 var(--display); letter-spacing: -0.02em; text-wrap: balance; }
+  [data-numbers][aria-busy="true"] table, [data-numbers][aria-busy="true"] [data-hero] { opacity: 0.45; }
+  [data-hero] { display: grid; gap: 0.25rem; }
+  [data-hero] strong {
+    color: var(--warp);
+    font: 900 clamp(2.75rem, 2rem + 3.4vi, 5rem)/1 var(--dots);
+    font-variant-numeric: tabular-nums;
+    word-spacing: -0.3em;
+    white-space: nowrap;
+  }
+  [data-hero] small { max-inline-size: 52ch; color: var(--ink); font-size: 0.9375rem; line-height: 1.4; text-wrap: pretty; }
+  table { inline-size: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  caption { padding-block-end: 0.5rem; color: var(--ink-2); font-size: 0.8125rem; line-height: 1.4; text-align: start; text-wrap: pretty; }
+  th, td { padding-block: 0.25rem; padding-inline: 0.25rem; border-block-end: 1px solid var(--line); text-align: end; }
+  thead th { color: var(--ink-2); font: 600 0.625rem/1.25 var(--display); letter-spacing: 0.02em; vertical-align: bottom; hyphens: auto; }
+  thead th:first-child, tbody th { text-align: start; }
+  tbody th { font-weight: 600; white-space: nowrap; }
+  tbody td { font-size: 0.9375rem; font-weight: 600; }
+  [data-numbers] tbody th button, [data-numbers] tbody th b {
+    display: flex;
+    align-items: center;
+    gap: 0.4375rem;
+    min-block-size: 2.75rem;
+    font-weight: 600;
+  }
+  /* The dock floats over the table, so a focused row must stop above it. */
+  [data-numbers] tbody th button { inline-size: 100%; padding: 0; border: 0; background: none; cursor: pointer; scroll-margin-block-end: calc(var(--dock-h, 14rem) + 0.5rem); }
+  [data-numbers] tbody th button::before, [data-numbers] tbody th b::before {
+    content: "";
+    flex: none;
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: 0 0 0.625rem var(--c);
+  }
+  [data-numbers] tbody tr:has([aria-pressed="true"]) { background: oklch(80% 0.15 var(--warp-hue) / 0.14); }
+  [data-numbers] tbody th button:hover, [data-numbers] tbody tr:has([aria-pressed="true"]) button { color: var(--warp); }
+  tbody td b { font-weight: 600; white-space: nowrap; }
+  abbr[title] { text-decoration: underline dotted; text-underline-offset: 0.15em; }
+  meter {
+    display: block;
+    inline-size: 100%;
+    block-size: 0.3125rem;
+    margin-block-start: 0.1875rem;
+    appearance: none;
+    border: 0;
+    border-radius: 99px;
+    background: oklch(100% 0 0 / 0.14);
+  }
+  meter::-webkit-meter-bar { block-size: 0.3125rem; border: 0; border-radius: 99px; background: oklch(100% 0 0 / 0.14); }
+  meter::-webkit-meter-optimum-value { border-radius: 99px; background: var(--c); }
+  meter::-moz-meter-bar { border-radius: 99px; background: var(--c); }
+  [data-numbers] h3 { font: 700 0.875rem/1.25 var(--display); }
+  [data-numbers] dl { display: grid; gap: 0.25rem 1.5rem; font-size: 0.875rem; line-height: 1.45; }
+  [data-numbers] dt { font-weight: 700; margin-block-start: 0.375rem; }
+  [data-numbers] dd { color: var(--ink-2); max-inline-size: 62ch; }
+  dfn { font-style: normal; }
+
+  /* The explanation */
+  article h2 {
+    font: 800 clamp(1.625rem, 1rem + 5vi, 5rem)/1 var(--display);
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    scroll-margin-block-start: 1rem;
+  }
+  article h3 { margin-block-start: 1rem; color: var(--warp); font: 700 clamp(1.0625rem, 1rem + 0.8vi, 1.5rem)/1.25 var(--display); text-wrap: balance; }
+  article p, article ul > li { max-inline-size: var(--measure); font-size: 1.0625rem; line-height: 1.6; text-wrap: pretty; }
+  article dfn { font-style: italic; }
+  article var { font-family: serif; font-size: 1.05em; }
+  article code { font-family: ui-monospace, monospace; font-size: 0.9375em; overflow-wrap: anywhere; }
+  article ul { display: grid; gap: 0.5rem; margin: 0; padding-inline-start: 1.5rem; }
+  article > section > dl { display: grid; gap: 0.5rem 1.5rem; max-inline-size: var(--measure); font-size: 1.0625rem; }
+  article > section > dl dt { margin-block-start: 0.5rem; color: var(--ink); font-weight: 700; }
+  article > section > dl dd { color: var(--ink-2); }
+
+  /* Each ordered list is a row of cards, numbered in big dots. */
+  article ol {
+    counter-reset: card;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr));
+    gap: 0.875rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  article ol > li {
+    counter-increment: card;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-rows: auto auto 1fr auto;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 1.5rem;
+    background: var(--raised);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  article ol > li::before {
+    content: counter(card);
+    color: var(--warp);
+    font: 900 clamp(3.5rem, 2.5rem + 3vi, 6rem)/0.8 var(--dots);
+  }
+  article ol > li > strong { font: 700 1.0625rem/1.3 var(--display); letter-spacing: -0.01em; text-wrap: balance; }
+  article [data-try-view] {
+    justify-self: start;
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-block-size: 2.75rem;
+    padding-inline: 1rem;
+    border: 1px solid var(--warp);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--warp);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  article [data-try-view]::before {
+    content: "";
+    inline-size: 0;
+    block-size: 0;
+    border-block: 0.3125rem solid transparent;
+    border-inline-start: 0.5rem solid currentColor;
+  }
+  article [data-try-view]:hover { background: var(--warp); color: var(--on-warp); }
+  [data-formula] { display: grid; gap: 0.5rem; max-inline-size: none; margin-block-start: 1rem; }
+  [data-formula] b { color: var(--warp); font: 900 clamp(3rem, 1rem + 13vi, 12rem)/0.9 var(--dots); word-spacing: -0.45em; white-space: nowrap; }
+  [data-formula] var { font-family: inherit; font-size: inherit; font-style: normal; }
+  [data-formula] sup { font-size: 0.5em; vertical-align: 0.8em; line-height: 0; }
+  [data-formula] small { font-size: 1.0625rem; line-height: 1.5; }
+  article table { max-inline-size: 52rem; margin-block-start: 0.5rem; }
+  article tbody th { font-weight: 600; }
+  details { max-inline-size: 52rem; padding: 1rem 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--raised); }
+  details > * + * { margin-block-start: 0.875rem; }
+  summary { font-weight: 700; cursor: pointer; }
+  math[display="block"] { max-inline-size: 100%; overflow-x: auto; font-size: 1.1em; }
+
+  /* The narrowest phones: the explanation's tables must still fit without a sideways scroll. */
+  @container page (inline-size < 24rem) {
+    article th, article td { padding-inline: 0.125rem; }
+    article thead th { font-size: 0.5625rem; overflow-wrap: anywhere; }
+    article tbody th, article tbody td { font-size: 0.8125rem; }
+  }
+
+  @container page (inline-size >= 62rem) {
+    thead th { font-size: 0.6875rem; }
+    tbody td { font-size: 1.0625rem; }
+    th, td { padding-inline: 0.5rem; }
+    [data-numbers] dl { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: auto auto; }
+  }
+}

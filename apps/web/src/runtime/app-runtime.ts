@@ -29,6 +29,7 @@ export const appDrivers: DriverList = [
     nowMillis: Date.now(),
     locale: navigator.language,
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
   })),
   clockReader.provide(() => Date.now()),
   skyLoader.provide(({ moment }, { signal }) => runtime.runPromise(loadSky(Moment(moment)), { signal })),

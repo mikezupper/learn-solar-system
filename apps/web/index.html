@@ -8,7 +8,8 @@
       name="description"
       content="See the Sun and the eight planets where they really are at this moment, at true scale, with the distances and light travel times to explore with a class. Learn how to use the page, how it works and the science behind it."
     />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#05060f" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Where are the planets right now?" />
     <meta
@@ -28,25 +29,28 @@
       }
     </script>
     <script type="module" src="/src/main.ts"></script>
+    <noscript><style>[data-try-view] { display: none; }</style></noscript>
   </head>
   <body>
     <a href="#main">Skip to main content</a>
     <header>
-      <h1>Where are the planets right now?</h1>
+      <nav aria-label="On this page">
+        <a href="/">Solar System Classroom</a>
+        <ul>
+          <li><a href="#numbers">Numbers</a></li>
+          <li><a href="#what-it-does">What it does</a></li>
+          <li><a href="#how-to-use">How to use it</a></li>
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#science">The science</a></li>
+          <li><a href="#leaves-out">What it leaves out</a></li>
+          <li><a href="#sources">Sources</a></li>
+        </ul>
+      </nav>
+      <h1>Where are the planets <em>right now?</em></h1>
       <p>
         The Sun and the eight planets where they really are, worked out from the planetary data NASA's
         Jet Propulsion Laboratory publishes for navigating spacecraft.
       </p>
-      <nav aria-label="On this page">
-        <ul>
-          <li><a href="#what-it-does">What this page does</a></li>
-          <li><a href="#how-to-use">How to use it</a></li>
-          <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#science">The science behind the page</a></li>
-          <li><a href="#leaves-out">What this page leaves out</a></li>
-          <li><a href="#sources">Sources</a></li>
-        </ul>
-      </nav>
     </header>
     <main id="main">
       <solar-classroom></solar-classroom>
@@ -65,6 +69,8 @@
           <ul>
             <li>see where every planet is right now, in a three-dimensional view you can turn and zoom;</li>
             <li>watch the planets travel along their paths, with time running as fast as a year per second;</li>
+            <li>ride along with any planet, and see how the solar system looks from there;</li>
+            <li>compare the planets' sizes, in a view that is clearly marked as enlarged;</li>
             <li>read how far each planet is from the Sun and from Earth, and how long its light takes to reach us;</li>
             <li>open any moment from 2000 through 2050 and share it as a link, so that a whole class looks at the same positions.</li>
           </ul>
@@ -79,23 +85,39 @@
 
           <h3>Turn and zoom the picture</h3>
           <p>
-            Drag the picture to turn it. Scroll, or pinch on a touch screen, to zoom in and out. The view
-            always circles the center of the solar system, so you cannot lose your way by sliding off to one
-            side.
+            Drag the picture to turn it. Pinch on a touch screen, or hold Ctrl and scroll, to zoom in and out.
+            Scrolling on its own moves down the page, and the picture stays with you as the numbers slide over
+            it. With the picture selected, the arrow keys turn it, and the plus and minus keys zoom.
           </p>
           <p>
-            Under <strong>What to show</strong>, "All eight planets" frames the whole solar system. "Inner
-            planets, Mercury to Mars" moves the camera closer, until those four are far enough apart to tell
-            from one another. Neither choice changes a distance: only your viewpoint moves.
+            Each dot marks where a planet is, and a dot's size says nothing about how big the planet is. Each
+            line is the path that planet is following around the Sun, and a fading streak behind a moving planet
+            is where it has just been. When labels would overlap, some stay hidden until you zoom in.
+          </p>
+
+          <h3>Choose what to show</h3>
+          <p>
+            "All eight planets" frames the whole solar system. The four inner planets are then so close to the
+            Sun that a ring marks them, and clicking or tapping the ring flies you in. "Inner planets" moves the camera
+            closer, until those four are far enough apart to tell from one another. Neither choice changes a
+            distance: only your viewpoint moves.
           </p>
           <p>
-            Each dot marks where a planet is, and a dot's size says nothing about how big the planet is.
-            Each line is the path that planet is following around the Sun. When labels would overlap, some
-            stay hidden until you zoom in.
+            "Ride along" puts the camera beside a planet you choose, and keeps it there as the planet moves. The
+            planet seems to stand still while everything else goes around it.
+          </p>
+          <p>
+            "Show planet sizes" draws each planet as a ball, so that you can compare them. Nothing in the solar
+            system could be seen at true size from this far away, so this view is enlarged, and a label on the
+            picture says by how much. All the planets are enlarged by the same amount, so they stay true to one
+            another. The Sun is enlarged less, or it would swallow the inner planets. The distances stay true.
           </p>
 
           <h3>Make time run</h3>
-          <p>Under <strong>How fast time runs</strong>, choose one of these:</p>
+          <p>
+            The big button starts and stops time, and "Right now" comes back to the present. Under
+            <strong>How fast time runs</strong>, each step sets a speed and starts time at once:
+          </p>
           <dl>
             <dt>Right now</dt>
             <dd>
@@ -103,8 +125,6 @@
               Earth travels about 30 kilometers every second, but with all eight planets in view one pixel
               covers about 18 million kilometers, so Earth needs about a week to cross a single pixel.
             </dd>
-            <dt>Stopped</dt>
-            <dd>The date holds still, and a link to that moment appears.</dd>
             <dt>1 day per second</dt>
             <dd>Mercury goes around in about 88 seconds. Try it with the inner planets in view.</dd>
             <dt>1 week per second</dt>
@@ -115,14 +135,17 @@
             <dd>Jupiter goes around in about 12 seconds and Saturn in about 29 seconds, while the inner planets race around too fast to follow.</dd>
           </dl>
           <p>
-            Time runs forward only, for now, and it stops at the end of the data. The page tells you when
-            that happens.
+            The long bar across the top of the controls is a timeline. Drag it to any date the site has. Dragging
+            within one year moves the planets at once. When you cross into another year, the page first fetches
+            that year's data, and the picture dims until it arrives, because it never guesses. Time cannot yet run
+            backward, though you can drag back to any earlier date. It stops at the end of the data, and the page
+            tells you when that happens.
           </p>
 
           <h3>Show a class one moment</h3>
           <p>
-            Choose <strong>Stopped</strong>, then share the link that appears. Anyone who opens it sees the
-            same positions and the same numbers, whatever their time zone.
+            Stop time with the big button, then share the link that appears under the date. Anyone who opens it
+            sees the same positions and the same numbers, whatever their time zone.
           </p>
           <p>
             You can also write such a link yourself, by adding <code>?at=</code> and a date to the page's
@@ -136,53 +159,65 @@
 
           <h3>Read the table</h3>
           <p>
-            The table gives the same positions as numbers, for the moment shown above it, and it follows the
-            picture as time runs. A distance is the straight line through space between two bodies at that
+            The table gives the same positions as numbers, for the moment on the clock, and it follows the picture
+            as time runs. Choose a planet's name to draw the path its light takes to Earth. A distance is the straight line through space between two bodies at that
             moment, in astronomical units (AU), a measure explained below. Distances are rounded to three
             decimal places, so the last digit stands for about 150,000 kilometers. The last column divides
-            each planet's distance from Earth by the speed of light.
+            each planet's distance from Earth by the speed of light, and its bar compares that with Neptune at
+            its farthest.
           </p>
 
           <h3>Use it with a keyboard or a screen reader</h3>
           <p>
             The speed and view controls are ordinary radio buttons: press Tab to reach a group, and the arrow
-            keys to change the choice. The table holds every number behind the picture, and it stays on the
-            page even if a computer cannot start the 3D view. The picture itself cannot yet be turned or
-            zoomed from the keyboard, which is a known gap.
+            keys to change the choice. The timeline is a slider, and its arrow keys move by one day. Press Tab
+            to reach the picture, then use the arrow keys to turn it and the plus and minus keys to zoom. The
+            table holds every number behind the picture, and it stays on the page even if a computer cannot
+            start the 3D view. If your computer is set to reduce motion, the page opens without its animated
+            start, and the camera moves without flying.
           </p>
 
           <h3>Things to try</h3>
           <ol>
             <li>
-              <strong>Watch Mercury hurry.</strong> Choose the inner planets and 1 week per second. Mercury
-              speeds up as it swings close to the Sun, then slows as it climbs away. Kepler's laws, below,
+              <strong>Watch Mercury hurry.</strong>
+              Mercury speeds up as it swings close to the Sun, then slows as it climbs away. Kepler's laws, below,
               explain why.
+              <button type="button" data-try-view="inner" data-try-speed="week" data-try-planet="Mercury">Watch Mercury hurry</button>
             </li>
             <li>
-              <strong>Time the laps.</strong> At 1 month per second, count how many seconds Earth and Mars
-              take to go once around. Then compare your counts with the table of orbit sizes below.
+              <strong>Time the laps.</strong>
+              Count how many seconds Earth and Mars take to go once around. Then compare your counts with the table
+              of orbit sizes below.
+              <button type="button" data-try-view="inner" data-try-speed="month">Time the laps</button>
             </li>
             <li>
-              <strong>Follow a message to Mars.</strong> Run time at 1 week per second and watch the last
-              column of Mars's row. Between 2000 and 2050, light or a radio signal takes from about 3 minutes
-              to about 22 minutes to cross the gap. Why does that mean nobody can steer a Mars rover with a
-              joystick?
+              <strong>Follow a message to Mars.</strong>
+              Choose Mars in the table to draw the path of its light, and watch the time change. Between 2000 and
+              2050, light or a radio signal takes from about 3 minutes to about 22 minutes to cross the gap. Why does
+              that mean nobody can steer a Mars rover with a joystick?
+              <button type="button" data-try-view="inner" data-try-speed="week" data-try-planet="Mars">Watch the gap to Mars</button>
             </li>
             <li>
-              <strong>See how slowly the outer planets move.</strong> Open
-              <a href="/?at=2000-01-01">January 1, 2000</a> and choose 1 year per second. By the end of 2050,
+              <strong>See how slowly the outer planets move.</strong>
+              Open <a href="/?at=2000-01-01">January 1, 2000</a> and choose 1 year per second. By the end of 2050,
               Saturn has gone around 1.7 times, and Neptune has not yet gone a third of the way.
             </li>
             <li>
-              <strong>Turn the solar system on edge.</strong> Drag until you are looking along the plane of
-              Earth's orbit. Earth's line flattens to a straight stroke, and Mercury's stands out at a tilt of
-              7 degrees.
+              <strong>See the Sun circle you.</strong>
+              Ride along with Earth at 1 month per second. The Sun seems to go around you once a year, which is how
+              the sky looked to everyone for most of history.
             </li>
             <li>
-              <strong>Walk it outdoors.</strong> Suppose the Sun were a ball 10 centimeters across. Earth would
-              be a 1-millimeter bead 11 meters away, Jupiter a 1-centimeter marble 56 meters away, and Neptune
-              a 4-millimeter bead about 325 meters away. The nearest other star would be about 2,900 kilometers
-              away.
+              <strong>Turn the solar system on edge.</strong>
+              Drag until you are looking along the plane of Earth's orbit. Earth's line flattens to a straight
+              stroke, and Mercury's stands out at a tilt of 7 degrees.
+            </li>
+            <li>
+              <strong>Walk it outdoors.</strong>
+              Suppose the Sun were a ball 10 centimeters across. Earth would be a 1-millimeter bead 11 meters away,
+              Jupiter a 1-centimeter marble 56 meters away, and Neptune a 4-millimeter bead about 325 meters away. The
+              nearest other star would be about 2,900 kilometers away.
             </li>
           </ol>
         </section>
@@ -265,19 +300,26 @@
               <strong>Each orbit is an ellipse, with the Sun at one focus.</strong> An ellipse is a stretched
               circle, and its eccentricity measures the stretch, where 0 is a perfect circle. Most planets'
               orbits are so nearly circles that they look round here. Mercury's, at about 0.21, does not.
+              <button type="button" data-try-view="inner" data-try-speed="stop" data-try-planet="Mercury">See Mercury's stretch</button>
             </li>
             <li>
               <strong>A planet moves fastest when it is closest to the Sun.</strong> A line from the Sun to a
               planet sweeps out equal areas in equal times, so the planet must speed up where the line is
               short. Mercury ranges from about 39 to about 59 kilometers per second.
+              <button type="button" data-try-view="inner" data-try-speed="week" data-try-planet="Mercury">Watch it happen</button>
             </li>
             <li>
               <strong>The farther out a planet is, the longer its year, by an exact rule.</strong> Take its
               average distance <var>a</var>, the midpoint of its closest and farthest distances from the Sun,
               in AU. Take the time <var>T</var> for one orbit, in years. Then <var>T</var> squared equals
               <var>a</var> cubed, as the last two columns of the second table show.
+              <button type="button" data-try-view="all" data-try-speed="year">Race the giants</button>
             </li>
           </ol>
+          <p data-formula>
+            <b><var>T</var><sup>2</sup> = <var>a</var><sup>3</sup></b>
+            <small>Neptune: 30.07 cubed is 27,190, and 164.8 squared is 27,159.</small>
+          </p>
           <table>
             <caption>How each orbit is shaped</caption>
             <thead>
@@ -340,6 +382,22 @@
             a full orbit it is largest for Uranus, at about 0.14 AU, which is under 1% of its distance from the
             Sun. The page redraws each line every 30 simulated days, so a planet stays on its line as time
             runs. The dots come straight from JPL's data; the lines are a guide for the eye.
+          </p>
+
+          <h3>Why the Sun seems to circle you</h3>
+          <p>
+            When you ride along with a planet, the planet stands still and the Sun appears to go around it. Nothing has
+            changed but your viewpoint: the positions are exactly the same. This is why people long believed that
+            everything circled Earth. From where we stand, that is how the sky looks, and it took careful measurements of
+            the planets' paths to show otherwise.
+          </p>
+
+          <h3>Why planets are so hard to draw at true size</h3>
+          <p>
+            Jupiter is about 11 times as wide as Earth, and the Sun about 109 times. Yet the gaps between them are far
+            larger: the Sun's width would fit about 107 times between the Sun and Earth. So no single picture can show true
+            sizes and true distances together and still let you see the planets. That is the reason this page marks
+            positions with dots, and marks its enlarged view so plainly.
           </p>
 
           <h3>Measuring in astronomical units and light</h3>
@@ -481,10 +539,14 @@
           <h2 id="leaves-out">What this page leaves out</h2>
           <ul>
             <li>
-              <strong>Planet sizes.</strong> With all eight planets in view, one pixel covers about 18 million
-              kilometers. The Sun is 1.4 million kilometers across, so at true scale even the Sun would cover
-              less than a tenth of a pixel, and Earth about a thousandth. That is why each dot marks a position
-              and says nothing about size.
+              <strong>Planet sizes, unless you ask.</strong> With all eight planets in view, one pixel covers about 18
+              million kilometers. The Sun is 1.4 million kilometers across, so at true scale even the Sun would cover
+              less than a tenth of a pixel, and Earth about a thousandth. That is why each dot marks a position and
+              says nothing about size. The sizes view enlarges them, and says by how much.
+            </li>
+            <li>
+              <strong>The real stars.</strong> The stars behind the planets are decoration, in random positions. They do
+              not twinkle, because twinkling comes from Earth's air, and this view is from space.
             </li>
             <li>
               <strong>Where to look in your own sky.</strong> The page shows where the planets are in space, not
@@ -500,8 +562,9 @@
               <strong>Moons, spin, dwarf planets, asteroids and comets.</strong> These are not on the page yet.
             </li>
             <li>
-              <strong>Dates outside 2000 through 2050, and running time backward.</strong> Uranus and Neptune
-              therefore cannot finish an orbit here, since they take 84 and 165 years.
+              <strong>Dates outside 2000 through 2050, and time running backward.</strong> Uranus and Neptune therefore
+              cannot finish an orbit here, since they take 84 and 165 years. You can still drag the timeline back to
+              any earlier date.
             </li>
           </ul>
         </section>
@@ -519,7 +582,10 @@
               which publishes the data file this site reads, <code>de440s.bsp</code>.
             </li>
             <li><a href="https://ssd.jpl.nasa.gov/horizons/">JPL Horizons</a>, the public calculator used for checking.</li>
-            <li><a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/">NASA's planetary fact sheets</a>, for the tables above.</li>
+            <li>
+              <a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/">NASA's planetary fact sheets</a>, for the tables
+              above, the planets' sizes, and the tilt and width of Saturn's rings.
+            </li>
             <li>
               <a href="https://eclipse.gsfc.nasa.gov/SEsearch/SEsearchmap.php?Ecl=20260812">NASA's Eclipse Web Site, by Fred Espenak</a>,
               on the total solar eclipse of 2026.

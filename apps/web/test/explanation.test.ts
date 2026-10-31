@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 import { assert, describe, it } from "@effect/vitest"
 import { Option, Schema } from "effect"
 import { makeSky, orbitsAt } from "@solar/classroom/service"
-import { KM_PER_AU, SPEEDS, type PlanetName } from "@solar/classroom/types"
+import { KM_PER_AU, SPEEDS, SUN_DIAMETER_KM, type PlanetName } from "@solar/classroom/types"
 import { makeTile, selectTile, tdbFromUtcMillis } from "@solar/ephemeris/service"
 import { TdbSeconds, TileCatalog, type Vector3Km } from "@solar/ephemeris/types"
 
@@ -149,6 +149,16 @@ describe("the sentences about time and distance", () => {
     const millis = Date.UTC(2026, 0, 1)
     const aheadSeconds = tdbFromUtcMillis(millis) - (millis - Date.UTC(2000, 0, 1, 12)) / 1000
     assert.include(page, `about ${String(Math.round(aheadSeconds))} seconds ahead`)
+  })
+
+  // NASA's fact sheets: 149.6 million km to the Sun, which is 1.3914 million km across.
+  it("states how many whole Suns fit between the Sun and Earth", () => {
+    assert.strictEqual(Math.floor(KM_PER_AU / SUN_DIAMETER_KM), 107)
+    assert.include(page, "about 107 times")
+  })
+
+  it("says plainly that the stars are decoration", () => {
+    assert.include(page, "The stars behind the planets are decoration")
   })
 
   it("names only the moment the example link opens", () => {

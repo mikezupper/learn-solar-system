@@ -24,10 +24,18 @@ export const loadSky = Effect.fn("Sky.load")(
     const entry = selectTile(catalog, tdbFromUtcMillis(moment))
     if (Option.isNone(entry)) return outsideCatalog(catalog)
     const tile = yield* loadTile(entry.value)
+    const years = catalog.tiles.map(({ year }) => year)
     return Option.match(makeSky(tile), {
       onNone: () => SkyLoad.Failed({ problem: "TileDamaged" }),
       onSome: (sky) =>
-        SkyLoad.Loaded({ sky, endSeconds: entry.value.endSeconds, year: entry.value.year }),
+        SkyLoad.Loaded({
+          sky,
+          startSeconds: entry.value.startSeconds,
+          endSeconds: entry.value.endSeconds,
+          year: entry.value.year,
+          firstYear: Math.min(...years),
+          lastYear: Math.max(...years),
+        }),
     })
   },
   Effect.catchTags({

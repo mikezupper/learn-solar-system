@@ -26,6 +26,7 @@ const facts: PageFacts = {
   nowMillis: Date.UTC(2026, 5, 1),
   locale: "en-US",
   timeZone: "UTC",
+  reducedMotion: true,
 }
 
 const mountClassroom = async (load: SkyLoad) => {
@@ -41,7 +42,14 @@ const mountClassroom = async (load: SkyLoad) => {
   return { classroom, recorder }
 }
 
-const loaded = SkyLoad.Loaded({ sky, endSeconds: TdbSeconds(1e12), year: 2026 })
+const loaded = SkyLoad.Loaded({
+  sky,
+  startSeconds: TdbSeconds(-1e12),
+  endSeconds: TdbSeconds(1e12),
+  year: 2026,
+  firstYear: 2026,
+  lastYear: 2027,
+})
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -54,7 +62,7 @@ describe("the classroom in a real browser", () => {
       row.textContent.includes("Mars"),
     )
     const cells = [...(mars?.querySelectorAll("td") ?? [])].map((cell) => cell.textContent.trim())
-    expect(cells).toEqual(["1.500", "0.500", "4.2"])
+    expect(cells).toEqual(["1.500", "0.500", "4.2 min"])
   })
 
   it("hides the stage and keeps the table when the stage reports it cannot start", async () => {

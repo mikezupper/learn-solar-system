@@ -29,8 +29,17 @@ const facts = (linkedMoment: string | undefined): PageFacts => ({
   nowMillis: JUNE,
   locale: "en-US",
   timeZone: "UTC",
+  reducedMotion: true,
 })
-const loaded = (year = 2026) => SkyLoad.Loaded({ sky, endSeconds: entry.endSeconds, year })
+const loaded = (year = 2026) =>
+  SkyLoad.Loaded({
+    sky,
+    startSeconds: entry.startSeconds,
+    endSeconds: entry.endSeconds,
+    year,
+    firstYear: 2026,
+    lastYear: 2027,
+  })
 const openedWith = (linked: string | undefined): State =>
   run(SolarClassroom.spec, [
     { _tag: "PageRead", facts: facts(linked) },
@@ -164,7 +173,7 @@ describe("stopping and returning", () => {
       { _tag: "SpeedChosen", speed: "month" },
       { _tag: "Tick", now: 1_000_000 },
       { _tag: "Tick", now: 1_001_000 },
-      { _tag: "Pause" },
+      { _tag: "PlayPressed" },
     )
     assert.strictEqual(chosen(state)._tag, "Paused")
     assert.strictEqual(step(SolarClassroom.spec, state, { _tag: "Tick", now: 9_000_000 }).state, state)
@@ -221,11 +230,11 @@ describe("what a learner can do", () => {
   })
 
   it("explains why it does not start moving by itself", async () => {
-    assert.include(await render(following()), COPY.realSpeedNote)
+    assert.include(await render(following()), COPY.followingNote("year"))
   })
 
   it("offers a link to a paused moment, to share with a class", async () => {
-    const { state } = go(ready(), { _tag: "SpeedChosen", speed: "day" }, { _tag: "Pause" })
+    const { state } = go(ready(), { _tag: "SpeedChosen", speed: "day" }, { _tag: "PlayPressed" })
     const markup = await render(state)
     assert.include(markup, "/?at=2026-06-01T12:00:00.000Z")
     assert.include(markup, COPY.linkToMoment)

@@ -1,0 +1,345 @@
+@font-face {
+  font-family: Unbounded;
+  src: url("/fonts/unbounded-latin.woff2") format("woff2");
+  font-weight: 500 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Doto;
+  src: url("/fonts/doto-latin.woff2") format("woff2");
+  font-weight: 900;
+  font-display: swap;
+}
+
+/* Registered, so that the accent color can glide from cool to hot as time speeds up. */
+@property --warp-hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 205;
+}
+
+@layer reset, tokens, layout, components, motion;
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+  h1, h2, h3, p, dl, dd, figure, fieldset, ol, ul, details { margin: 0; }
+  fieldset, legend { padding: 0; }
+  fieldset { border: 0; min-inline-size: 0; }
+  canvas, svg { display: block; }
+  button, input, select { font: inherit; color: inherit; }
+}
+
+@layer tokens {
+  :root { color-scheme: dark; background: oklch(6% 0.015 275); }
+
+  body {
+    --void: oklch(6% 0.015 275);
+    --panel: oklch(11% 0.024 275);
+    --panel-soft: oklch(11% 0.024 275 / 0.9);
+    --raised: oklch(13% 0.026 275);
+    --line: oklch(100% 0 0 / 0.17);
+    --ink: oklch(97% 0.008 265);
+    --ink-2: oklch(83% 0.02 265);
+    --warp: oklch(80% 0.15 var(--warp-hue));
+    --warp-soft: oklch(80% 0.15 var(--warp-hue) / 0.35);
+    --on-warp: oklch(14% 0.04 var(--warp-hue));
+    --gutter: clamp(1rem, 0.5rem + 1.6vi, 2rem);
+    --display: Unbounded, system-ui, sans-serif;
+    --dots: Doto, ui-monospace, monospace;
+    --text: system-ui, sans-serif;
+    --measure: 68ch;
+    --spin: 4s;
+  }
+
+  /* Time warp runs from cool to hot, on one rising hue so that it never wraps the wrong way round. */
+  body:has([data-warp="day"]) { --warp-hue: 230; --spin: 5s; }
+  body:has([data-warp="week"]) { --warp-hue: 295; --spin: 2.6s; }
+  body:has([data-warp="month"]) { --warp-hue: 350; --spin: 1.3s; }
+  body:has([data-warp="year"]) { --warp-hue: 415; --spin: 0.6s; }
+
+  /* The stage's PLANET_COLORS, in oklch. */
+  [data-planet="Sun"] { --c: oklch(89.4% 0.135 90); }
+  [data-planet="Mercury"] { --c: oklch(82.2% 0.014 82); }
+  [data-planet="Venus"] { --c: oklch(89.9% 0.063 88); }
+  [data-planet="Earth"] { --c: oklch(73% 0.141 259); }
+  [data-planet="Mars"] { --c: oklch(70.7% 0.139 41); }
+  [data-planet="Jupiter"] { --c: oklch(83.7% 0.073 80); }
+  [data-planet="Saturn"] { --c: oklch(89.6% 0.063 91); }
+  [data-planet="Uranus"] { --c: oklch(88.1% 0.048 200); }
+  [data-planet="Neptune"] { --c: oklch(85.1% 0.055 227); }
+
+  [data-step="day"] { --h: 230; --rows: 2; }
+  [data-step="week"] { --h: 295; --rows: 3; }
+  [data-step="month"] { --h: 350; --rows: 4; }
+  [data-step="year"] { --h: 415; --rows: 5; }
+}
+
+@layer layout {
+  body {
+    position: relative;
+    container: page / inline-size;
+    background: var(--void);
+    color: var(--ink);
+    font: 400 1rem/1.5 var(--text);
+  }
+
+  /* The headline floats over the sky whenever there is a sky to float over. */
+  body > header { position: relative; z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.375rem; padding-inline: var(--gutter); pointer-events: none; }
+  body:has(solar-classroom > figure) > header { position: absolute; inset-block-start: 0; inset-inline: 0; }
+  body > header a { pointer-events: auto; }
+  body > header nav { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-inline-size: 0; }
+  body > header > * { min-inline-size: 0; }
+  body > header ul { display: flex; gap: 0.25rem 1rem; min-inline-size: 0; margin: 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
+
+  /* The sky stays pinned while the numbers scroll over it, so picture and table stay in view together. */
+  solar-classroom {
+    --stage: clamp(36rem, 100svh, 72rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--stage) auto;
+  }
+  solar-classroom:has(> [data-problem]), solar-classroom:has(> [data-no-stage]) { display: grid; grid-template-rows: none; gap: 1rem; padding: var(--gutter); }
+  solar-classroom > figure {
+    grid-area: 1 / 1 / 3 / 2;
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 0;
+    align-self: start;
+    block-size: var(--stage);
+    overflow: clip;
+    background: oklch(0% 0 0);
+  }
+  sky-stage { position: absolute; inset: 0; }
+  [data-loading] { grid-area: 1 / 1; z-index: 3; place-self: center; padding: 0.5rem 1rem; border-radius: 999px; background: var(--panel-soft); }
+  [data-view] {
+    grid-area: 1 / 1;
+    z-index: 3;
+    align-self: start;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.375rem;
+    margin-block-start: calc(var(--head-h, 13rem) + 0.25rem);
+    margin-inline: var(--gutter);
+  }
+  [data-dock] {
+    grid-area: 1 / 1 / 3 / 2;
+    z-index: 4;
+    position: sticky;
+    inset-block-end: 0.5rem;
+    align-self: end;
+    justify-self: center;
+    inline-size: min(100% - 1rem, 88rem);
+    margin-block-end: 0.5rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "scrub scrub scrub"
+      "clock clock now"
+      "play speed speed"
+      "say say say";
+    gap: 0.375rem 0.75rem;
+    align-items: center;
+    padding: 0.375rem 0.75rem 0.625rem;
+    border: 1px solid var(--line);
+    border-radius: 1.25rem;
+    background: var(--panel);
+    box-shadow: 0 1rem 3rem oklch(0% 0 0 / 0.6);
+  }
+  [data-numbers] {
+    grid-area: 2 / 1;
+    z-index: 2;
+    display: grid;
+    gap: 1rem;
+    padding: 1.5rem var(--gutter) calc(var(--dock-h, 14rem) + 1.5rem);
+    border-start-start-radius: 1.5rem;
+    border-start-end-radius: 1.5rem;
+    background: var(--void);
+  }
+
+  main { min-inline-size: 0; }
+  main > article {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(3rem, 2rem + 5vi, 6rem);
+    background: var(--void);
+    padding-block: clamp(3rem, 2rem + 5vi, 7rem);
+    padding-inline: var(--gutter);
+    container-type: inline-size;
+  }
+  main > article > section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    inline-size: 100%;
+    max-inline-size: 78rem;
+    margin-inline: auto;
+    scroll-margin-block-start: 1rem;
+  }
+  body > footer {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 0.5rem;
+    padding: 2rem var(--gutter) 3rem;
+    border-block-start: 1px solid var(--line);
+    background: var(--void);
+    color: var(--ink-2);
+    font-size: 0.875rem;
+  }
+
+  @container page (inline-size >= 62rem) {
+    body > header { gap: 0.625rem; }
+    [data-view] {
+      justify-self: end;
+      inline-size: 21rem;
+      grid-template-columns: minmax(0, 1fr);
+      margin-block-start: 3.5rem;
+    }
+    [data-dock] {
+      grid-template-columns: auto auto minmax(0, 1fr) auto;
+      grid-template-areas:
+        "scrub scrub scrub scrub"
+        "play clock speed now"
+        "play clock say now";
+      column-gap: 1.5rem;
+      padding: 0.5rem 1.25rem 0.875rem;
+      border-radius: 1.75rem;
+    }
+    [data-numbers] {
+      justify-self: end;
+      inline-size: min(58%, 54rem);
+      padding-inline: 2.5rem;
+      border-start-end-radius: 0;
+      border-end-start-radius: 1.5rem;
+      border: 1px solid var(--line);
+      border-inline-end: 0;
+      background: oklch(6% 0.015 275 / 0.97);
+    }
+  }
+}
+
+@layer components {
+  a { color: var(--ink); text-underline-offset: 0.2em; }
+  :where(a, button, input, select, summary):focus-visible { outline: 3px solid var(--warp); outline-offset: 3px; border-radius: 0.25rem; }
+  ::selection { background: var(--warp); color: var(--on-warp); }
+
+  body > a:first-child {
+    position: absolute;
+    inset-block-start: 0.25rem;
+    inset-inline-start: 0.5rem;
+    z-index: 10;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--ink);
+    color: var(--void);
+    translate: 0 -300%;
+  }
+  body > a:first-child:focus-visible { translate: 0 0; }
+
+  body > header nav a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+    font: 500 0.6875rem/1 var(--display);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  body > header nav a:hover { color: var(--warp); }
+  body > header nav > a { display: none; }
+  h1 {
+    max-inline-size: 15ch;
+    font: 800 clamp(1.625rem, 1rem + 2.7vi, 3.625rem)/1.06 var(--display);
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    text-shadow: 0 0 1.5rem oklch(0% 0 0);
+  }
+  h1 em { font-style: normal; color: var(--warp); }
+  body > header p {
+    max-inline-size: 42ch;
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    text-wrap: pretty;
+    text-shadow: 0 0 0.5rem oklch(0% 0 0), 0 0 0.125rem oklch(0% 0 0);
+  }
+
+  figure[data-stale] sky-stage { opacity: 0.55; }
+  figcaption {
+    position: absolute;
+    inset-block-end: calc(var(--dock-h, 14rem) + 0.125rem);
+    inset-inline-start: var(--gutter);
+    max-inline-size: min(40ch, 100% - 2 * var(--gutter));
+    color: var(--ink-2);
+    font-size: 0.75rem;
+    line-height: 1.35;
+    pointer-events: none;
+    text-shadow: 0 0 0.375rem oklch(0% 0 0), 0 0 0.125rem oklch(0% 0 0);
+  }
+  figcaption strong {
+    display: block;
+    margin-block-end: 0.25rem;
+    color: var(--ink);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  figcaption small { font-size: inherit; }
+  [data-problem] [role="alert"], [data-no-stage] { max-inline-size: var(--measure); font-size: 1.0625rem; }
+
+  @container page (inline-size >= 62rem) {
+    body > header nav a { font-size: 0.75rem; }
+    body > header nav > a { display: inline-flex; }
+    /* While time runs the sky takes over, so that no planet hides behind the headline. */
+    body:has([data-mode="running"]) h1 { opacity: 0.5; }
+    body:has([data-mode="running"]) > header p { opacity: 0; }
+    body > header p { font-size: 0.9375rem; }
+    figcaption { font-size: 0.8125rem; }
+    figcaption strong { font-size: 1rem; }
+  }
+
+  /* A phone needs its picture: the page explains how to turn and zoom it further down. */
+  @media (width < 40rem) {
+    figcaption small { display: none; }
+  }
+
+  /* A short phone has no room for words over the picture. They all appear again further down. */
+  @media (height < 46rem) and (width < 40rem) {
+    body > header p, figcaption { display: none; }
+    h1 { max-inline-size: none; font-size: 1.25rem; }
+  }
+
+  @media (height < 32rem) and (width >= 40rem) {
+    body > header p { display: none; }
+    h1 { max-inline-size: none; font-size: 1.25rem; }
+  }
+}
+
+@layer motion {
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+    body { transition: --warp-hue 500ms ease-out; }
+    h1, body > header p { transition: opacity 500ms 700ms; }
+    @keyframes rise { from { opacity: 0; translate: 0 1.25rem; } }
+    @keyframes spin { to { rotate: 1turn; } }
+    @keyframes breathe { 50% { scale: 1.5; opacity: 0.55; } }
+    @keyframes sweep { from { background-position: 130% 0; } to { background-position: -30% 0; } }
+    body > header { animation: rise 900ms 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    [data-view] { animation: rise 800ms 1500ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    [data-dock] { animation: rise 800ms 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    [data-view] label, [data-view] svg { transition: border-color 200ms, background 200ms, box-shadow 200ms, opacity 200ms; }
+    [data-play] { transition: scale 150ms; }
+    [data-play]::before { transition: opacity 200ms; }
+    [data-speed] input { transition: background-color 160ms; }
+    [data-mode="running"] [data-play]::before { animation: spin var(--spin) linear infinite; }
+    [data-speed] label:has(:checked) input,
+    [data-speed] label:has(~ label :checked) input { animation: sweep var(--spin) linear infinite; }
+    [data-now][aria-pressed="true"]::before { animation: breathe 2s ease-in-out infinite; }
+    @supports (animation-timeline: view()) {
+      article ol > li { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% cover 25%; }
+    }
+  }
+}
