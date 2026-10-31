@@ -115,6 +115,24 @@ describe("tileSourceHttp", () => {
     }),
   )
 
+  // A trace header makes a browser ask a CDN's permission first, and an ordinary CDN says no.
+  it.effect("sends plain requests, so that a tile host on another origin need not allow trace headers", () =>
+    Effect.gen(function* () {
+      const seen = yield* Ref.make<ReadonlyArray<string>>([])
+      const client = HttpClient.make((request) =>
+        Ref.update(seen, (names) => [...names, ...Object.keys(request.headers)]).pipe(
+          Effect.map(() => HttpClientResponse.fromWeb(request, new Response("{}"))),
+        ),
+      )
+      const tiles = yield* source(Layer.succeed(HttpClient.HttpClient, client))
+      yield* tiles.catalogJson
+      yield* tiles.blob(entry)
+      const names = yield* Ref.get(seen)
+      assert.notInclude(names, "traceparent")
+      assert.notInclude(names, "b3")
+    }),
+  )
+
   it.effect("treats a missing blob as a tile it cannot trust", () =>
     Effect.gen(function* () {
       const { layer } = yield* respondWith(new Response("", { status: 404 }))

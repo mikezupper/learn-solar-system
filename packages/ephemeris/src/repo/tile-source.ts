@@ -12,7 +12,11 @@ export class TileSource extends Context.Service<
   }
 >()("ephemeris/repo/TileSource") {}
 
-/** Reads the catalog and blobs over HTTP from a directory such as a CDN path. */
+/**
+ * Reads the catalog and blobs over HTTP from a directory such as a CDN path. Requests carry no trace
+ * headers: they would trigger a CORS preflight that an ordinary static host refuses, so a page whose
+ * tiles live on another origin could never load them. The client span is still recorded here.
+ */
 export const tileSourceHttp = (baseUrl: string) =>
   Layer.effect(
     TileSource,
@@ -22,6 +26,7 @@ export const tileSourceHttp = (baseUrl: string) =>
         catalogJson: client.get(`${baseUrl}/catalog.json`).pipe(
           Effect.flatMap((response) => response.json),
           Effect.mapError((cause) => new CatalogUnavailableError({ reason: String(cause) })),
+          Effect.provideService(HttpClient.TracerPropagationEnabled, false),
           Effect.withSpan("TileSource.catalogJson"),
         ),
         blob: Effect.fn("TileSource.blob")((entry: TileEntry) =>
@@ -31,6 +36,7 @@ export const tileSourceHttp = (baseUrl: string) =>
             Effect.mapError(
               (cause) => new TileCorruptError({ tileId: entry.id, reason: String(cause) }),
             ),
+            Effect.provideService(HttpClient.TracerPropagationEnabled, false),
           ),
         ),
       })
