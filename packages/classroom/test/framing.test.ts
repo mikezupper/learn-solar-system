@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest"
-import { fitDistance, labelSide, labelsWithRoom } from "../src/service/framing.js"
+import { fitDistance, placeLabels } from "../src/service/framing.js"
 
 describe("fitDistance", () => {
   it("fits a radius to a square view by simple trigonometry", () => {
@@ -16,45 +16,69 @@ describe("fitDistance", () => {
   })
 })
 
-describe("labelsWithRoom", () => {
-  const LABEL = { width: 64, height: 18 }
-  const at = (name: string, x: number, y = 0) => ({ name, x, y })
-  const names = (labels: ReadonlyArray<{ readonly name: string }>) => labels.map((label) => label.name)
+describe("placeLabels", () => {
+  const BOX = { width: 64, height: 14 }
+  const VIEW = 1000
+  const at = (name: string, x: number, y = 100) => ({ name, x, y })
+  const placed = (...labels: ReadonlyArray<ReturnType<typeof at>>) =>
+    placeLabels(labels, VIEW, BOX).map((label) => `${label.name}:${label.side}`)
+
+  it("puts a label after its dot when there is room", () => {
+    assert.deepStrictEqual(placed(at("a", 100)), ["a:after"])
+  })
 
   it("keeps labels that do not touch", () => {
-    assert.strictEqual(labelsWithRoom([at("a", 0), at("b", 100)], LABEL).length, 2)
+    assert.deepStrictEqual(placed(at("a", 100), at("b", 300)), ["a:after", "b:after"])
   })
 
-  it("drops the later of two labels that overlap", () => {
-    assert.deepStrictEqual(names(labelsWithRoom([at("a", 0), at("b", 10)], LABEL)), ["a"])
+  it("keeps two close labels on separate lines of text", () => {
+    assert.deepStrictEqual(placed(at("a", 100, 100), at("b", 105, 120)), ["a:after", "b:after"])
   })
 
-  it("keeps two labels that are close but on separate lines of text", () => {
-    assert.deepStrictEqual(names(labelsWithRoom([at("a", 0, 0), at("b", 5, 20)], LABEL)), ["a", "b"])
+  it("does not cover a neighbor's dot, when the other side is free", () => {
+    assert.deepStrictEqual(placed(at("Venus", 100), at("Mercury", 150, 105)), [
+      "Venus:before",
+      "Mercury:after",
+    ])
   })
 
-  it("keeps a label that starts just past the end of another", () => {
-    assert.deepStrictEqual(names(labelsWithRoom([at("a", 0), at("b", 65)], LABEL)), ["a", "b"])
+  it("names two planets side by side by labeling outward", () => {
+    assert.deepStrictEqual(placed(at("a", 100), at("b", 110)), ["a:before", "b:after"])
   })
 
-  it("measures a label against those it kept, not those it dropped", () => {
-    assert.deepStrictEqual(
-      names(labelsWithRoom([at("a", 0), at("b", 40), at("c", 80)], LABEL)),
-      ["a", "c"],
-    )
-  })
-})
-
-describe("labelSide", () => {
-  it("puts a label after its dot when there is room", () => {
-    assert.strictEqual(labelSide(100, 390, 64), "after")
+  it("still names a body whose neighbors crowd it, then labels what it can around it", () => {
+    assert.deepStrictEqual(placed(at("Sun", 100), at("x", 90), at("y", 110)), ["Sun:after", "x:before"])
   })
 
-  it("puts a label before its dot when it would run off the view", () => {
-    assert.strictEqual(labelSide(340, 390, 64), "before")
+  it("leaves room for a neighbor's own label, not just its dot", () => {
+    assert.deepStrictEqual(placed(at("Venus", 100, 100), at("Mercury", 150, 112)), [
+      "Venus:before",
+      "Mercury:after",
+    ])
+  })
+
+  it("drops a label only when both of its sides are taken", () => {
+    assert.deepStrictEqual(placed(at("a", 100), at("b", 101), at("c", 102)), ["a:before", "b:after"])
+  })
+
+  it("moves a label inside the view at the right edge", () => {
+    assert.deepStrictEqual(placed(at("Neptune", 960)), ["Neptune:before"])
   })
 
   it("allows a label that exactly reaches the edge", () => {
-    assert.strictEqual(labelSide(326, 390, 64), "after")
+    assert.deepStrictEqual(placed(at("a", 936)), ["a:after"])
+  })
+
+  it("drops a label that fits on neither side of a very narrow view", () => {
+    assert.deepStrictEqual(
+      placeLabels([at("a", 30)], 60, BOX).map((label) => label.name),
+      [],
+    )
+  })
+
+  it("returns where each label belongs, for the stage to draw", () => {
+    assert.deepStrictEqual(placeLabels([at("a", 100, 40)], VIEW, BOX), [
+      { name: "a", x: 100, y: 40, side: "after" },
+    ])
   })
 })

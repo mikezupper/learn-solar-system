@@ -6,11 +6,13 @@
 
 | What | Budget | Measured | Enforced by |
 |---|---|---|---|
-| Tile error against live Horizons | 1 km | 2.5 m | `verifyTile`, at publish |
+| Tile error against live Horizons | 1 km | 4.7 m, across 2000 to 2050 | `verifyTile`, at publish |
 | Tile error against recorded Horizons | 5 m | under 3 m | `golden.test.ts` |
 | Eclipse time and gamma | 1 s, 0.0002 | within both | `golden.test.ts` |
-| Page JavaScript, gzipped | 240 KiB | 209 KiB | `pnpm budget` |
-| One year of planets | none yet | 104,400 bytes | |
+| A planet's distance from its line, over a year | 1 pixel | 0.0004 AU at most | `orbit.test.ts` |
+| A planet's distance from its line, over a full orbit | 0.006 AU inner, 0.2 AU outer | 0.14 AU, Uranus | `orbit-fidelity.kernel.test.ts` |
+| Page JavaScript, gzipped | 240 KiB | 213 KiB | `pnpm budget` |
+| One year of planets | none yet | 104,400 bytes; 5.4 MB for 2000 to 2050 | |
 
 ## Failure modes
 
@@ -22,10 +24,13 @@
 | The worker crashes between blob and catalog | An unlisted blob remains, which a rerun reuses | `build-tile.ts` |
 | The catalog cannot be fetched or is a newer format | The page says the data could not be loaded | `load-sky.ts` |
 | A tile arrives damaged | The page refuses it and shows no numbers | `load-tile.ts` |
-| SHA-256 is unavailable (plain http) | Treated as damage: unverifiable bytes are not shown | `digest.ts` |
+| SHA-256 is unavailable (plain http) | Bytes it cannot check are not shown, and the page asks for https | `digest.ts`, `load-sky.ts` |
 | WebGL will not start | The stage reports it; the table remains | `stage.ts` |
 | A date outside the catalog | The page names the years it has | `load-sky.ts` |
-| The year rolls over while open | The page fetches the next tile | `classroom.ts` |
+| The year rolls over, or time runs into the next year | The next tile is fetched ahead; time waits at the boundary if it is late, without a jump | `classroom-model.ts` |
+| Time runs past the last published year | Time stops, and the page says through which year it has data | `classroom-model.ts` |
+| The next year's tile fails to load | Time stops and says so; choosing a speed tries again | `classroom-model.ts` |
+| A laptop sleeps while time runs | Time waits: a single tick counts at most one real second | `moment.ts` |
 
 ## Limits
 

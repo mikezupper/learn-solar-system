@@ -1,5 +1,5 @@
 import { Data, Option, Result } from "effect"
-import { ChosenMoment, Moment } from "../types/index.js"
+import { ChosenMoment, Moment, SPEEDS, type SpeedName } from "../types/index.js"
 
 export class InvalidMoment extends Data.TaggedError("InvalidMoment")<{ readonly text: string }> {}
 
@@ -22,4 +22,31 @@ export const chooseMoment = (
         ? Result.fail(new InvalidMoment({ text }))
         : Result.succeed(ChosenMoment.PinnedByLink({ moment: Moment(millis) }))
     },
+  })
+
+/**
+ * The longest real gap a single tick counts. A browser stops timers in a hidden tab or a sleeping
+ * laptop, and time should wait rather than leap years ahead when the learner returns.
+ */
+const MAX_TICK_MILLIS = 1000
+
+/** Starts time running from a moment. The clock starts counting at the next tick. */
+export const startTravelling = (moment: Moment, speed: SpeedName): ChosenMoment =>
+  ChosenMoment.Travelling({ moment, speed, lastNow: Option.none() })
+
+/** Where a moment has got to, given the wall clock now. Pinned and paused moments stay put. */
+export const advanceMoment = (chosen: ChosenMoment, now: number): ChosenMoment =>
+  ChosenMoment.$match(chosen, {
+    FollowingNow: () => ChosenMoment.FollowingNow({ moment: Moment(now) }),
+    PinnedByLink: () => chosen,
+    Paused: () => chosen,
+    Travelling: ({ moment, speed, lastNow }) =>
+      ChosenMoment.Travelling({
+        moment: Option.match(lastNow, {
+          onNone: () => moment,
+          onSome: (last) => Moment(moment + Math.min(now - last, MAX_TICK_MILLIS) * SPEEDS[speed]),
+        }),
+        speed,
+        lastNow: Option.some(now),
+      }),
   })

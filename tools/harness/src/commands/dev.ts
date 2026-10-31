@@ -22,10 +22,8 @@ export const dev = Effect.gen(function* () {
   yield* fs.writeFileString(PID_FILE, String(process.pid)).pipe(Effect.mapError(toFailure))
   yield* Effect.gen(function* () {
     yield* stackUp(identity)
-    const haveTiles = yield* fs.exists(`${TILES}/catalog.json`).pipe(Effect.mapError(toFailure))
-    if (!haveTiles) {
-      yield* runVisibly("pnpm", ["-s", "tiles:build"], { ...telemetryEnv(identity), TILE_STORE_DIR: TILES })
-    }
+    // Publishes only the years that are missing. The first run in a worktree takes a few minutes.
+    yield* runVisibly("pnpm", ["-s", "tiles:build"], { ...telemetryEnv(identity), TILE_STORE_DIR: TILES })
     yield* Console.log(`dev: ${webUrl}  (telemetry: pnpm obs:logs, obs:metrics, obs:traces)`)
     yield* runVisibly(
       "pnpm",
@@ -33,7 +31,7 @@ export const dev = Effect.gen(function* () {
       {
         TILE_STORE_DIR: TILES,
         HARNESS_OTLP_TARGET: telemetryEnv(identity).OTEL_EXPORTER_OTLP_ENDPOINT,
-        VITE_OTLP_BASE_URL: `${webUrl}/otlp`,
+        VITE_OTLP_BASE_URL: "/otlp",
         VITE_WORKTREE: identity.project,
       },
     )

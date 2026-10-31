@@ -77,6 +77,14 @@ describe("parseYears", () => {
     assert.deepStrictEqual(parseYears("2025, 2026,2027"), [2025, 2026, 2027])
   })
 
+  it("reads a range of years, inclusive at both ends", () => {
+    assert.deepStrictEqual(parseYears("2000-2003"), [2000, 2001, 2002, 2003])
+  })
+
+  it("mixes ranges and single years", () => {
+    assert.deepStrictEqual(parseYears("2000-2001, 2026"), [2000, 2001, 2026])
+  })
+
   it("leaves out anything that is not a whole year", () => {
     assert.deepStrictEqual(parseYears("2025,soon,20.5,-1"), [2025])
   })

@@ -128,6 +128,122 @@ test.describe("a student explores the view", () => {
   })
 })
 
+const countLit = (page: Page, shot: Buffer) =>
+  page.evaluate(async (base64) => {
+    const image = new Image()
+    image.src = `data:image/png;base64,${base64}`
+    await image.decode()
+    const canvas = document.createElement("canvas")
+    canvas.width = image.width
+    canvas.height = image.height
+    const context = canvas.getContext("2d")
+    if (context === null) return 0
+    context.drawImage(image, 0, 0)
+    const { data } = context.getImageData(0, 0, image.width, image.height)
+    let lit = 0
+    for (let i = 0; i < data.length; i += 4) if ((data[i] ?? 0) + (data[i + 1] ?? 0) + (data[i + 2] ?? 0) > 60) lit += 1
+    return lit
+  }, shot.toString("base64"))
+
+const shownMoment = (page: Page) => page.locator("time").getAttribute("datetime")
+
+test.describe("a student watches the planets move", () => {
+  test("each planet's path is drawn as a line around the Sun", async ({ page }) => {
+    await page.goto("/?at=2026-06-01T00:00:00Z")
+    const stage = page.locator("sky-stage")
+    await expect(stage.locator("li", { hasText: "Neptune" })).toBeVisible()
+    // Eight dots and a Sun light a few hundred pixels. Eight long ellipses light thousands.
+    expect(await countLit(page, await stage.screenshot())).toBeGreaterThan(3000)
+  })
+
+  test("choosing a speed runs time forward, and the picture and table follow", async ({ page }) => {
+    const errors = watchForErrors(page)
+    await page.goto("/?at=2026-03-01T00:00:00Z")
+    const stage = page.locator("sky-stage")
+    await expect(stage.locator("li", { hasText: "Neptune" })).toBeVisible()
+    await page.getByRole("radio", { name: "Inner planets" }).check()
+    await expect(stage.locator("li", { hasText: "Mercury" })).toBeVisible()
+    const before = await stage.screenshot()
+    const distanceBefore = await rowCells(page, "Mercury").nth(0).textContent()
+
+    await page.getByRole("radio", { name: "1 week per second" }).check()
+    await expect.poll(async () => (await shownMoment(page)) ?? "").not.toBe("2026-03-01T00:00:00.000Z")
+    await expect.poll(() => rowCells(page, "Mercury").nth(0).textContent()).not.toBe(distanceBefore)
+    await expect(page.getByText("The motion is real, only faster")).toBeVisible()
+    expect((await stage.screenshot()).equals(before)).toBe(false)
+    expect(errors).toEqual([])
+  })
+
+  test("the date advances at the speed chosen", async ({ page }) => {
+    await page.goto("/?at=2026-03-01T00:00:00Z")
+    await page.getByRole("radio", { name: "1 day per second" }).check()
+    const start = Date.parse((await shownMoment(page)) ?? "")
+    await page.waitForTimeout(2000)
+    const days = (Date.parse((await shownMoment(page)) ?? "") - start) / 86_400_000
+    // Two real seconds is two days, give or take a tick either side on a busy machine.
+    expect(days).toBeGreaterThan(1)
+    expect(days).toBeLessThan(3.5)
+  })
+
+  test("stopping holds the moment and offers a link to it", async ({ page }) => {
+    await page.goto("/?at=2026-03-01T00:00:00Z")
+    await page.getByRole("radio", { name: "1 week per second" }).check()
+    await expect.poll(async () => (await shownMoment(page)) ?? "").not.toBe("2026-03-01T00:00:00.000Z")
+    await page.getByRole("radio", { name: "Stopped" }).check()
+    const stoppedAt = (await shownMoment(page)) ?? ""
+    await page.waitForTimeout(600)
+    expect(await shownMoment(page)).toBe(stoppedAt)
+    await expect(page.getByRole("link", { name: /Link to this moment/ })).toHaveAttribute(
+      "href",
+      `/?at=${stoppedAt}`,
+    )
+  })
+
+  test("time crosses into the next year's data without a pause in the page", async ({ page }) => {
+    const errors = watchForErrors(page)
+    await page.goto("/?at=2026-12-20T00:00:00Z")
+    await page.getByRole("radio", { name: "1 month per second" }).check()
+    await expect.poll(async () => (await shownMoment(page)) ?? "", { timeout: 15_000 }).toMatch(/^2027-/)
+    await expect(page.locator("sky-stage")).toBeVisible()
+    expect(errors).toEqual([])
+  })
+
+  test("at the end of the data, time stops and says why", async ({ page }) => {
+    await page.goto("/?at=2027-12-20T00:00:00Z")
+    await page.getByRole("radio", { name: "1 month per second" }).check()
+    await expect(page.getByText("planet data through 2027")).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole("radio", { name: "Stopped" })).toBeChecked()
+    expect((await shownMoment(page)) ?? "").toMatch(/^2027-12/)
+  })
+
+  test("Right now returns to the present without reloading the page", async ({ page }) => {
+    await page.clock.install({ time: new Date("2026-10-31T12:00:00Z") })
+    await page.goto("/?at=2026-03-01T00:00:00Z")
+    await expect(page.getByRole("table")).toBeVisible()
+    await page.getByRole("radio", { name: "Right now" }).check()
+    await expect.poll(async () => (await shownMoment(page)) ?? "").toMatch(/^2026-10-31T12:00/)
+    await expect(page.getByText("updated every second")).toBeVisible()
+  })
+
+  test("the inner view makes the inner planets readable, and the giants leave the frame", async ({ page }) => {
+    await page.goto("/?at=2026-06-01T00:00:00Z")
+    const stage = page.locator("sky-stage")
+    await page.getByRole("radio", { name: "Inner planets" }).check()
+    for (const name of ["Mercury", "Venus", "Earth", "Mars"]) {
+      await expect(stage.locator("li", { hasText: name })).toBeVisible()
+    }
+    await expect(stage.locator("li", { hasText: "Neptune" })).toBeHidden()
+  })
+
+  test("the controls work from the keyboard", async ({ page }) => {
+    await page.goto("/?at=2026-03-01T00:00:00Z")
+    await page.getByRole("radio", { name: "1 day per second" }).focus()
+    await page.keyboard.press("ArrowRight")
+    await expect(page.getByRole("radio", { name: "1 week per second" })).toBeChecked()
+    await expect(page.getByText("The motion is real, only faster")).toBeVisible()
+  })
+})
+
 test.describe("a student opens the page with no link", () => {
   test("it shows the present moment and keeps it current", async ({ page }) => {
     await page.clock.install({ time: new Date("2026-10-31T12:00:00Z") })
@@ -144,7 +260,7 @@ test.describe("a student opens the page with no link", () => {
 test.describe("when the page cannot show the sky", () => {
   test("a date outside the published years is explained", async ({ page }) => {
     await page.goto("/?at=1990-01-01")
-    await expect(page.getByRole("alert")).toContainText("2026 through 2026")
+    await expect(page.getByRole("alert")).toContainText("2026 through 2027")
     await expect(page.getByRole("table")).toHaveCount(0)
     await expect(page.getByRole("link", { name: "Go to the present moment" })).toBeVisible()
   })

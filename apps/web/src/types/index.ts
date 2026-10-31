@@ -10,11 +10,11 @@ export interface PageFacts {
   readonly timeZone: string
 }
 
-export type SkyProblem = "CatalogUnavailable" | "TileDamaged"
+export type SkyProblem = "CatalogUnavailable" | "TileDamaged" | "TileUncheckable"
 
 /** Every way asking for the sky can end. A failure is an answer here, so the loop keeps running. */
 export type SkyLoad = Data.TaggedEnum<{
-  Loaded: { readonly sky: Sky; readonly endSeconds: TdbSeconds }
+  Loaded: { readonly sky: Sky; readonly endSeconds: TdbSeconds; readonly year: number }
   OutsideCatalog: { readonly firstYear: number; readonly lastYear: number }
   Failed: { readonly problem: SkyProblem }
 }>
@@ -35,8 +35,15 @@ export const StageReport = Schema.Union([
 ])
 export type StageReport = typeof StageReport.Type
 
-/** The one input the stage takes. */
+/** How much of the solar system the stage frames. Either way, distances stay to scale. */
+export const Framing = Schema.Literals(["all", "inner"])
+export type Framing = typeof Framing.Type
+
+/** The one input the stage takes. `rate` is simulated seconds per real second, zero when stopped. */
 export interface StageView {
   readonly sky: Sky
   readonly at: TdbSeconds
+  readonly endSeconds: TdbSeconds
+  readonly rate: number
+  readonly framing: Framing
 }

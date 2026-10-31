@@ -11,8 +11,14 @@ The page should read like a well-set science textbook with one live figure in it
 - **True positions, marked by dots.** A dot marks where a planet is. Its size is fixed and says nothing
   about the planet. Uranus and Neptune are both pale, following Irwin et al. (2024), and not the deep blue
   of processed Voyager images.
-- **Labels yield.** When labels would overlap, the Sun, Earth and the giants keep theirs. Zooming in
-  separates the inner planets, and their labels return.
+- **Labels stay out of the way.** A label takes the side of its dot that crowds no other planet. When a
+  body has no room on either side, the Sun, Earth and the giants keep their names first.
+- **Two ways to frame one true scale.** With all eight planets in view, the inner four share a few dozen
+  pixels. A framing control moves the camera in; neither view distorts a distance.
+- **The controls stay beside the picture.** On a wide screen they sit in a column next to the stage, so that
+  both stay in sight while time runs. On a narrow screen they follow the stage.
+- **Lines are lighter than dots.** Each line uses its planet's color at reduced opacity, so that the dots
+  stand out and a line can be traced back to its planet.
 - **No twinkling and no shooting stars.** Earth's atmosphere causes both, so neither belongs in a view
   from space.
 

@@ -6,12 +6,34 @@ export const COPY = {
   skyHeading: "The Sun and planets, to scale",
   following: "Showing this moment, updated every second:",
   pinned: "Showing the moment in this link:",
+  paused: "Stopped at this moment:",
+  travelling: "Time is running fast. The date on screen is:",
   pinnedNote: "This link holds one fixed moment, so everyone who opens it sees the same sky.",
+  linkToMoment: "Link to this moment, to share with a class",
   backToNow: "Go to the present moment",
+  controlsLabel: "Controls for the view",
+  speedLegend: "How fast time runs",
+  speedNow: "Right now",
+  speedStopped: "Stopped",
+  speedDay: "1 day per second",
+  speedWeek: "1 week per second",
+  speedMonth: "1 month per second",
+  speedYear: "1 year per second",
+  realSpeedNote:
+    "At real speed the planets look still, even though Earth travels about 30 kilometers every second. Speed up time to watch them move.",
+  travellingNote:
+    "Each frame shows where JPL's data puts every planet on that date. The motion is real, only faster.",
+  viewLegend: "What to show",
+  viewAll: "All eight planets",
+  viewInner: "Inner planets, Mercury to Mars",
+  endOfData: (lastYear: number) =>
+    `Time stopped here because this site has planet data through ${String(lastYear)}.`,
+  nextYearUnavailable:
+    "Time stopped here because the next year's planet data could not be loaded. Choose a speed to try again.",
   figureCaption:
-    "Distances are to scale, which makes the planets far too small to see at this size. Each dot marks where a planet is, not how big it is. Drag to turn the view; scroll or pinch to zoom in on the inner planets.",
+    "Distances are to scale, which makes the planets far too small to see at this size. Each dot marks where a planet is, not how big it is, and each line shows the path it is following around the Sun. Drag to turn the view; scroll or pinch to zoom.",
   stageLabel:
-    "A three-dimensional view of the Sun and the eight planets at their true distances. The table below gives the same positions as numbers.",
+    "A three-dimensional view of the Sun and the eight planets at their true distances, with the path each planet follows. The table below gives the same positions as numbers.",
   stageUnavailable:
     "This browser could not start the 3D view. The table below still has every number.",
   numbersHeading: "The numbers behind the picture",
@@ -39,6 +61,8 @@ export const COPY = {
     "The planet data could not be loaded. Check your connection, then reload the page.",
   tileDamaged:
     "The planet data arrived damaged, so this page will not show it. Reload the page to try again.",
+  tileUncheckable:
+    "This page checks its planet data before showing it, and browsers allow that only on secure pages. Open it with an https address.",
   outsideCatalog: (firstYear: number, lastYear: number) =>
     `This site has planet data for ${String(firstYear)} through ${String(lastYear)}. The date in this link falls outside those years.`,
   badLink: (text: string) =>

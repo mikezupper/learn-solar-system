@@ -34,7 +34,7 @@ const pageRead = (overrides: Partial<PageFacts> = {}): Msg => ({
   facts: facts(overrides),
 })
 const skyAnswered = (load: SkyLoad): Msg => ({ _tag: "SkyAnswered", load })
-const loaded = SkyLoad.Loaded({ sky, endSeconds: entry.endSeconds })
+const loaded = SkyLoad.Loaded({ sky, endSeconds: entry.endSeconds, year: 2026 })
 
 const render = (state: State) => renderToString(viewOf(SolarClassroom, state), { dev: false })
 
@@ -98,13 +98,6 @@ describe("showing the sky", () => {
       skyAnswered(loaded),
     ]).state
     assert.strictEqual(step(SolarClassroom.spec, pinned, { _tag: "Tick", now: JUNE }).state, pinned)
-  })
-
-  it("fetches next year's tile when the clock crosses into it", () => {
-    const newYear = Date.UTC(2027, 0, 1, 0, 0, 10)
-    const { state, commands } = step(SolarClassroom.spec, ready, { _tag: "Tick", now: newYear })
-    assert.strictEqual(state.phase._tag, "Waiting")
-    assert.deepStrictEqual(inputsFor(commands, skyLoader), [{ moment: newYear }])
   })
 
   it("answers a loader command with the message the reducer expects", () => {

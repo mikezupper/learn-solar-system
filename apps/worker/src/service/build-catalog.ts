@@ -29,10 +29,18 @@ export const buildCatalog = Effect.fn("Worker.buildCatalog")(function* (input: {
   return yield* Effect.forEach(input.years, (year) => buildYearTile(pin, year))
 })
 
-/** Reads "2025, 2026" into years, leaving out anything that is not a whole number. */
+const YEAR_RANGE = /^(\d+)-(\d+)$/
+
+/** Reads "2000-2050, 2060" into years, leaving out anything that is not a whole year. */
 export const parseYears = (text: string): ReadonlyArray<number> =>
   pipe(
     text.split(","),
-    Array.map((part) => Number(part.trim())),
+    Array.flatMap((raw) => {
+      const part = raw.trim()
+      const [, first, last] = YEAR_RANGE.exec(part) ?? []
+      return first === undefined || last === undefined
+        ? [Number(part)]
+        : Array.range(Number(first), Number(last))
+    }),
     Array.filter((year) => Number.isInteger(year) && year > 0),
   )

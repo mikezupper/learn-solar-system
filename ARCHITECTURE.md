@@ -31,16 +31,17 @@ moment, at any frame rate, with no server running behind it.
 evaluates them, and decides what may be published. It runs on Node and in browsers.
 `service/chebyshev.ts` is the hot path. `service/decisions.ts` holds the publish rules as pure functions.
 
-**`packages/classroom`**: what a learner sees. Turns a tile into distances and light travel times,
-chooses the moment to show, and holds the framing math for the stage.
+**`packages/classroom`**: what a learner sees. Turns a tile into distances, light travel times and orbit
+lines, moves the moment through time, and holds the framing and label math for the stage.
 
 **`packages/providers`**: the one door for cross-cutting concerns. `Instruments` names every metric,
 and `telemetryLayer` is the only place telemetry leaves a process.
 
 **`apps/worker`**: the Node entry point, with adapters for the kernel cache and the tile directory.
 
-**`apps/web`**: the Vite app. `ui/classroom.ts` is the Gyral component, `ui/stage.ts` the Three.js
-element, `ui/copy.ts` every sentence on screen, and `runtime/app-runtime.ts` the single place Effects run
+**`apps/web`**: the Vite app. `ui/classroom.ts` is the Gyral component and `ui/classroom-model.ts` its pure
+reducers. `ui/stage.ts` is the custom element and `ui/stage-scene.ts` the Three.js scene behind it.
+`ui/copy.ts` holds every sentence on screen, and `runtime/app-runtime.ts` the single place Effects run
 in the browser. `about-the-data.html` is a plain document with no CSS or script, on purpose.
 
 **`tools/harness`**: the custom lints, generated docs, per-worktree boot and telemetry queries. Its
@@ -90,6 +91,7 @@ These hold everywhere, so check them before changing anything nearby.
   near Neptune. `cameraRelative` is the only way a position reaches the GPU.
 - **Reducers and views are pure.** The page's facts, including the clock, arrive as messages.
 - **Telemetry goes nowhere unless configured.** With no endpoint, `telemetryLayer` is the empty layer.
+- **Real hostnames stay out of git.** The servers read `ALLOWED_HOSTS` from a `.env` that git ignores.
 
 ## Boundaries
 

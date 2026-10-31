@@ -9,14 +9,17 @@ Tests prove behavior. This shows you what a learner sees, which tests cannot jud
 
 1. **Boot.** Run `pnpm dev` in the background. It starts a telemetry stack, builds tiles if they are
    missing, and serves the app. It needs Docker and network access to JPL.
-2. **Find it.** `pnpm harness where` prints this worktree's ports as JSON. The app is at `ports.web`.
+2. **Find it.** `pnpm harness where` prints this worktree's ports as JSON. The app is at `ports.web`. To
+   reach it by another name, list that name in `ALLOWED_HOSTS` in `.env`, and use https.
 3. **Look.** With the `chrome-devtools` MCP server from `.mcp.json`: navigate, take a DOM snapshot, take a
    screenshot, list console messages. With Playwright instead, launch Chromium with
    `--use-angle=swiftshader --enable-unsafe-swiftshader` so that WebGL works headless.
 4. **Pin the moment.** Open `/?at=2026-08-12T17:46:00Z` so that two runs show the same sky. Labels and dots
    live in the shadow root of `sky-stage`.
-5. **Check the telemetry.** See [read-telemetry](../read-telemetry/SKILL.md).
-6. **Stop.** `pnpm dev:stop`. Never kill `pnpm dev` by its PID: the signal stops pnpm alone and strands
+5. **Run time.** Choose a speed to watch motion, and "Stopped" to hold a frame. The "Inner planets" view is
+   where the four inner planets are readable.
+6. **Check the telemetry.** See [read-telemetry](../read-telemetry/SKILL.md).
+7. **Stop.** `pnpm dev:stop`. Never kill `pnpm dev` by its PID: the signal stops pnpm alone and strands
    the containers and the web server.
 
 Look at both a wide window and a 390 px phone. The clipped Neptune label was only visible that way.

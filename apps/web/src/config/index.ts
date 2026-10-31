@@ -12,8 +12,11 @@ export interface WebConfig {
   readonly worktree: string
 }
 
-/** Reads the values Vite injects at build time. With none set, tiles come from `/tiles`. */
-export const readWebConfig = (env: unknown): WebConfig => {
+/**
+ * Reads the values Vite injects at build time. With none set, tiles come from `/tiles`. A telemetry
+ * path is resolved against `origin`, because the page may be reached by any name.
+ */
+export const readWebConfig = (env: unknown, origin: string): WebConfig => {
   const decoded = Option.getOrElse(Schema.decodeUnknownOption(Env)(env), () => ({
     VITE_TILE_BASE_URL: undefined,
     VITE_OTLP_BASE_URL: undefined,
@@ -21,7 +24,7 @@ export const readWebConfig = (env: unknown): WebConfig => {
   }))
   return {
     tileBaseUrl: decoded.VITE_TILE_BASE_URL ?? "/tiles",
-    otlpBaseUrl: Option.fromNullishOr(decoded.VITE_OTLP_BASE_URL),
+    otlpBaseUrl: Option.map(Option.fromNullishOr(decoded.VITE_OTLP_BASE_URL), (url) => new URL(url, origin).href),
     worktree: decoded.VITE_WORKTREE ?? "unset",
   }
 }

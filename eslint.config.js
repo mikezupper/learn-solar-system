@@ -117,7 +117,7 @@ export default defineConfig(
   },
   {
     // A DOM element with a canvas: its fields change by design, and the platform's APIs use null.
-    files: ["apps/web/src/ui/stage.ts"],
+    files: ["apps/web/src/ui/stage.ts", "apps/web/src/ui/stage-scene.ts"],
     rules: { "no-restricted-syntax": ["error", ...without(NO_NULL, NO_CAST)] },
   },
   {

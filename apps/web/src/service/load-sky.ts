@@ -26,7 +26,8 @@ export const loadSky = Effect.fn("Sky.load")(
     const tile = yield* loadTile(entry.value)
     return Option.match(makeSky(tile), {
       onNone: () => SkyLoad.Failed({ problem: "TileDamaged" }),
-      onSome: (sky) => SkyLoad.Loaded({ sky, endSeconds: entry.value.endSeconds }),
+      onSome: (sky) =>
+        SkyLoad.Loaded({ sky, endSeconds: entry.value.endSeconds, year: entry.value.year }),
     })
   },
   Effect.catchTags({
@@ -40,7 +41,7 @@ export const loadSky = Effect.fn("Sky.load")(
       ),
     DigestError: (error) =>
       Effect.logError("could not check a tile", { reason: error.reason }).pipe(
-        Effect.as(SkyLoad.Failed({ problem: "TileDamaged" })),
+        Effect.as(SkyLoad.Failed({ problem: "TileUncheckable" })),
       ),
   }),
 )

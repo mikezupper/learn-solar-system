@@ -18,8 +18,14 @@ export const makeSky = (tile: Tile): Option.Option<Sky> => {
       sun: trackFor(tile, Naif.Sun, root),
       earth: trackFor(tile, Naif.Earth, root),
       planets: Option.all(
-        PLANETS.map(({ name, target }) =>
-          Option.map(trackFor(tile, target, root), (track) => ({ name, track })),
+        PLANETS.map(({ name, target, orbitTarget }) =>
+          Option.map(
+            Option.all({
+              track: trackFor(tile, target, root),
+              orbitTrack: trackFor(tile, orbitTarget, root),
+            }),
+            ({ track, orbitTrack }) => ({ name, track, orbitTrack }),
+          ),
         ),
       ),
     }),

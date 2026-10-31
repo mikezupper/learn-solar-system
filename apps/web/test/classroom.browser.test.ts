@@ -17,6 +17,7 @@ const sky: Sky = {
   planets: PLANETS.map(({ name }) => ({
     name,
     track: at(name === "Earth" ? 1 : name === "Mars" ? 1.5 : 9),
+    orbitTrack: at(name === "Earth" ? 1 : name === "Mars" ? 1.5 : 9),
   })),
 }
 
@@ -40,7 +41,7 @@ const mountClassroom = async (load: SkyLoad) => {
   return { classroom, recorder }
 }
 
-const loaded = SkyLoad.Loaded({ sky, endSeconds: TdbSeconds(1e12) })
+const loaded = SkyLoad.Loaded({ sky, endSeconds: TdbSeconds(1e12), year: 2026 })
 
 afterEach(() => {
   vi.restoreAllMocks()

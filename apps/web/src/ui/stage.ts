@@ -1,52 +1,43 @@
 import { OUTPUT_EVENT } from "@gyral/core"
 import { Option, Result } from "effect"
-import {
-  AdditiveBlending,
-  BufferAttribute,
-  BufferGeometry,
-  CanvasTexture,
-  Color,
-  PerspectiveCamera,
-  Points,
-  PointsMaterial,
-  Scene,
-  Vector3,
-  WebGLRenderer,
-} from "three"
-import { OrbitControls } from "three/addons/controls/OrbitControls.js"
+import { Vector3 } from "three"
 import {
   cameraRelative,
   fitDistance,
-  labelSide,
-  labelsWithRoom,
+  orbitsAt,
+  placeLabels,
   skyPositionsAt,
 } from "@solar/classroom/service"
-import { KM_PER_AU, type BodyName } from "@solar/classroom/types"
-import type { StageReport, StageView } from "../types/index.js"
+import { KM_PER_AU, type Sky } from "@solar/classroom/types"
+import { TdbSeconds, type Vector3Km } from "@solar/ephemeris/types"
+import type { Framing, StageReport, StageView } from "../types/index.js"
 import { COPY } from "./copy.js"
+import {
+  buildScene,
+  KM_PER_UNIT,
+  ORBIT_POINTS,
+  PLANET_COLORS,
+  toScreenAxes,
+  VERTICAL_FOV_DEGREES,
+  type Scene3D,
+} from "./stage-scene.js"
 import STAGE_STYLES from "./stage.css?inline"
 
-/** One scene unit, once positions are relative to the camera and small enough for 32-bit floats. */
-const KM_PER_UNIT = 1e6
-const VERTICAL_FOV_DEGREES = 45
-/** Neptune's farthest point from the Sun, plus room for its label on a narrow screen. */
-const FRAMED_RADIUS_KM = 30.4 * KM_PER_AU * 1.25
+/** How much of the solar system each view frames, in km from the Sun, with room for labels. */
+const FRAMED_RADIUS_KM: Readonly<Record<Framing, number>> = {
+  all: 30.4 * KM_PER_AU * 1.08,
+  inner: 1.67 * KM_PER_AU * 1.08,
+}
 const NEAREST_ZOOM_KM = 0.15 * KM_PER_AU
-/** The room a label needs. Labels sit to the right of their dots, so they are wider than tall. */
-const LABEL_BOX_PIXELS = { width: 64, height: 18 }
+/** The room a label needs. Labels sit beside their dots, so they are wider than tall. */
+const LABEL_BOX_PIXELS = { width: 64, height: 14 }
 const FRAMES_PER_REPORT = 30
-/** Colors a learner would recognize. Uranus and Neptune are both pale, as Irwin et al. (2024) showed. */
-const BODIES: ReadonlyArray<{ readonly name: BodyName; readonly color: string }> = [
-  { name: "Sun", color: "#ffd86b" },
-  { name: "Mercury", color: "#b5b0a8" },
-  { name: "Venus", color: "#e8d3a2" },
-  { name: "Earth", color: "#6fa8ff" },
-  { name: "Mars", color: "#d9734a" },
-  { name: "Jupiter", color: "#d8b98a" },
-  { name: "Saturn", color: "#e6d7a8" },
-  { name: "Uranus", color: "#b4dde0" },
-  { name: "Neptune", color: "#a4cfe4" },
-]
+/** Below this, motion is too slow to see, so the stage draws only when something changes. */
+const VISIBLE_RATE = 1000
+/** A line changes very little in this time, and redrawing it less often saves work. */
+const ORBIT_REFRESH_SECONDS = 30 * 86_400
+const SECONDS_PER_MILLI = 0.001
+
 /** When labels collide, these win: the Sun, then Earth, then the giants. */
 const LABEL_PRIORITY: ReadonlyArray<string> = [
   "Sun",
@@ -60,98 +51,30 @@ const LABEL_PRIORITY: ReadonlyArray<string> = [
   "Mercury",
 ]
 
-/** A soft round dot, so that points are not drawn as squares. */
-const dotTexture = (): CanvasTexture => {
-  const canvas = document.createElement("canvas")
-  canvas.width = 64
-  canvas.height = 64
-  const context = canvas.getContext("2d")
-  if (context !== null) {
-    context.fillStyle = "#fff"
-    context.beginPath()
-    context.arc(32, 32, 30, 0, Math.PI * 2)
-    context.fill()
-  }
-  return new CanvasTexture(canvas)
-}
-
-interface Stage3D {
-  readonly renderer: WebGLRenderer
-  readonly controls: OrbitControls
-  readonly scene: Scene
-  /** Takes the input from OrbitControls, in kilometers. Never rendered through. */
-  readonly controlCamera: PerspectiveCamera
-  /** Sits at the origin with the same orientation, which is what keeps positions small. */
-  readonly renderCamera: PerspectiveCamera
-  readonly positions: BufferAttribute
-  readonly dispose: () => void
-}
-
-const buildStage = (canvas: HTMLCanvasElement): Result.Result<Stage3D, unknown> =>
-  Result.try(() => {
-    const renderer = new WebGLRenderer({ canvas, antialias: true, logarithmicDepthBuffer: true })
-    renderer.setPixelRatio(window.devicePixelRatio)
-    const controlCamera = new PerspectiveCamera(VERTICAL_FOV_DEGREES, 1, 1, 1e12)
-    const renderCamera = new PerspectiveCamera(VERTICAL_FOV_DEGREES, 1, 1e-3, 1e6)
-    const controls = new OrbitControls(controlCamera, canvas)
-    controls.enablePan = false
-    controls.minDistance = NEAREST_ZOOM_KM
-
-    const geometry = new BufferGeometry()
-    const positions = new BufferAttribute(new Float32Array(BODIES.length * 3), 3)
-    const colors = new Float32Array(BODIES.flatMap(({ color }) => new Color(color).toArray()))
-    geometry.setAttribute("position", positions)
-    geometry.setAttribute("color", new BufferAttribute(colors, 3))
-    const texture = dotTexture()
-    const material = new PointsMaterial({
-      size: 9,
-      sizeAttenuation: false,
-      vertexColors: true,
-      map: texture,
-      transparent: true,
-      alphaTest: 0.4,
-      blending: AdditiveBlending,
-      depthWrite: false,
-    })
-    const dots = new Points(geometry, material)
-    dots.frustumCulled = false
-    const scene = new Scene()
-    scene.add(dots)
-    return {
-      renderer,
-      controls,
-      scene,
-      controlCamera,
-      renderCamera,
-      positions,
-      dispose: () => {
-        controls.dispose()
-        geometry.dispose()
-        material.dispose()
-        texture.dispose()
-        renderer.dispose()
-      },
-    }
-  })
-
 /**
  * The WebGL stage: one input property, its own lifecycle, teardown when it leaves the page. It draws
  * only when something changed, because a classroom laptop should not spin its fan for a sky that
- * moves a pixel an hour.
+ * moves a pixel an hour. While time runs fast, it advances between the page's ticks by itself.
  */
 export class SkyStage extends HTMLElement {
   #view: Option.Option<StageView> = Option.none()
-  #stage: Option.Option<Stage3D> = Option.none()
+  #viewArrivedAt = 0
+  #stage: Option.Option<Scene3D> = Option.none()
   #labels: ReadonlyMap<string, HTMLLIElement> = new Map()
   #resize: Option.Option<ResizeObserver> = Option.none()
   #frame = 0
   #dirty = false
-  #framed = false
+  #framedAs: Framing | undefined = undefined
+  #orbitsFor: { readonly sky: Sky; readonly at: number } | undefined = undefined
   #frameMillis: ReadonlyArray<number> = []
 
   set view(view: StageView) {
     this.#view = Option.some(view)
+    this.#viewArrivedAt = performance.now()
     this.#dirty = true
+    Option.map(this.#stage, (stage) => {
+      this.#frameTo(stage, view.framing)
+    })
   }
 
   connectedCallback(): void {
@@ -162,7 +85,7 @@ export class SkyStage extends HTMLElement {
     canvas.tabIndex = 0
     const list = document.createElement("ol")
     list.setAttribute("aria-hidden", "true")
-    const labels = BODIES.map(({ name }) => {
+    const labels = ["Sun", ...PLANET_COLORS.map(([name]) => name)].map((name) => {
       const item = document.createElement("li")
       item.textContent = name
       item.hidden = true
@@ -174,12 +97,13 @@ export class SkyStage extends HTMLElement {
     style.textContent = STAGE_STYLES
     root.replaceChildren(style, canvas, list)
 
-    Result.match(buildStage(canvas), {
+    Result.match(buildScene(canvas), {
       onFailure: () => {
         this.#report({ _tag: "StageUnavailable" })
       },
       onSuccess: (stage) => {
         this.#stage = Option.some(stage)
+        stage.controls.minDistance = NEAREST_ZOOM_KM
         stage.controls.addEventListener("change", () => {
           this.#dirty = true
         })
@@ -204,14 +128,20 @@ export class SkyStage extends HTMLElement {
     })
     this.#resize = Option.none()
     this.#stage = Option.none()
-    this.#framed = false
+    this.#framedAs = undefined
+    this.#orbitsFor = undefined
   }
 
   #report(report: StageReport): void {
     this.dispatchEvent(new CustomEvent(OUTPUT_EVENT, { detail: report, bubbles: true }))
   }
 
-  #fit(stage: Stage3D): void {
+  #size(): { readonly inlineSize: number; readonly blockSize: number } {
+    const box = this.getBoundingClientRect()
+    return { inlineSize: box.width, blockSize: box.height }
+  }
+
+  #fit(stage: Scene3D): void {
     const { inlineSize, blockSize } = this.#size()
     if (inlineSize === 0 || blockSize === 0) return
     const aspect = inlineSize / blockSize
@@ -220,21 +150,28 @@ export class SkyStage extends HTMLElement {
     stage.renderCamera.updateProjectionMatrix()
     stage.controlCamera.aspect = aspect
     stage.controlCamera.updateProjectionMatrix()
-    const distance = fitDistance(FRAMED_RADIUS_KM, VERTICAL_FOV_DEGREES, aspect)
-    stage.controls.maxDistance = distance * 3
-    if (!this.#framed) {
-      // Look down on the plane of the orbits from 30 degrees off the pole, so depth still reads.
-      const tilt = Math.PI / 6
-      stage.controlCamera.position.set(0, distance * Math.cos(tilt), distance * Math.sin(tilt))
-      stage.controls.update()
-      this.#framed = true
-    }
+    stage.controls.maxDistance = fitDistance(FRAMED_RADIUS_KM.all, VERTICAL_FOV_DEGREES, aspect) * 3
+    const framing = Option.match(this.#view, { onNone: () => "all" as const, onSome: (view) => view.framing })
+    this.#frameTo(stage, framing)
     this.#dirty = true
   }
 
-  #size(): { readonly inlineSize: number; readonly blockSize: number } {
-    const box = this.getBoundingClientRect()
-    return { inlineSize: box.width, blockSize: box.height }
+  /** Moves the camera only when the view changes, so that a learner's own zoom and turn survive. */
+  #frameTo(stage: Scene3D, framing: Framing): void {
+    if (this.#framedAs === framing) return
+    const { inlineSize, blockSize } = this.#size()
+    if (inlineSize === 0 || blockSize === 0) return
+    const distance = fitDistance(FRAMED_RADIUS_KM[framing], VERTICAL_FOV_DEGREES, inlineSize / blockSize)
+    if (this.#framedAs === undefined) {
+      // Look down on the plane of the orbits from 30 degrees off the pole, so depth still reads.
+      const tilt = Math.PI / 6
+      stage.controlCamera.position.set(0, distance * Math.cos(tilt), distance * Math.sin(tilt))
+    } else {
+      stage.controlCamera.position.setLength(distance)
+    }
+    stage.controls.update()
+    this.#framedAs = framing
+    this.#dirty = true
   }
 
   #schedule(): void {
@@ -249,60 +186,88 @@ export class SkyStage extends HTMLElement {
     const view = Option.getOrUndefined(this.#view)
     if (stage === undefined || view === undefined) return
     stage.controls.update()
-    if (!this.#dirty) return
+    if (!this.#dirty && view.rate < VISIBLE_RATE) return
     this.#dirty = false
     const started = performance.now()
-    this.#draw(stage, view)
+    const elapsed = (started - this.#viewArrivedAt) * SECONDS_PER_MILLI
+    this.#draw(stage, view.sky, TdbSeconds(Math.min(view.at + view.rate * elapsed, view.endSeconds)))
     this.#measure(performance.now() - started)
   }
 
-  #draw(stage: Stage3D, view: StageView): void {
-    const { controlCamera, renderCamera, positions, renderer, scene } = stage
-    const camera = [
+  #draw(stage: Scene3D, sky: Sky, at: TdbSeconds): void {
+    const { controlCamera, renderCamera, renderer, scene } = stage
+    const camera: Vector3Km = [
       controlCamera.position.x,
       controlCamera.position.y,
       controlCamera.position.z,
-    ] as const
+    ]
     renderCamera.quaternion.copy(controlCamera.quaternion)
     renderCamera.updateMatrixWorld()
 
-    // Ecliptic north is +y on screen. Three.js axes are x right, y up, z toward the viewer.
-    const placed = skyPositionsAt(view.sky, view.at).map(({ name, eclipticKm }) => {
-      const [x, y, z] = cameraRelative(
-        [eclipticKm[0], eclipticKm[2], -eclipticKm[1]],
-        camera,
-      )
-      return { name, unit: [x / KM_PER_UNIT, y / KM_PER_UNIT, z / KM_PER_UNIT] as const }
-    })
-    BODIES.forEach(({ name }, index) => {
+    const inView = (eclipticKm: Vector3Km): Vector3Km => {
+      const [x, y, z] = cameraRelative(toScreenAxes(eclipticKm), camera)
+      return [x / KM_PER_UNIT, y / KM_PER_UNIT, z / KM_PER_UNIT]
+    }
+    const placed = skyPositionsAt(sky, at).map(({ name, eclipticKm }) => ({
+      name,
+      eclipticKm,
+      unit: inView(eclipticKm),
+    }))
+    const sun = placed.find((body) => body.name === "Sun")
+    if (sun === undefined) return
+    stage.sunPosition.setXYZ(0, sun.unit[0], sun.unit[1], sun.unit[2])
+    stage.sunPosition.needsUpdate = true
+    PLANET_COLORS.forEach(([name], index) => {
       const body = placed.find((candidate) => candidate.name === name)
-      if (body !== undefined) positions.setXYZ(index, body.unit[0], body.unit[1], body.unit[2])
+      if (body !== undefined) stage.planetPositions.setXYZ(index, body.unit[0], body.unit[1], body.unit[2])
     })
-    positions.needsUpdate = true
+    stage.planetPositions.needsUpdate = true
+
+    this.#refreshOrbits(stage, sky, at)
+    stage.orbitLines.forEach(({ line }) => {
+      line.position.set(sun.unit[0], sun.unit[1], sun.unit[2])
+    })
     renderer.render(scene, renderCamera)
     this.#placeLabels(renderCamera, placed)
   }
 
+  #refreshOrbits(stage: Scene3D, sky: Sky, at: TdbSeconds): void {
+    const last = this.#orbitsFor
+    if (last?.sky === sky && Math.abs(at - last.at) < ORBIT_REFRESH_SECONDS) return
+    this.#orbitsFor = { sky, at }
+    const orbits = orbitsAt(sky, at, ORBIT_POINTS)
+    stage.orbitLines.forEach(({ planet, positions }) => {
+      const orbit = orbits.find((candidate) => candidate.planet === planet)
+      if (orbit === undefined) return
+      orbit.pointsEcliptic.forEach((point, index) => {
+        const [x, y, z] = toScreenAxes(point)
+        positions.setXYZ(index, x / KM_PER_UNIT, y / KM_PER_UNIT, z / KM_PER_UNIT)
+      })
+      positions.needsUpdate = true
+    })
+  }
+
   #placeLabels(
-    camera: PerspectiveCamera,
-    placed: ReadonlyArray<{ readonly name: string; readonly unit: readonly [number, number, number] }>,
+    camera: Scene3D["renderCamera"],
+    placed: ReadonlyArray<{ readonly name: string; readonly unit: Vector3Km }>,
   ): void {
     const { inlineSize, blockSize } = this.#size()
     const projected = LABEL_PRIORITY.flatMap((name) => {
       const body = placed.find((candidate) => candidate.name === name)
       if (body === undefined) return []
       const ndc = new Vector3(...body.unit).project(camera)
-      return ndc.z >= 1
-        ? []
-        : [{ name, x: ((ndc.x + 1) / 2) * inlineSize, y: ((1 - ndc.y) / 2) * blockSize }]
+      const x = ((ndc.x + 1) / 2) * inlineSize
+      const y = ((1 - ndc.y) / 2) * blockSize
+      const onScreen = ndc.z < 1 && x >= 0 && x <= inlineSize && y >= 0 && y <= blockSize
+      return onScreen ? [{ name, x, y }] : []
     })
-    const kept = labelsWithRoom(projected, LABEL_BOX_PIXELS)
+    const kept = placeLabels(projected, inlineSize, LABEL_BOX_PIXELS)
     this.#labels.forEach((item, name) => {
       const label = kept.find((candidate) => candidate.name === name)
       item.hidden = label === undefined
       if (label === undefined) return
-      const shift = labelSide(label.x, inlineSize, LABEL_BOX_PIXELS.width) === "before" ? "-100%" : "0"
-      item.style.transform = `translate(${String(label.x)}px, ${String(label.y - 6)}px) translateX(${shift})`
+      const shift = label.side === "before" ? "-100%" : "0"
+      item.style.transform = `translate(${String(label.x)}px, ${String(label.y - 8)}px) translateX(${shift})`
     })
   }
 

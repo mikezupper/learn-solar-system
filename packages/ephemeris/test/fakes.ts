@@ -1,7 +1,7 @@
 import { Effect, Layer, Ref } from "effect"
 import { Horizons, KernelSource, TileStore } from "../src/repo/index.js"
 import { tdbFromUtcMillis } from "../src/service/time-scale.js"
-import { EmptyCatalog, type KernelPin, type TileCatalog } from "../src/types/catalog.js"
+import { EmptyCatalog, type KernelPin, type TileCatalog, type TileEntry } from "../src/types/catalog.js"
 import type { Vector3Km } from "../src/types/bodies.js"
 import { HorizonsError } from "../src/types/errors.js"
 import { buildSpk } from "./spk-builder.js"
@@ -75,9 +75,15 @@ export const horizonsDown = Layer.succeed(
 )
 
 /** A tile store in memory that records the order of its writes. */
-export const memoryStore = Effect.gen(function* () {
+export const memoryStore = Effect.suspend(() => memoryStoreStartingWith(EmptyCatalog))
+
+/** The same store, with one tile already published. */
+export const memoryStoreHolding = (entry: TileEntry) =>
+  memoryStoreStartingWith({ formatVersion: 1, tiles: [entry] })
+
+const memoryStoreStartingWith = (initial: TileCatalog) => Effect.gen(function* () {
   const writes = yield* Ref.make<ReadonlyArray<string>>([])
-  const catalog = yield* Ref.make<TileCatalog>(EmptyCatalog)
+  const catalog = yield* Ref.make<TileCatalog>(initial)
   const layer = Layer.succeed(
     TileStore,
     TileStore.of({

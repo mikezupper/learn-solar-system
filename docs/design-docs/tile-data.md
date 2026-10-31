@@ -12,10 +12,10 @@ hash before reading a number from it.
 
 | Parameter | Value | Source |
 |---|---|---|
-| Tile size | 104,400 bytes per year | Measured |
+| Tile size | 104,400 bytes per year; 5.4 MB for 2000 to 2050 | Measured |
 | Gzip saving | About 2% | Measured on the prototype; doubles barely compress |
 | Writes | A few tiles per kernel release, from one worker | Assumed |
-| Reads | One catalog and one tile per page load | By design |
+| Reads | One catalog and one tile per page load; one more tile for each year time runs through | By design |
 | Freshness | A kernel changes rarely; DE440 dates from 2020 | JPL |
 
 **Scale gate:** the data fits one directory, there is one writer, and it is not user data. So no database,

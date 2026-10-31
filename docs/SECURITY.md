@@ -10,6 +10,7 @@ The site is static and holds no accounts and no personal data. The main risks ar
 | A damaged tile shows wrong planets | Length and SHA-256 checked against the catalog | Catches corruption, not an attacker who controls both the catalog and the blob |
 | A hostile `?at=` value | Parsed against an ISO pattern; quoted back through Gyral's escaping binding | |
 | Malformed Horizons or catalog data | Decoded with `Schema` at the boundary, and rejected if it does not fit | |
+| A malicious site reads the dev server through DNS rebinding | Vite answers only to localhost and the names in `ALLOWED_HOSTS` | Real names live in a `.env` that git ignores |
 | Telemetry leaks data | With no endpoint nothing is sent. The dev stack binds to 127.0.0.1 only | |
 | Dependencies | Exact versions, lockfile, and a build-script allowlist in `pnpm-workspace.yaml` | No automated audit yet |
 

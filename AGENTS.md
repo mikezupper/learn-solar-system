@@ -68,6 +68,7 @@ design, or change the rule and its reason together.
   agent cannot see it.
 - When something fails, ask what capability is missing, then add it to the repository.
 - Commit messages are imperative, with no attribution trailers.
+- Real hostnames and other local settings go in `.env`, which git ignores. See `.env.example`.
 
 ## Commands
 
@@ -77,7 +78,7 @@ pnpm verify:full         # also the real kernel and the telemetry stack
 pnpm test                # unit tests: no network, no browser
 pnpm test:browser        # Gyral elements in Chromium
 pnpm e2e                 # needs `pnpm build` first
-pnpm tiles:build         # compile, check against Horizons, publish (TILE_YEARS, TILE_STORE_DIR)
+pnpm tiles:build         # compile, check against Horizons, publish missing years (TILE_YEARS, TILE_STORE_DIR)
 pnpm obs:logs '<LogsQL>' ; pnpm obs:metrics '<PromQL>' ; pnpm obs:traces solar-web
 pnpm gen-docs            # regenerate docs/generated
 ```

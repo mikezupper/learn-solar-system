@@ -45,6 +45,7 @@ export default defineConfig({
         "**/index.ts",
         "**/main.ts",
         "apps/web/src/ui/stage.ts",
+        "apps/web/src/ui/stage-scene.ts",
         "apps/web/src/runtime/**",
         "apps/worker/src/runtime/**",
         "tools/harness/src/commands/**",

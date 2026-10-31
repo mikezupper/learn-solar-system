@@ -31,7 +31,7 @@ const RESTRICTED: ReadonlyArray<{
   },
   {
     matches: /^three(\/|$)/,
-    allowedIn: /^apps\/web\/src\/ui\/stage\.ts$/,
+    allowedIn: /^apps\/web\/src\/ui\/stage(-[a-z]+)?\.ts$/,
     why: "the WebGL stage owns Three.js, so nothing else needs a GPU to run or test",
   },
   {

@@ -27,8 +27,14 @@
 
       <section aria-labelledby="checked">
         <h2 id="checked">How the numbers were checked</h2>
-        <p>A file reaches this site only after it agrees with <a href="https://ssd.jpl.nasa.gov/horizons/">JPL Horizons</a>, the calculator JPL runs for the public, to within 1 kilometer. Across twelve moments in 2026, the largest difference we measured was about 3 meters.</p>
+        <p>A file reaches this site only after it agrees with <a href="https://ssd.jpl.nasa.gov/horizons/">JPL Horizons</a>, the calculator JPL runs for the public, to within 1 kilometer. We checked twelve moments in every year from 2000 through 2050, and the largest difference we measured was about 5 meters.</p>
         <p>As a check that does not rely on Horizons, the same file predicts the total solar eclipse of <time datetime="2026-08-12">August 12, 2026</time> at the time and distance that eclipse catalogs published.</p>
+      </section>
+
+      <section aria-labelledby="motion">
+        <h2 id="motion">How the motion and the lines are calculated</h2>
+        <p>When time runs faster, nothing is animated or estimated. Every frame asks the same data where each planet is on that date, so the motion you see is the real motion, only faster. The data covers 2000 through 2050, which is long enough to watch Saturn go around almost twice, but only about a third of Neptune's 165-year orbit.</p>
+        <p>Each line is the ellipse a planet would follow if only the Sun pulled on it, worked out from where the planet is and how fast it is moving at the moment shown. The other planets pull on it too, so its real path slowly drifts from that ellipse. We measured the drift against JPL's data: over one full orbit it is largest for Uranus, at about 0.14 astronomical units, which is under 1% of its distance from the Sun. The line is redrawn as time runs, so a planet always sits on its line.</p>
       </section>
 
       <section aria-labelledby="limits">
@@ -36,7 +42,8 @@
         <ul>
           <li><strong>Planet sizes.</strong> At true scale, Earth would be far smaller than one pixel with the whole solar system in view, so each dot marks a position and says nothing about size.</li>
           <li><strong>The exact center of Mars through Neptune.</strong> For those planets the data gives the center of mass of the planet and its moons. That point sits at most a few hundred kilometers from the planet's center, while the last digit in our table stands for about 150,000 kilometers.</li>
-          <li><strong>Moons, orbits and spin.</strong> These are not on the page yet.</li>
+          <li><strong>Moons and spin.</strong> These are not on the page yet.</li>
+          <li><strong>Dates outside 2000 through 2050.</strong> This site has no planet data for them yet.</li>
         </ul>
       </section>
     </article>

@@ -13,6 +13,7 @@ export const Naif = {
   Venus: NaifId(299),
   Earth: NaifId(399),
   Moon: NaifId(301),
+  EarthMoonBarycenter: NaifId(3),
   MarsBarycenter: NaifId(4),
   JupiterBarycenter: NaifId(5),
   SaturnBarycenter: NaifId(6),

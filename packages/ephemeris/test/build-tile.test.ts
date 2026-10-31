@@ -7,7 +7,15 @@ import { spreadInstants, verifyTile } from "../src/service/verify-tile.js"
 import { makeTile } from "../src/service/tile.js"
 import { KernelCoverageError, HorizonsError, TileRejectedError } from "../src/types/errors.js"
 import { TdbSeconds } from "../src/types/time.js"
-import { horizonsAgreeing, horizonsDown, kernelOf, memoryStore, PIN, stillKernel } from "./fakes.js"
+import {
+  horizonsAgreeing,
+  horizonsDown,
+  kernelOf,
+  memoryStore,
+  memoryStoreHolding,
+  PIN,
+  stillKernel,
+} from "./fakes.js"
 
 const world = (horizons: Layer.Layer<never> | ReturnType<typeof horizonsAgreeing>) =>
   Effect.gen(function* () {
@@ -54,6 +62,32 @@ describe("buildYearTile", () => {
       yield* Ref.set(store.writes, [])
       yield* buildYearTile(PIN, 2026).pipe(Effect.provide(layer))
       assert.deepStrictEqual(yield* Ref.get(store.writes), [])
+    }),
+  )
+
+  it.effect("asks Horizons nothing for a year already published from this kernel", () =>
+    Effect.gen(function* () {
+      const { layer } = yield* world(horizonsAgreeing())
+      const first = yield* buildYearTile(PIN, 2026).pipe(Effect.provide(layer))
+      // Horizons is down now, so a rerun can only succeed if it does not ask.
+      const store = yield* memoryStoreHolding(first)
+      const offline = Layer.mergeAll(kernelOf(stillKernel()), horizonsDown, DigestWebCrypto, store.layer)
+      const again = yield* buildYearTile(PIN, 2026).pipe(Effect.provide(offline))
+      assert.strictEqual(again.sha256, first.sha256)
+    }),
+  )
+
+  it.effect("rebuilds a year published from a different kernel", () =>
+    Effect.gen(function* () {
+      const { layer } = yield* world(horizonsAgreeing())
+      const first = yield* buildYearTile(PIN, 2026).pipe(Effect.provide(layer))
+      const store = yield* memoryStoreHolding(first)
+      const offline = Layer.mergeAll(kernelOf(stillKernel()), horizonsDown, DigestWebCrypto, store.layer)
+      const error = yield* buildYearTile({ ...PIN, sha256: "newer-kernel" }, 2026).pipe(
+        Effect.provide(offline),
+        Effect.flip,
+      )
+      assert.instanceOf(error, HorizonsError)
     }),
   )
 

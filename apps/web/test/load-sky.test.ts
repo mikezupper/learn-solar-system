@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { assert, describe, it } from "@effect/vitest"
-import { Effect, Layer, Schema } from "effect"
+import { Effect, Layer, Option, Schema } from "effect"
 import { Moment } from "@solar/classroom/types"
 import { Digest, DigestWebCrypto, TileSource } from "@solar/ephemeris/repo"
 import { CatalogUnavailableError, DigestError, TileCatalog } from "@solar/ephemeris/types"
@@ -37,7 +37,7 @@ describe("loadSky", () => {
       )
       assert.deepStrictEqual(
         answer._tag === "OutsideCatalog" ? [answer.firstYear, answer.lastYear] : [],
-        [2026, 2026],
+        [2026, 2027],
       )
     }),
   )
@@ -49,6 +49,13 @@ describe("loadSky", () => {
         Layer.merge(source(blob, { formatVersion: 1, tiles: [] }), DigestWebCrypto),
       )
       assert.deepStrictEqual(answer._tag === "Failed" ? answer.problem : "", "CatalogUnavailable")
+    }),
+  )
+
+  it.effect("tells the page which year it loaded, so that it can ask for the next", () =>
+    Effect.gen(function* () {
+      const answer = yield* load(JUNE, Layer.merge(source(blob), DigestWebCrypto))
+      assert.strictEqual(answer._tag === "Loaded" ? answer.year : 0, 2026)
     }),
   )
 
@@ -75,7 +82,7 @@ describe("loadSky", () => {
         Digest.of({ sha256: () => Effect.fail(new DigestError({ reason: "not a secure page" })) }),
       )
       const answer = yield* load(JUNE, Layer.merge(source(blob), noDigest))
-      assert.deepStrictEqual(answer._tag === "Failed" ? answer.problem : "", "TileDamaged")
+      assert.deepStrictEqual(answer._tag === "Failed" ? answer.problem : "", "TileUncheckable")
     }),
   )
 
@@ -95,24 +102,31 @@ describe("loadSky", () => {
 })
 
 describe("readWebConfig", () => {
+  const ORIGIN = "https://class.example.test"
+
   it("defaults to tiles beside the page, with telemetry off", () => {
-    const config = readWebConfig({})
+    const config = readWebConfig({}, ORIGIN)
     assert.strictEqual(config.tileBaseUrl, "/tiles")
-    assert.strictEqual(config.otlpBaseUrl._tag, "None")
+    assert.isTrue(Option.isNone(config.otlpBaseUrl))
   })
 
   it("reads what Vite injects", () => {
-    const config = readWebConfig({
-      VITE_TILE_BASE_URL: "https://cdn.test/t",
-      VITE_OTLP_BASE_URL: "http://localhost:1/otlp",
-      VITE_WORKTREE: "w",
-    })
+    const config = readWebConfig(
+      { VITE_TILE_BASE_URL: "https://cdn.test/t", VITE_OTLP_BASE_URL: "https://otel.test/otlp", VITE_WORKTREE: "w" },
+      ORIGIN,
+    )
     assert.strictEqual(config.tileBaseUrl, "https://cdn.test/t")
-    assert.strictEqual(config.otlpBaseUrl._tag, "Some")
+    assert.deepStrictEqual(Option.getOrThrow(config.otlpBaseUrl), "https://otel.test/otlp")
     assert.strictEqual(config.worktree, "w")
   })
 
+  // The dev server may be reached by any name, so telemetry goes back to wherever the page came from.
+  it("resolves a telemetry path against the page's own address", () => {
+    const config = readWebConfig({ VITE_OTLP_BASE_URL: "/otlp" }, ORIGIN)
+    assert.strictEqual(Option.getOrThrow(config.otlpBaseUrl), "https://class.example.test/otlp")
+  })
+
   it("falls back to the defaults if the values are the wrong type", () => {
-    assert.strictEqual(readWebConfig({ VITE_TILE_BASE_URL: 7 }).tileBaseUrl, "/tiles")
+    assert.strictEqual(readWebConfig({ VITE_TILE_BASE_URL: 7 }, ORIGIN).tileBaseUrl, "/tiles")
   })
 })

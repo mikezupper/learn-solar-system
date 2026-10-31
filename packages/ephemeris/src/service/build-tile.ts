@@ -24,6 +24,17 @@ export const buildYearTile = Effect.fn("Tile.buildYear")(function* (pin: KernelP
   const startSeconds = tdbFromUtcMillis(Date.UTC(year, 0, 1))
   const endSeconds = tdbFromUtcMillis(Date.UTC(year + 1, 0, 1))
 
+  // A tile depends only on its kernel and dates, so one already published needs no second look.
+  // This keeps a rerun from asking a shared public service 459 questions it has already answered.
+  const catalog = yield* store.readCatalog
+  const published = catalog.tiles.find(
+    (tile) => tile.id === tileId && tile.provenance.kernelSha256 === pin.sha256,
+  )
+  if (published !== undefined) {
+    yield* Effect.logDebug("tile already published", { tileId })
+    return published
+  }
+
   const reader = yield* kernels.open(pin)
   const spkSegments = yield* readSpkSegments(reader)
   const compiled = yield* compileTile({
@@ -64,7 +75,6 @@ export const buildYearTile = Effect.fn("Tile.buildYear")(function* (pin: KernelP
     verification: outcome.verification,
   }
 
-  const catalog = yield* store.readCatalog
   const decision = decidePublication(catalog, entry)
   if (Option.isSome(decision)) {
     // Blob first, catalog second: a crash in between leaves an unlisted blob, which a rerun reuses.
