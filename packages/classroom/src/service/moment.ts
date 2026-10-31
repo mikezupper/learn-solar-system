@@ -34,6 +34,13 @@ const MAX_TICK_MILLIS = 1000
 export const startTravelling = (moment: Moment, speed: SpeedName): ChosenMoment =>
   ChosenMoment.Travelling({ moment, speed, lastNow: Option.none() })
 
+/**
+ * Runs from a moment to the present in a set time, forward or backward. The clock starts counting at
+ * the next tick, so that the time the tile took to arrive does not eat into the run.
+ */
+export const startCatchingUp = (from: Moment, now: number, durationMillis: number): ChosenMoment =>
+  ChosenMoment.CatchingUp({ moment: from, rate: (now - from) / durationMillis, lastNow: Option.none() })
+
 /** Where a moment has got to, given the wall clock now. Pinned and paused moments stay put. */
 export const advanceMoment = (chosen: ChosenMoment, now: number): ChosenMoment =>
   ChosenMoment.$match(chosen, {
@@ -49,4 +56,14 @@ export const advanceMoment = (chosen: ChosenMoment, now: number): ChosenMoment =
         speed,
         lastNow: Option.some(now),
       }),
+    CatchingUp: ({ moment, rate, lastNow }) => {
+      const next = Option.match(lastNow, {
+        onNone: () => moment,
+        onSome: (last) => Moment(moment + Math.min(now - last, MAX_TICK_MILLIS) * rate),
+      })
+      const arrived = rate >= 0 ? next >= now : next <= now
+      return arrived
+        ? ChosenMoment.FollowingNow({ moment: Moment(now) })
+        : ChosenMoment.CatchingUp({ moment: next, rate, lastNow: Option.some(now) })
+    },
   })

@@ -1,4 +1,5 @@
 import type { Vector3Km } from "@solar/ephemeris/types"
+import { KM_PER_AU, SUN_DIAMETER_KM } from "../types/index.js"
 
 /**
  * Subtracts the camera while the numbers are still 64-bit. The GPU's 32-bit floats resolve only
@@ -16,6 +17,63 @@ export const fitDistance = (radius: number, verticalFovDegrees: number, aspect: 
   const halfHorizontal = Math.atan(Math.tan(halfVertical) * aspect)
   return radius / Math.sin(Math.min(halfVertical, halfHorizontal))
 }
+
+/**
+ * How far back a camera must stand for a radius to fit the part of the view that nothing covers. A
+ * dock across the bottom or a panel down one side leaves less of the field of view to fit into.
+ */
+export const fitDistanceInto = (input: {
+  readonly radius: number
+  readonly verticalFovDegrees: number
+  readonly viewWidth: number
+  readonly viewHeight: number
+  readonly freeWidth: number
+  readonly freeHeight: number
+}): number => {
+  const tangent = Math.tan((input.verticalFovDegrees * Math.PI) / 360)
+  const halfVertical = Math.atan((tangent * input.freeHeight) / input.viewHeight)
+  const halfHorizontal = Math.atan((tangent * input.freeWidth) / input.viewHeight)
+  return input.radius / Math.sin(Math.min(halfVertical, halfHorizontal))
+}
+
+/** How many kilometers one pixel covers at a distance from the camera. */
+export const kmPerPixel = (distanceKm: number, verticalFovDegrees: number, viewHeight: number): number =>
+  (2 * distanceKm * Math.tan((verticalFovDegrees * Math.PI) / 360)) / viewHeight
+
+const NEAREST_RIDE_RADIUS_KM = 0.3 * KM_PER_AU
+const RIDE_MARGIN = 1.15
+
+/** How much to frame while riding with a planet: enough that the Sun stays in the picture. */
+export const rideRadiusKm = (sunDistanceKm: number): number =>
+  Math.max(NEAREST_RIDE_RADIUS_KM, sunDistanceKm * RIDE_MARGIN)
+
+const SCALE_BAR_LENGTHS_AU = [100, 10, 1, 0.1, 0.01] as const
+const SCALE_BAR_SHARE_OF_VIEW = 0.3
+
+/** The longest round length, in AU, that a scale bar can show without crowding the view. */
+export const scaleBarAu = (pixelsPerAu: number, viewWidth: number): number =>
+  SCALE_BAR_LENGTHS_AU.find((au) => au * pixelsPerAu < viewWidth * SCALE_BAR_SHARE_OF_VIEW) ?? 0.01
+
+/** Two significant figures, so that a label can be read while it changes. Never below life size. */
+export const niceFactor = (raw: number): number => {
+  if (raw <= 1) return 1
+  const magnitude = 10 ** (Math.floor(Math.log10(raw)) - 1)
+  return Math.round(raw / magnitude) * magnitude
+}
+
+const EARTH_DIAMETER_KM = 12_756
+const EARTH_ON_SCREEN_PIXELS = 6
+const SUN_ON_SCREEN_PIXELS = 28
+
+/**
+ * How much to enlarge bodies so that they can be seen, for a labeled view that is never the default.
+ * Planets share one factor, which keeps them true to one another. The Sun gets its own: at the
+ * planets' factor it would be wider than the orbits of the inner planets.
+ */
+export const sizeScales = (kilometersPerPixel: number): { readonly planets: number; readonly sun: number } => ({
+  planets: niceFactor((EARTH_ON_SCREEN_PIXELS * kilometersPerPixel) / EARTH_DIAMETER_KM),
+  sun: niceFactor((SUN_ON_SCREEN_PIXELS * kilometersPerPixel) / SUN_DIAMETER_KM),
+})
 
 export interface ProjectedLabel {
   readonly name: string

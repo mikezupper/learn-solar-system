@@ -1,6 +1,6 @@
 import { assert, describe, it } from "@effect/vitest"
 import { Option, Result } from "effect"
-import { advanceMoment, chooseMoment, startTravelling } from "../src/service/moment.js"
+import { advanceMoment, chooseMoment, startCatchingUp, startTravelling } from "../src/service/moment.js"
 import { ChosenMoment, Moment, SPEEDS } from "../src/types/index.js"
 
 const NOW = Moment(Date.UTC(2026, 9, 31, 12))
@@ -79,5 +79,41 @@ describe("SPEEDS", () => {
     assert.strictEqual(SPEEDS.week, 7 * 86_400)
     assert.strictEqual(SPEEDS.year, 365.25 * 86_400)
     assert.strictEqual(SPEEDS.month, (365.25 / 12) * 86_400)
+  })
+})
+
+describe("catching up to the present", () => {
+  const JANUARY = Moment(Date.UTC(2026, 0, 1))
+  const NOW_MILLIS = Date.UTC(2026, 9, 31, 12)
+  const moment = (chosen: ChosenMoment) => chosen.moment
+
+  it("covers the whole gap in the time it was given", () => {
+    const start = startCatchingUp(JANUARY, NOW_MILLIS, 2000)
+    const first = advanceMoment(start, NOW_MILLIS)
+    const halfway = advanceMoment(first, NOW_MILLIS + 1000)
+    assert.strictEqual(moment(first), JANUARY)
+    assert.closeTo(moment(halfway), (JANUARY + NOW_MILLIS) / 2, 1000)
+  })
+
+  it("lands on the clock and follows it from there", () => {
+    const first = advanceMoment(startCatchingUp(JANUARY, NOW_MILLIS, 500), NOW_MILLIS)
+    const landed = advanceMoment(first, NOW_MILLIS + 1000)
+    assert.strictEqual(landed._tag, "FollowingNow")
+    assert.strictEqual(moment(landed), NOW_MILLIS + 1000)
+  })
+
+  it("rewinds when the moment on screen is ahead of the clock", () => {
+    const ahead = Moment(NOW_MILLIS + 30 * 86_400_000)
+    const first = advanceMoment(startCatchingUp(ahead, NOW_MILLIS, 1000), NOW_MILLIS)
+    const landed = advanceMoment(first, NOW_MILLIS + 1000)
+    assert.isBelow(moment(advanceMoment(first, NOW_MILLIS + 500)), ahead)
+    assert.strictEqual(landed._tag, "FollowingNow")
+  })
+
+  it("waits out a sleeping laptop instead of leaping", () => {
+    const first = advanceMoment(startCatchingUp(JANUARY, NOW_MILLIS, 10_000), NOW_MILLIS)
+    const woken = advanceMoment(first, NOW_MILLIS + 3_600_000)
+    assert.strictEqual(woken._tag, "CatchingUp")
+    assert.closeTo(moment(woken) - JANUARY, (NOW_MILLIS - JANUARY) / 10, 1000)
   })
 })
