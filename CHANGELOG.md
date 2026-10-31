@@ -19,6 +19,8 @@ has no releases yet, so everything sits under Unreleased.
 - Keyboard control of the picture: arrow keys turn it, and plus and minus zoom.
 - Buttons in the explanation that set up the view a sentence describes.
 - Links that hold one moment for a whole class.
+- A layout for every screen. A phone gets the sky and a slim bar, with speeds and views in a sheet, and the planets stay pinned above
+  the numbers as you scroll. Each larger screen adds a layer, and tests hold a minimum share of sky at each, in Chromium and WebKit.
 - A line for each planet showing the path it is following around the Sun.
 - A full explanation on the main page: what it does, how to use it, how it works and the science behind it, which
   reads without JavaScript and survives a failure to load the data. Tests hold its numbers against JPL's data.

@@ -79,6 +79,8 @@ export interface ProjectedLabel {
   readonly name: string
   readonly x: number
   readonly y: number
+  /** How wide this label really is, which matters on a small screen. The box stands in if it is unknown. */
+  readonly width?: number | undefined
 }
 
 export type LabelSide = "after" | "before"
@@ -92,15 +94,20 @@ interface LabelBox {
   readonly height: number
 }
 
-const left = ({ x, side }: PlacedLabel, box: LabelBox): number => (side === "after" ? x : x - box.width)
+const widthOf = (label: ProjectedLabel, box: LabelBox): number => label.width ?? box.width
+
+const left = (label: PlacedLabel, box: LabelBox): number =>
+  label.side === "after" ? label.x : label.x - widthOf(label, box)
 
 const overlaps = (a: PlacedLabel, b: PlacedLabel, box: LabelBox): boolean =>
-  Math.abs(left(a, box) - left(b, box)) < box.width && Math.abs(a.y - b.y) < box.height
+  left(a, box) < left(b, box) + widthOf(b, box) &&
+  left(b, box) < left(a, box) + widthOf(a, box) &&
+  Math.abs(a.y - b.y) < box.height
 
 /** True when a label sits on a neighbor's dot, or close enough to block that neighbor's own label. */
 const crowds = (label: PlacedLabel, dot: ProjectedLabel, box: LabelBox): boolean => {
   const start = left(label, box)
-  return dot.x > start && dot.x < start + box.width && Math.abs(dot.y - label.y) < box.height
+  return dot.x > start && dot.x < start + widthOf(label, box) && Math.abs(dot.y - label.y) < box.height
 }
 
 /**
@@ -119,7 +126,7 @@ export const placeLabels = (
       .map((side): PlacedLabel => ({ ...label, side }))
       .filter((candidate) => {
         const start = left(candidate, box)
-        return start >= 0 && start + box.width <= viewWidth
+        return start >= 0 && start + widthOf(candidate, box) <= viewWidth
       })
       .filter((candidate) => kept.every((other) => !overlaps(candidate, other, box)))
     const uncrowded = candidates.find((candidate) =>

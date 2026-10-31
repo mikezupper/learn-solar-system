@@ -68,6 +68,8 @@ export class SkyPainter {
   #trails: ReadonlyMap<string, ReadonlyArray<Sample>> = new Map()
   #lastSampleAt = 0
   #orbitsFor: { readonly sky: Sky; readonly at: number } | undefined = undefined
+  #labelWidths: ReadonlyMap<string, number> = new Map()
+  #widthsFor = 0
   readonly #bloom = paintBloom()
   readonly #parts: StageParts
   readonly #reduced: boolean
@@ -269,6 +271,8 @@ export class SkyPainter {
       action: COPY.ringAction,
       floor: rig.free.top,
       ceiling: rig.free.bottom,
+      leftEdge: rig.free.left,
+      rightEdge: rig.free.right,
       bodies: placed.flatMap(({ km }) => {
         const point = onScreen(km)
         return point === undefined ? [] : [point]
@@ -292,6 +296,20 @@ export class SkyPainter {
     })
   }
 
+  /** Labels change width only with the view and the font, so each is measured once, not on every frame. */
+  #labelWidth(name: string, viewWidth: number): number | undefined {
+    if (viewWidth !== this.#widthsFor) {
+      this.#widthsFor = viewWidth
+      this.#labelWidths = new Map()
+    }
+    const known = this.#labelWidths.get(name)
+    if (known !== undefined) return known
+    const measured = this.#parts.labels.get(name)?.offsetWidth ?? 0
+    if (measured === 0) return undefined
+    this.#labelWidths = new Map([...this.#labelWidths, [name, measured]])
+    return measured
+  }
+
   #placeLabels(rig: CameraRig, view: StageView, camera: Scene3D["renderCamera"], placed: ReadonlyArray<Placed>, pixel: number): void {
     const { inlineSize, blockSize } = rig.size
     // With everything in view, the ring speaks for the planets too close to the Sun to name one by one.
@@ -304,7 +322,7 @@ export class SkyPainter {
       const x = ((ndc.x + 1) / 2) * inlineSize
       const y = ((1 - ndc.y) / 2) * blockSize
       const visible = ndc.z < 1 && x >= 0 && x <= inlineSize && y >= 0 && y <= blockSize
-      return visible ? [{ name, x, y }] : []
+      return visible ? [{ name, x, y, width: this.#labelWidth(name, inlineSize) }] : []
     })
     const kept = placeLabels(projected, inlineSize, LABEL_BOX_PIXELS)
     this.#parts.labels.forEach((item, name) => {

@@ -10,7 +10,7 @@ Each entry says what triggers paying it down.
 | Time runs forward only, though the timeline can drag back to any date. | Nobody can watch a planet retrace its path | A teacher asks |
 | The stars are random decoration. | A real catalog would be more honest, and could be a static data file that costs no JavaScript budget | The next visual pass |
 | The dark page is untested on a projector in a lit room. | It could wash out, and classrooms are the main audience | Before any classroom pilot |
-| The redesign is tested in Chromium only, and on no real phone or school laptop. | Trails are smooth only at a good frame rate, and Firefox and Safari draw range inputs and meters differently | Before public deployment |
+| The page is tested in Chromium, and at phone sizes in WebKit, but not in Firefox or on a real phone or school laptop. | WebKit on Linux is not Safari on iOS, and trails are smooth only at a good frame rate | Before public deployment |
 | Data covers 2000 to 2050, so Uranus and Neptune cannot finish an orbit. | About 31 MB and 2,700 Horizons requests would cover all of DE440s; verification needs batching first | Someone wants a full Neptune orbit |
 | Each worktree publishes its own tiles, about two minutes on first run. | Tiles are immutable and could be shared across worktrees, as kernels are | Worktrees become routine |
 | Leap seconds are a table in the code. | A new leap second would need a release; none has been added since 2017 | IERS announces one |

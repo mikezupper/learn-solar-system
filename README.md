@@ -86,6 +86,7 @@ look crowded. This page keeps every distance real, so you can see how empty the 
 | **Follow a planet's light** | Pick a planet to draw the path its light takes to Earth, with the travel time |
 | **Read the numbers** | A table gives each planet's distance from the Sun and from Earth, and how long its light takes to reach us |
 | **Show a class one moment** | A link such as `/?at=2026-08-12T17:46:00Z` holds one moment, so that everyone sees the same positions and numbers |
+| **Use it on any screen** | A phone gets the sky and a slim bar, with the rest one tap away, and the planets stay pinned above the numbers as you scroll. Each larger screen adds a layer, up to a large desktop with the numbers always open beside the sky |
 | **Learn how it all works** | The page explains how to use it, how it works and the science behind it, in language for readers with no astronomy background, with buttons that set up what a sentence describes |
 
 <div align="center">
@@ -99,7 +100,13 @@ look crowded. This page keeps every distance real, so you can see how empty the 
 <br/><br/>
 <img src="docs/images/classroom-numbers.png" alt="The numbers panel over the pinned sky: a giant light travel time for Mars, a table of distances with bars, and a dashed path of light on the picture." width="720" />
 <br/>
-<sub>The numbers slide over the sky, so the picture and the table stay in view together.</sub>
+<sub>On a laptop the numbers slide over one side of the sky, so the picture and the table stay in view together.</sub>
+<br/><br/>
+<img src="docs/images/classroom-phone.png" alt="The page on a small phone: the sky fills the screen, with one slim line for the headline and a slim bar holding the timeline, a play button, the date and two small buttons." width="240" />
+&nbsp;&nbsp;
+<img src="docs/images/classroom-phone-reading.png" alt="The same phone while reading the numbers: the planets stay pinned at the top of the screen, with the table scrolling beneath them." width="240" />
+<br/>
+<sub>On a phone the planets get the screen, and stay pinned above the numbers as you scroll.</sub>
 </div>
 
 ### Who it is for
@@ -571,7 +578,7 @@ Versions are pinned exactly in [`pnpm-workspace.yaml`](pnpm-workspace.yaml), and
 | Runtime | [Node.js](https://nodejs.org/) 24 | The worker and tooling. There is no server in production |
 | Workspace | [pnpm](https://pnpm.io/) 10 | Workspace, shared version catalog, build-script allowlist |
 | Unit and browser tests | [Vitest](https://vitest.dev/) 5 | Three projects: unit, browser and kernel |
-| End-to-end tests | [Playwright](https://playwright.dev/) 1.64, [axe](https://github.com/dequelabs/axe-core) | Real builds, real WebGL in software, accessibility in both color schemes |
+| End-to-end tests | [Playwright](https://playwright.dev/) 1.64, [axe](https://github.com/dequelabs/axe-core) | Real builds, real WebGL in software, accessibility in both color schemes, Chromium and WebKit |
 | Linting | [ESLint](https://eslint.org/), typescript-eslint, and custom lints | Effect's rules, plus layers, taste and docs |
 | Telemetry | [OpenTelemetry](https://opentelemetry.io/) (OTLP), [Vector](https://vector.dev/), [VictoriaLogs, VictoriaMetrics, VictoriaTraces](https://victoriametrics.com/) | A disposable stack per worktree, in development only |
 | CI | GitHub Actions, CodeQL | See [What CI runs](#what-ci-runs) |
@@ -589,7 +596,7 @@ toolchain and can be read and tested here.
 |---|---|---|
 | Node.js | 24 (`.node-version` pins 24.15.0) | Everything |
 | pnpm | 10.33.2, via `corepack enable` | Everything |
-| Chromium for Playwright | `pnpm --filter @solar/web exec playwright install chromium` | `pnpm verify` |
+| Chromium and WebKit for Playwright | `pnpm --filter @solar/web exec playwright install chromium webkit` | `pnpm verify` |
 | Docker with Compose | Any recent version | Only `pnpm dev` and `pnpm obs:*` |
 
 ### Commands
@@ -628,7 +635,7 @@ toolchain and can be read and tested here.
 | `pnpm coverage` | Unit tests pass, with at least 85% of lines covered. On 2026-10-31 it stood at 96.0% |
 | `pnpm test:browser` | Components work in a real browser |
 | `pnpm build`, `pnpm budget` | At most 240 KiB of gzipped JavaScript |
-| `pnpm e2e` | Acceptance tests, including axe in both color schemes |
+| `pnpm e2e` | Acceptance tests in Chromium, and in WebKit for the screen layouts, including axe in both color schemes and a minimum share of sky at every screen size |
 
 ### What CI runs
 
@@ -728,7 +735,7 @@ tests send nothing**, because with no endpoint, `telemetryLayer` is the empty la
 │   │   │   ├── ui/                 classroom*.ts (component, state, reducers, view), moment-clock.ts,
 │   │   │   │                       stage*.ts (element, scene, camera rig, painter, overlay, stars),
 │   │   │   │                       copy.ts (every rendered sentence)
-│   │   │   └── styles/             Cascade layers and oklch tokens: base, controls, reading
+│   │   │   └── styles/             Cascade layers and oklch tokens: base, layout, controls, screens, reading
 │   │   ├── test/                   Model tests, browser tests, and tests of the page's text
 │   │   └── e2e/                    Acceptance tests against the built page
 │   └── worker/                     The Node batch job that publishes tiles
@@ -821,7 +828,7 @@ Open an issue: [a number looks wrong](https://github.com/mikezupper/learn-solar-
 | Mars through Neptune are barycenters | Off by a few hundred kilometers; matters only for close views, and moon kernels would fix it |
 | Time runs forward only | The timeline can drag back to any date, but nobody can watch a planet retrace its path |
 | The stars are random decoration | A real catalog would be more honest |
-| Untested on a projector, Firefox, Safari, or a real phone | The redesign is tested in Chromium only, and a dark page could wash out in a lit classroom |
+| Untested on a projector, Firefox, or a real phone | Tests run in Chromium, and in WebKit at phone sizes, which is not quite Safari on iOS. A dark page could wash out in a lit classroom |
 | Data covers 2000 to 2050 | Uranus and Neptune cannot finish an orbit |
 | Leap seconds are a table in the code | A new one would need a release, though none has been added since 2017 |
 | No strict Content-Security-Policy | Needed before public deployment |

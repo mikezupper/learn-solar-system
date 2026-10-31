@@ -29,6 +29,7 @@ Every rule names its enforcer. "Review" means it is not yet mechanical.
 | Every page passes axe in both color schemes | Every learner | `pnpm e2e` |
 | Flash never costs the truth: decoration says so, and enlarged views label themselves | Accuracy is the product | `pnpm e2e`, `explanation.test.ts`, review |
 | The page calls no other site | School networks, and readers' privacy | `pnpm e2e` |
+| The planets keep a minimum share of every screen, at the top of the page and while reading | They are the point of the page | `pnpm e2e`, in Chromium and WebKit |
 | Numbers in the page's static text are under test | No type checks HTML, and a typo would reach a class | `explanation.test.ts` |
 | Expected values come from outside the code | A test that pastes its output proves nothing | Review |
 | Each command has a success spec and one failure spec per rule | Rules are not explicit otherwise | Review |

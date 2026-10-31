@@ -5,7 +5,7 @@
   [data-hero] { display: grid; gap: 0.25rem; }
   [data-hero] strong {
     color: var(--warp);
-    font: 900 clamp(2.75rem, 2rem + 3.4vi, 5rem)/1 var(--dots);
+    font: 900 clamp(2rem, 1.25rem + 3.4vi, 5rem)/1 var(--dots);
     font-variant-numeric: tabular-nums;
     word-spacing: -0.3em;
     white-space: nowrap;
@@ -26,7 +26,15 @@
     font-weight: 600;
   }
   /* The dock floats over the table, so a focused row must stop above it. */
-  [data-numbers] tbody th button { inline-size: 100%; padding: 0; border: 0; background: none; cursor: pointer; scroll-margin-block-end: calc(var(--dock-h, 14rem) + 0.5rem); }
+  [data-numbers] tbody th button {
+    inline-size: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    /* The sky above and the bar below both float over the table, so a focused row must stop between them. */
+    scroll-margin-block: var(--sky-pinned, 0px) calc(var(--dock-h, 14rem) + 0.5rem);
+  }
   [data-numbers] tbody th button::before, [data-numbers] tbody th b::before {
     content: "";
     flex: none;
@@ -139,12 +147,19 @@
   summary { font-weight: 700; cursor: pointer; }
   math[display="block"] { max-inline-size: 100%; overflow-x: auto; font-size: 1.1em; }
 
-  /* The narrowest phones: every table must fit without a sideways scroll, whatever font the reader has. */
-  @container page (inline-size < 24rem) {
+  /* A narrow panel, on a phone or beside the sky: every table must fit, whatever font the reader has. */
+  @container numbers (inline-size < 24rem) {
     th, td { padding-inline: 0.125rem; }
     thead th { font-size: 0.5625rem; overflow-wrap: anywhere; }
-    tbody th, tbody td, [data-numbers] tbody th button, [data-numbers] tbody th b { font-size: 0.75rem; }
+    tbody th, tbody td, tbody th button, tbody th b { font-size: 0.75rem; }
     tbody td b { white-space: normal; }
+    tbody th button, tbody th b { min-block-size: 2.25rem; }
+  }
+
+  @container page (inline-size < 24rem) {
+    article th, article td { padding-inline: 0.125rem; }
+    article thead th { font-size: 0.5625rem; overflow-wrap: anywhere; }
+    article tbody th, article tbody td { font-size: 0.75rem; }
   }
 
   @container page (inline-size >= 62rem) {

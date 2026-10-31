@@ -29,7 +29,9 @@
       }
     </script>
     <link rel="stylesheet" href="/src/styles/base.css" />
+    <link rel="stylesheet" href="/src/styles/layout.css" />
     <link rel="stylesheet" href="/src/styles/controls.css" />
+    <link rel="stylesheet" href="/src/styles/screens.css" />
     <link rel="stylesheet" href="/src/styles/reading.css" />
     <script type="module" src="/src/main.ts"></script>
     <noscript><style>[data-try-view] { display: none; }</style></noscript>
@@ -39,7 +41,10 @@
     <header>
       <nav aria-label="On this page">
         <a href="/">Solar System Classroom</a>
-        <ul>
+        <button type="button" data-menu popovertarget="site-menu" aria-label="Open the list of contents">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+        </button>
+        <ul id="site-menu" popover>
           <li><a href="#numbers">Numbers</a></li>
           <li><a href="#what-it-does">What it does</a></li>
           <li><a href="#how-to-use">How to use it</a></li>
@@ -89,8 +94,8 @@
           <h3>Turn and zoom the picture</h3>
           <p>
             Drag the picture to turn it. Pinch on a touch screen, or hold Ctrl and scroll, to zoom in and out.
-            Scrolling on its own moves down the page, and the picture stays with you as the numbers slide over
-            it. With the picture selected, the arrow keys turn it, and the plus and minus keys zoom.
+            Scrolling on its own moves down the page, and the picture stays with you beside or above the numbers.
+            With the picture selected, the arrow keys turn it, and the plus and minus keys zoom.
           </p>
           <p>
             Each dot marks where a planet is, and a dot's size says nothing about how big the planet is. Each
@@ -99,6 +104,10 @@
           </p>
 
           <h3>Choose what to show</h3>
+          <p>
+            On a phone, these choices and the speeds wait behind the More controls button, next to "Right now", so
+            that the planets get the screen. On a larger screen they are always in view.
+          </p>
           <p>
             "All eight planets" frames the whole solar system. The four inner planets are then so close to the
             Sun that a ring marks them, and clicking or tapping the ring flies you in. "Inner planets" moves the camera
@@ -118,7 +127,7 @@
 
           <h3>Make time run</h3>
           <p>
-            The big button starts and stops time, and "Right now" comes back to the present. Under
+            The round button starts and stops time, and "Right now" comes back to the present. Under
             <strong>How fast time runs</strong>, each step sets a speed and starts time at once:
           </p>
           <dl>
@@ -138,7 +147,7 @@
             <dd>Jupiter goes around in about 12 seconds and Saturn in about 29 seconds, while the inner planets race around too fast to follow.</dd>
           </dl>
           <p>
-            The long bar across the top of the controls is a timeline. Drag it to any date the site has. Dragging
+            The long bar across the controls is a timeline. Drag it to any date the site has. Dragging
             within one year moves the planets at once. When you cross into another year, the page first fetches
             that year's data, and the picture dims until it arrives, because it never guesses. Time cannot yet run
             backward, though you can drag back to any earlier date. It stops at the end of the data, and the page
@@ -147,7 +156,7 @@
 
           <h3>Show a class one moment</h3>
           <p>
-            Stop time with the big button, then share the link that appears under the date. Anyone who opens it
+            Stop time with the round button, then share the link that appears under the date. Anyone who opens it
             sees the same positions and the same numbers, whatever their time zone.
           </p>
           <p>

@@ -22,7 +22,11 @@ Flash may never cost the truth. Every effect below is either decoration that say
   those three apart replaced a single list that mixed them up.
 - **What to show is a flight.** The camera flies between views, and the scale bar stretches as it goes, which turns a change
   of scale into something you can feel.
-- **The numbers keep the picture in view.** The sky stays pinned while the table slides over it, and the dock stays put.
+- **The planets never leave.** On a phone or tablet the sky stays pinned above the numbers as you scroll. On a laptop the numbers
+  slide over one side of it, and on a large desktop they simply stay open beside it.
+- **Each larger screen adds a layer.** A phone has the sky and a slim bar, with everything else one tap away. A tablet adds the
+  speeds and views, a laptop the full headline and caption, and a large desktop the numbers. Nothing is ever taken away from
+  a small screen, only moved behind a tap. See [the spec](product-specs/fits-every-screen.md).
 - **Labels stay out of the way.** A label takes the side of its dot that crowds no other planet. With all eight in view, a
   ring speaks for the inner four, and clicking it flies in.
 - **Two typefaces carry the display, and the body stays plain.** Unbounded for headings and labels, Doto for the clock and

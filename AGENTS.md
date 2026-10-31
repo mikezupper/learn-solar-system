@@ -83,7 +83,7 @@ pnpm verify:full         # also the real kernel and the telemetry stack
 pnpm dev:quick           # the page on the 2026-2027 fixtures: no Docker, no downloads
 pnpm test                # unit tests: no network, no browser
 pnpm test:browser        # Gyral elements in Chromium
-pnpm e2e                 # needs `pnpm build` first
+pnpm e2e                 # needs `pnpm build` first; Chromium, plus WebKit at phone sizes
 pnpm tiles:build         # compile, check against Horizons, publish missing years (TILE_YEARS, TILE_STORE_DIR)
 pnpm obs:logs '<LogsQL>' ; pnpm obs:metrics '<PromQL>' ; pnpm obs:traces solar-web
 pnpm gen-docs            # regenerate docs/generated

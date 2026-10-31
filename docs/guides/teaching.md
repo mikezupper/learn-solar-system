@@ -15,7 +15,7 @@ and 2027.
 
 - Open the page on the computer you will project from, and check that the picture appears. If the 3D view cannot
   start, the table still has every number.
-- Choose a moment and make a link, so that everyone sees the same thing: stop time with the big button, and share the
+- Choose a moment and make a link, so that everyone sees the same thing: stop time with the round button, and share the
   link that appears under the date. A link holds its moment forever, so you can prepare it a year ahead.
 - Project with the room dimmed if you can. The page is dark, and nobody has tried it yet in a bright room.
 

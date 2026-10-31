@@ -49,7 +49,7 @@ Then  a run starting 2026-12-20 reaches 2027 with the stage still showing
 
 VIEW  PlanetReadings · time stops at the end of the data, and says why
 Given ⟪TilePublished⟫ planets-2027 is the last tile
-Then  a run starting 2027-12-20 stops in 2027, with the big button ready to run again and a note naming the last year
+Then  a run starting 2027-12-20 stops in 2027, with the round button ready to run again and a note naming the last year
 ```
 
 These run in `packages/classroom/test/orbit.test.ts`, `moment.test.ts`, `apps/web/test/time-travel.test.ts` and

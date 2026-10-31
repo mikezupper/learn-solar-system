@@ -16,9 +16,11 @@ export interface Ring {
   readonly opacity: number
   readonly words: string
   readonly action: string
-  /** Where the ring's words may go, clear of the dock and the headline. */
+  /** Where the ring's words may go, clear of the controls, the headline and the numbers. */
   readonly floor: number
   readonly ceiling: number
+  readonly leftEdge: number
+  readonly rightEdge: number
   readonly bodies: ReadonlyArray<Point>
 }
 
@@ -137,7 +139,7 @@ const drawBeam = (c: CanvasRenderingContext2D, beam: Beam, accent: string, width
 }
 
 /** The ring's words take the first corner with room, clear of every body and of the controls. */
-const drawRing = (c: CanvasRenderingContext2D, ring: Ring, accent: string, width: number): void => {
+const drawRing = (c: CanvasRenderingContext2D, ring: Ring, accent: string): void => {
   const xs = ring.outline.map(([x]) => x)
   const ys = ring.outline.map(([, y]) => y)
   const center: Point = [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2]
@@ -163,15 +165,16 @@ const drawRing = (c: CanvasRenderingContext2D, ring: Ring, accent: string, width
       y: sideY < 0 ? edge[1] - out - boxHeight : edge[1] + out,
     }
   })
+  // With no clear corner the words stay away: the ring still marks the place, and can still be tapped.
   const chosen =
     corners.find(
       ({ x, y }) =>
-        x > 8 &&
-        x + boxWidth < width - 8 &&
+        x > ring.leftEdge + 8 &&
+        x + boxWidth < ring.rightEdge - 8 &&
         y > ring.floor &&
         y + boxHeight < ring.ceiling &&
         ring.bodies.every(([bx, by]) => bx < x - 12 || bx > x + boxWidth + 12 || by < y - 12 || by > y + boxHeight + 12),
-    ) ?? corners[0]
+    )
   if (chosen !== undefined) {
     polyline(c, [chosen.edge, [chosen.sideX > 0 ? chosen.x - 3 : chosen.x + boxWidth + 3, chosen.y + boxHeight / 2]])
     c.textAlign = "left"
@@ -206,7 +209,7 @@ export const drawOverlay = (c: CanvasRenderingContext2D, frame: OverlayFrame): v
     c.drawImage(frame.bloom, frame.sun[0] - half, frame.sun[1] - half, frame.bloomSize, frame.bloomSize)
   }
   c.globalCompositeOperation = "source-over"
-  if (frame.ring !== undefined) drawRing(c, frame.ring, frame.accent, frame.width)
+  if (frame.ring !== undefined) drawRing(c, frame.ring, frame.accent)
   if (frame.beam !== undefined) drawBeam(c, frame.beam, frame.accent, frame.width)
   if (frame.scale !== undefined) drawScale(c, frame.scale)
 }

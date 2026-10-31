@@ -55,7 +55,7 @@ p[data-year] {
 /* The sizes view is not to scale, so it says so where no one can miss it: just above the controls. */
 p[data-badge] {
   position: absolute;
-  inset-block-end: calc(var(--dock-h, 14rem) + 0.75rem);
+  inset-block-end: calc(var(--dock-h, 14rem) + var(--tiles-h, 0px) + 0.75rem);
   inset-inline: 0;
   inline-size: fit-content;
   max-inline-size: min(38rem, 100% - 2rem);
@@ -70,10 +70,18 @@ p[data-badge] {
   pointer-events: none;
 }
 
-/* On a small screen the caption sits at the same height, so the badge goes above it. */
-@container (inline-size < 62rem) {
+/* A tablet has the caption at the same height, so the badge goes above it. */
+@container (37.5rem <= inline-size < 62rem) {
   p[data-badge] {
-    inset-block-end: calc(var(--dock-h, 14rem) + 7rem);
+    inset-block-end: calc(var(--dock-h, 14rem) + var(--tiles-h, 0px) + 6rem);
+  }
+}
+
+/* While a phone's sky is pinned, the bar no longer sits on it, so the badge drops to the bottom edge. */
+@container (inline-size < 37.5rem) {
+  p[data-badge] {
+    inset-block-end: 0.5rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -97,7 +105,13 @@ li {
   inset-inline-start: 0;
   padding-inline: 0.75rem;
   color: oklch(97% 0.01 265);
-  font: 600 0.75rem/1 Unbounded, system-ui, sans-serif;
+  font: 600 clamp(0.625rem, 2.4cqi, 0.75rem)/1 Unbounded, system-ui, sans-serif;
   text-shadow: 0 0 0.25rem oklch(0% 0 0), 0 0 0.125rem oklch(0% 0 0), 0 0 0.5rem oklch(0% 0 0);
   white-space: nowrap;
+}
+
+/* A hidden label keeps its box, so that the stage can measure how wide it would be. */
+li[hidden] {
+  display: block;
+  visibility: hidden;
 }

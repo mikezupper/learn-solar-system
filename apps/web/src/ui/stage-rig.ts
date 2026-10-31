@@ -70,7 +70,11 @@ export class CameraRig {
 
   /** Follows a change in what covers the stage, unless the learner has zoomed somewhere of their own. */
   cover(free: FreeArea, view: StageView | undefined): void {
-    const changed = free.right !== this.free.right || free.top !== this.free.top || free.bottom !== this.free.bottom
+    const changed =
+      free.left !== this.free.left ||
+      free.right !== this.free.right ||
+      free.top !== this.free.top ||
+      free.bottom !== this.free.bottom
     this.free = free
     if (!changed || view === undefined || this.#framedAs === undefined) return
     const { controlCamera, controls } = this.#stage

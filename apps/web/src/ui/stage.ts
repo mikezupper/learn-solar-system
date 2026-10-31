@@ -14,6 +14,10 @@ const FRAMES_PER_MEASURE = 8
 const SECONDS_PER_MILLI = 0.001
 const CLICK_PIXELS = 6
 const NARROW_PIXELS = 992
+const LAPTOP_TOP_INSET = 40
+/** A bar narrower than this share of the stage sits beside the sky, and not across it. */
+const BESIDE_THE_SKY = 0.5
+const LEAST_SHARE_OF_SKY = 0.2
 const SMALLEST_RING_TARGET_PIXELS = 30
 const FARTHEST_ZOOM_OUT = 8
 
@@ -33,6 +37,7 @@ export class SkyStage extends HTMLElement {
   #frameCount = 0
   #lastFrameAt = 0
   #dirty = true
+  #coversChanged = true
   #frameMillis: ReadonlyArray<number> = []
   #pressedAt: readonly [number, number] | undefined = undefined
   #teardowns: ReadonlyArray<() => void> = []
@@ -44,6 +49,7 @@ export class SkyStage extends HTMLElement {
     this.#view = Option.some(view)
     this.#viewArrivedAt = performance.now()
     this.#dirty = true
+    this.#coversChanged = true
   }
 
   connectedCallback(): void {
@@ -87,7 +93,14 @@ export class SkyStage extends HTMLElement {
         stage.controls.addEventListener("change", () => {
           this.#dirty = true
         })
+        const onScroll = () => {
+          this.#coversChanged = true
+        }
+        window.addEventListener("scroll", onScroll, { passive: true })
         this.#teardowns = [
+          () => {
+            window.removeEventListener("scroll", onScroll)
+          },
           letThePageScroll(canvas),
           steerFromKeyboard(canvas, stage.controlCamera, stage.controls, () => {
             this.#dirty = true
@@ -178,25 +191,38 @@ export class SkyStage extends HTMLElement {
     this.#dirty = true
   }
 
-  /** Finds what covers the stage, and tells the page's layout how tall the dock and headline are. */
+  /**
+   * Finds the part of the sky that can be seen, and tells the page's layout how tall the controls are. On a
+   * phone the figure scrolls up until only its lower part shows, so this runs on every scroll as well.
+   */
   #measureCovers(rig: CameraRig): void {
     const box = this.getBoundingClientRect()
     if (box.width === 0) return
     const dock = document.querySelector("[data-dock]")?.getBoundingClientRect()
     const header = document.querySelector("body > header")?.getBoundingClientRect()
-    const tiles = document.querySelector("[data-view]")?.getBoundingClientRect()
+    const tilesElement = document.querySelector("[data-view]")
     const panel = document.querySelector("[data-numbers]")?.getBoundingClientRect()
+    // In the sheet the views cover nothing for long, and closed they have no box at all.
+    const inSheet = tilesElement?.matches("[data-controls]:popover-open *") === true
+    const tilesBox = tilesElement?.getBoundingClientRect()
+    const tiles = tilesBox === undefined || tilesBox.height === 0 || inSheet ? undefined : tilesBox
     const classroom = this.closest<HTMLElement>("solar-classroom")
     if (dock !== undefined) classroom?.style.setProperty("--dock-h", `${String(dock.height + 16)}px`)
-    if (header !== undefined) classroom?.style.setProperty("--head-h", `${String(header.height)}px`)
-    const narrow = window.innerWidth < NARROW_PIXELS
-    const panelOpen = !narrow && panel !== undefined && panel.top < box.height * 0.62 && panel.bottom > box.height * 0.3
+    classroom?.style.setProperty("--tiles-h", `${String(tiles === undefined ? 0 : tiles.height + 8)}px`)
+    const shown = Math.max(0, -box.top)
+    const beside = dock !== undefined && dock.width < box.width * BESIDE_THE_SKY
+    const sidePanel = panel !== undefined && panel.width < box.width * BESIDE_THE_SKY * 1.5
+    const panelOpen = sidePanel && panel.top < box.height * 0.62 && panel.bottom > box.height * 0.3
+    const panelOnLeft = panelOpen && panel.left - box.left < box.width / 4
+    const headerFloats = window.innerWidth < NARROW_PIXELS && header !== undefined
+    const coveredFrom = Math.min(dock?.top ?? Number.POSITIVE_INFINITY, tiles?.top ?? Number.POSITIVE_INFINITY)
+    const top = Math.max(shown, headerFloats ? header.bottom - box.top : shown + LAPTOP_TOP_INSET)
     rig.cover(
       {
-        left: 0,
-        right: box.width - (panelOpen ? panel.width : 0),
-        top: narrow ? Math.max(0, (tiles?.bottom ?? header?.bottom ?? 0) - box.top) : 40,
-        bottom: dock === undefined ? box.height : Math.max(box.height * 0.3, dock.top - box.top),
+        left: panelOnLeft ? panel.right - box.left : 0,
+        right: beside ? dock.left - box.left : panelOpen && !panelOnLeft ? panel.left - box.left : box.width,
+        top,
+        bottom: beside ? box.height : Math.max(top + box.height * LEAST_SHARE_OF_SKY, Math.min(box.height, coveredFrom - box.top)),
       },
       Option.getOrUndefined(this.#view),
     )
@@ -217,7 +243,10 @@ export class SkyStage extends HTMLElement {
     const dt = Math.min(0.1, (now - this.#lastFrameAt) * SECONDS_PER_MILLI)
     this.#lastFrameAt = now
     this.#frameCount += 1
-    if (this.#frameCount % FRAMES_PER_MEASURE === 0) this.#measureCovers(rig)
+    if (this.#coversChanged || this.#frameCount % FRAMES_PER_MEASURE === 0) {
+      this.#coversChanged = false
+      this.#measureCovers(rig)
+    }
     const view = Option.getOrUndefined(this.#view)
     if (view === undefined) {
       if (this.#dirty) stage.renderer.render(stage.scene, stage.renderCamera)

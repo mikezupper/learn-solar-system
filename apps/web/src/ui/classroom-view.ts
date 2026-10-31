@@ -45,6 +45,8 @@ const ICON_RIDE = html`<svg viewBox="0 0 48 48" aria-hidden="true">
   <circle data-rider-dot cx="38" cy="10" r="4"></circle>
 </svg>`
 
+const ICON_MORE = html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></svg>`
+const ICON_CLOSE = html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>`
 const ICON_PLAY = html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4.5v15l12-7.5z"></path></svg>`
 const ICON_STOP = html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z"></path></svg>`
 
@@ -174,7 +176,7 @@ export const dock = (s: State, phase: Ready): TemplateResult => {
     data-dock
     data-mode=${modeOf(phase)}
     data-warp=${warpOf(phase)}
-    aria-label=${COPY.controlsLabel}
+    aria-label=${COPY.dockLabel}
   >
     ${timeline(s, phase, shown)}
     <button
@@ -200,18 +202,38 @@ export const dock = (s: State, phase: Ready): TemplateResult => {
         ? html`<a href=${`/?at=${new Date(shown).toISOString()}`}>${COPY.linkToMoment}</a>`
         : nothing}
     </p>
-    <fieldset data-speed>
-      <legend>${COPY.speedLegend}</legend>
-      ${SPEED_ORDER.map((speed) => speedStep(s, phase, speed))}
-    </fieldset>
-    <output>${statusFor(s, phase)}</output>
+    <button
+      data-more
+      type="button"
+      popovertarget="controls"
+      aria-label=${COPY.moreControls}
+    >
+      ${ICON_MORE}
+    </button>
+    <section id="controls" popover data-controls aria-label=${COPY.controlsLabel}>
+      <button
+        data-close
+        type="button"
+        popovertarget="controls"
+        popovertargetaction="hide"
+        aria-label=${COPY.closeControls}
+      >
+        ${ICON_CLOSE}
+      </button>
+      <fieldset data-speed>
+        <legend>${COPY.speedLegend}</legend>
+        ${SPEED_ORDER.map((speed) => speedStep(s, phase, speed))}
+      </fieldset>
+      ${viewTiles(s)}
+    </section>
+    <output ?data-urgent=${Option.isSome(phase.seeking) || s.notice._tag !== "NoNotice"}>${statusFor(s, phase)}</output>
     <button
       data-now
       type="button"
       aria-pressed=${phase.chosen._tag === "FollowingNow" ? "true" : "false"}
       data-intent=${i.BackToNow}
     >
-      ${COPY.speedNow}
+      <b>${COPY.speedNowLead}</b> ${COPY.speedNowRest}
     </button>
   </section>`
 }

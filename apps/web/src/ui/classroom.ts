@@ -22,7 +22,7 @@ import {
   whenUpcomingAnswered,
 } from "./classroom-model.js"
 import { initialState, Phase, type Msg, type Ready, type State } from "./classroom-state.js"
-import { captionFor, dock, numbers, viewTiles } from "./classroom-view.js"
+import { captionFor, dock, numbers } from "./classroom-view.js"
 import { COPY } from "./copy.js"
 
 export type { Msg, State } from "./classroom-state.js"
@@ -153,7 +153,7 @@ export const SolarClassroom = define<State, Msg>()("solar-classroom", {
           captionFor(s),
           COPY.odometer(new Intl.NumberFormat(s.locale, { maximumFractionDigits: 0 }).format(s.flownKm)),
         )}
-        ${viewTiles(s)} ${dock(s, phase)} ${numbers(s, phase)}
+        ${dock(s, phase)} ${numbers(s, phase)}
       `,
     })
   },

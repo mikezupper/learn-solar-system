@@ -8,20 +8,55 @@
     text-transform: uppercase;
   }
 
+  /* On a phone the speeds and views wait in a sheet, which leaves the sky in view above it. */
+  [data-controls] {
+    position: fixed;
+    inset: auto 0 0 0;
+    inline-size: auto;
+    max-inline-size: none;
+    max-block-size: min(72svh, 36rem);
+    margin: 0;
+    padding: 0.75rem var(--gutter) 1rem;
+    border: 1px solid var(--line);
+    border-block-end: 0;
+    border-start-start-radius: 1.25rem;
+    border-start-end-radius: 1.25rem;
+    background: var(--panel);
+    color: var(--ink);
+    overflow-y: auto;
+  }
+  [data-controls]:popover-open { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  [data-controls]::backdrop { background: oklch(0% 0 0 / 0.25); }
+  [data-more], [data-close] {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+  }
+  [data-more] { grid-area: more; }
+  /* It shares a row with the speeds' legend, and must stay on top of it to be tapped. */
+  [data-close] { position: relative; z-index: 1; justify-self: end; margin-block-end: -3rem; }
+  [data-more] svg, [data-close] svg { inline-size: 1.25rem; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; }
+
   /* What to show */
+  [data-view] { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.375rem; }
   [data-view] > label {
     position: relative;
     display: grid;
-    grid-template-columns: 1.875rem minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    column-gap: 0.5rem;
-    align-items: center;
+    justify-items: center;
+    gap: 0.25rem;
     align-content: center;
-    min-block-size: 3.25rem;
-    padding: 0.375rem 0.5rem;
+    min-block-size: 4.5rem;
+    padding: 0.375rem;
     border: 1px solid var(--line);
     border-radius: 0.875rem;
     background: var(--panel-soft);
+    text-align: center;
     cursor: pointer;
   }
   [data-view] > label input {
@@ -33,12 +68,20 @@
     border-radius: inherit;
     cursor: pointer;
   }
-  [data-view] svg { grid-row: 1 / 3; inline-size: 100%; max-inline-size: 3rem; opacity: 0.55; }
+  [data-view] svg { inline-size: 1.875rem; opacity: 0.55; }
   [data-view] circle { fill: none; stroke: var(--c); stroke-width: 1.5; }
   [data-view] circle[data-planet="Sun"] { fill: var(--c); stroke: none; }
   [data-view] circle[data-rider-dot] { fill: var(--warp); stroke: none; }
   [data-view] b { font: 600 0.6875rem/1.2 var(--display); }
   [data-view] small { color: var(--ink-2); font-size: 0.6875rem; line-height: 1.25; }
+  [data-view] > label small {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: clip;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
   [data-view] > label:hover { border-color: var(--warp); }
   [data-view] > label:has(:checked) {
     border-color: var(--warp);
@@ -77,7 +120,7 @@
   /* The timeline */
   [data-scrub] { grid-area: scrub; display: grid; position: relative; }
   [data-scrub]::after {
-    content: "now" / "";
+    content: none;
     position: absolute;
     inset-block-end: 0;
     inset-inline-start: var(--now, 50%);
@@ -134,7 +177,7 @@
     box-shadow: 0 0 0 3px var(--warp), 0 0 1rem var(--warp);
   }
   [data-scrub] ol {
-    display: flex;
+    display: none;
     justify-content: space-between;
     margin-block-start: -0.125rem;
     padding: 0;
@@ -150,9 +193,8 @@
     position: relative;
     display: grid;
     place-items: center;
-    inline-size: 3.75rem;
-    block-size: 3.75rem;
-    margin: 0.25rem;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
     border: 0;
     border-radius: 50%;
     background: var(--warp);
@@ -162,7 +204,7 @@
   }
   [data-play]:hover { scale: 1.06; }
   [data-play]:active { scale: 0.95; }
-  [data-play] svg { inline-size: 1.75rem; fill: currentColor; }
+  [data-play] svg { inline-size: 1.375rem; fill: currentColor; }
   [data-play]::before {
     content: "";
     position: absolute;
@@ -179,7 +221,7 @@
   moment-clock { display: block; }
   [data-clock] time { display: grid; }
   [data-clock] time b {
-    font: 900 clamp(1.5rem, 0.2rem + 7cqi, 2.5rem)/1 var(--dots);
+    font: 900 clamp(1rem, 0.6rem + 3.4vi, 1.375rem)/1 var(--dots);
     font-variant-numeric: tabular-nums;
     word-spacing: -0.3em;
     white-space: nowrap;
@@ -190,17 +232,30 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
-  [data-clock] > a { color: var(--warp); font-size: 0.75rem; font-weight: 600; }
+  /* The time and the pace wait for a bigger screen, and a link to a stopped moment takes their place. */
+  [data-clock] > small { display: none; }
+  [data-clock] time small { font-size: 0.6875rem; }
+  [data-clock]:has(> a) time small { display: none; }
+  [data-clock] > a {
+    display: block;
+    overflow: hidden;
+    min-block-size: 1.5rem;
+    color: var(--warp);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.5rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   /* How fast time runs: a rising ramp of LEDs */
   [data-speed] {
-    grid-area: speed;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.25rem 0.375rem;
     min-inline-size: 0;
   }
-  [data-speed] legend { margin-block-end: 0.125rem; font-size: 0.625rem; letter-spacing: 0.02em; }
+  [data-speed] legend { margin-block-end: 0.25rem; }
   [data-speed] legend::after { content: ", per second"; }
   [data-speed] label {
     display: flex;
@@ -214,12 +269,15 @@
   [data-speed] label:has(:focus-visible) { outline: 3px solid var(--warp); outline-offset: 3px; }
   /* Each radio is a block of LED dots: whole rows, so that a dot is never cut in half. */
   [data-speed] input {
-    flex: 0 0 100%;
+    flex: 0 0 auto;
+    inline-size: 100%;
+    /* Whole dots only: Safari would otherwise cut the last column in half. */
+    inline-size: round(down, 100%, 0.5rem);
     block-size: calc(0.5rem * var(--rows));
     margin: 0;
     appearance: none;
     background: oklch(100% 0 0 / 0.24);
-    mask: radial-gradient(circle, oklch(0% 0 0) 0.1875rem, transparent 0.2125rem) left bottom / 0.5rem 0.5rem round;
+    mask: radial-gradient(circle, oklch(0% 0 0) 0.1875rem, transparent 0.2125rem) left bottom / 0.5rem 0.5rem repeat;
     cursor: pointer;
   }
   [data-speed] input:focus-visible { outline: none; }
@@ -236,7 +294,19 @@
   [data-speed] label:has(:checked) b { color: oklch(84% 0.14 var(--h)); }
   /* What Play will use, once time is stopped. */
   [data-speed] label[data-armed] input { background-color: oklch(80% 0.15 var(--h) / 0.72); }
-  [data-dock] output { grid-area: say; color: var(--ink); font-size: 0.75rem; line-height: 1.3; }
+  /* A screen reader always hears the status. A phone shows it only when it matters right now. */
+  [data-dock] output {
+    grid-area: say;
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: clip;
+    clip-path: inset(50%);
+    color: var(--ink);
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  [data-dock] output[data-urgent] { position: static; inline-size: auto; block-size: auto; clip-path: none; }
 
   /* Right now */
   [data-now] {
@@ -245,15 +315,16 @@
     gap: 0.375rem;
     align-items: center;
     min-block-size: 2.75rem;
-    padding-inline: 0.75rem;
+    padding-inline: 0.625rem;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: transparent;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
   }
+  [data-now] b { font-weight: inherit; }
   [data-now]:hover { border-color: oklch(80% 0.18 150); }
   [data-now]::before {
     content: "";
@@ -264,55 +335,4 @@
   }
   [data-now][aria-pressed="true"] { border-color: oklch(80% 0.18 150); background: oklch(30% 0.08 150); }
   [data-now][aria-pressed="true"]::before { border-color: transparent; background: oklch(86% 0.2 150); }
-
-  /* On a narrow track the word would sit on the year labels, so the tick speaks for itself. */
-  @container page (inline-size < 62rem) {
-    [data-scrub]::after { content: none; }
-  }
-
-  @container page (inline-size < 24rem) {
-    [data-speed] b { font-size: 0.5625rem; }
-    [data-clock] time small { display: none; }
-  }
-
-  @container page (inline-size >= 62rem) {
-    [data-view] > label { grid-template-columns: 3rem minmax(0, 1fr); column-gap: 0.75rem; padding: 0.5rem 0.875rem; }
-    [data-view] b { font-size: 0.8125rem; }
-    [data-view] small { font-size: 0.75rem; }
-    [data-play] { inline-size: 4.75rem; block-size: 4.75rem; }
-    [data-play] svg { inline-size: 2.25rem; }
-    [data-speed] b { font-size: 0.75rem; }
-    [data-speed] small { position: static; inline-size: auto; block-size: auto; clip-path: none; color: var(--ink-2); font-size: 0.75rem; line-height: 1.15; }
-    [data-speed] legend::after { content: none; }
-    [data-speed] legend { font-size: 0.6875rem; letter-spacing: 0.06em; }
-    [data-dock] output { font-size: 0.8125rem; }
-    [data-clock] small { font-size: 0.8125rem; }
-    [data-clock] time b { font-size: clamp(2rem, 1.5rem + 1.6cqi, 3.25rem); }
-    [data-scrub] ol { font-size: 0.6875rem; }
-  }
-
-  @media (height < 46rem) and (width < 40rem) {
-    [data-view] legend, [data-view] small, [data-speed] legend, [data-dock] output { display: none; }
-    [data-view] > label { min-block-size: 2.75rem; }
-    [data-view] svg { display: none; }
-    [data-view] > label { grid-template-columns: minmax(0, 1fr); }
-    [data-clock] time { grid-template-columns: auto auto; column-gap: 0.5rem; align-items: baseline; }
-    [data-play] { inline-size: 3rem; block-size: 3rem; }
-  }
-
-  @media (height < 32rem) and (width >= 40rem) {
-    [data-view] legend, [data-dock] output, [data-speed] legend, [data-clock] small { display: none; }
-    [data-dock] {
-      grid-template-columns: auto auto minmax(0, 1fr) auto;
-      grid-template-areas:
-        "scrub scrub scrub scrub"
-        "play clock speed now";
-      column-gap: 1rem;
-    }
-    [data-play] { inline-size: 3rem; block-size: 3rem; }
-  }
-
-  @media (forced-colors: active) {
-    [data-speed] input, [data-view] > label input { appearance: auto; }
-  }
 }

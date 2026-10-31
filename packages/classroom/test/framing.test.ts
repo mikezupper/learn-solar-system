@@ -195,3 +195,40 @@ describe("planet diameters", () => {
     assert.strictEqual(PLANETS.find((planet) => planet.name === name)?.diameterKm, km)
   })
 })
+
+describe("placeLabels, with each label's own width", () => {
+  const box = { width: 92, height: 14 }
+
+  it("lets a short label leave room for a long one beside it", () => {
+    const placed = placeLabels(
+      [
+        { name: "Earth", x: 100, y: 50, width: 60 },
+        { name: "Neptune", x: 250, y: 50, width: 84 },
+      ],
+      300,
+      box,
+    )
+    assert.deepStrictEqual(
+      placed.map(({ name, side }) => [name, side]),
+      [
+        ["Earth", "after"],
+        ["Neptune", "before"],
+      ],
+    )
+  })
+
+  it("keeps a long label inside the view by its true width", () => {
+    const placed = placeLabels([{ name: "Neptune", x: 300, y: 50, width: 84 }], 375, box)
+    assert.strictEqual(placed[0]?.side, "before")
+  })
+
+  it("keeps a short label on its preferred side where a wide box would not fit", () => {
+    const placed = placeLabels([{ name: "Sun", x: 300, y: 50, width: 40 }], 375, box)
+    assert.strictEqual(placed[0]?.side, "after")
+  })
+
+  it("still uses the box for a label with no width of its own", () => {
+    const placed = placeLabels([{ name: "Sun", x: 300, y: 50 }], 375, box)
+    assert.strictEqual(placed[0]?.side, "before")
+  })
+})

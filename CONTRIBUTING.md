@@ -30,7 +30,7 @@ git clone https://github.com/mikezupper/learn-solar-system.git
 cd learn-solar-system
 corepack enable
 pnpm bootstrap                                     # fetches the public skills and installs dependencies
-pnpm --filter @solar/web exec playwright install chromium   # the browser the tests use
+pnpm --filter @solar/web exec playwright install chromium webkit   # the browsers the tests use
 ```
 
 Then choose how to run the page:
@@ -96,7 +96,7 @@ project's [MIT license](LICENSE).
 | `pnpm coverage` | Unit tests pass, with at least 85% of lines covered |
 | `pnpm test:browser` | Components work in real Chromium |
 | `pnpm build`, `pnpm budget` | The page builds, with at most 240 KiB of gzipped JavaScript |
-| `pnpm e2e` | The acceptance tests pass against the built page, including accessibility checks with axe in both color schemes |
+| `pnpm e2e` | The acceptance tests pass against the built page, including accessibility checks with axe in both color schemes, and a minimum share of sky at every screen size in Chromium and WebKit |
 
 `pnpm verify:full` also runs the tests against the real JPL kernel and the telemetry stack. CI runs those as
 separate jobs, so you need not run them yourself unless your change touches the worker or telemetry.
@@ -131,7 +131,7 @@ without access to the private skills should follow this guide instead.
 | To | Do this |
 |---|---|
 | Change on-screen wording | Edit `apps/web/src/ui/copy.ts` or `apps/web/index.html`, then update any test that pins the sentence |
-| Change the look | Styles are in `apps/web/src/styles/`, in cascade layers. Read [docs/DESIGN.md](docs/DESIGN.md) first: flash may never cost the truth |
+| Change the look | Styles are in `apps/web/src/styles/`, in cascade layers. Read [docs/DESIGN.md](docs/DESIGN.md) first: flash may never cost the truth, and each screen size adds a layer |
 | Add a metric | Add it to `packages/providers/src/instruments.ts`, then run `pnpm gen-docs` |
 | Add a package | Give it a row in `docs/QUALITY_SCORE.md` and an edge in `tools/harness/src/rules/layers.ts` |
 | Publish other years | `TILE_YEARS=2051-2060 pnpm tiles:build`. See [the deployment guide](docs/guides/deployment.md) |
@@ -141,7 +141,7 @@ without access to the private skills should follow this guide instead.
 
 | Symptom | Cause and fix |
 |---|---|
-| `pnpm test:browser` or `pnpm e2e` says a browser is missing | Run `pnpm --filter @solar/web exec playwright install chromium`. On Linux, add `--with-deps` if it complains about system libraries |
+| `pnpm test:browser` or `pnpm e2e` says a browser is missing | Run `pnpm --filter @solar/web exec playwright install chromium webkit`. On Linux, add `--with-deps` if it complains about system libraries |
 | `pnpm e2e` fails because `dist` is missing | It tests the built page, so run `pnpm build` first |
 | `pnpm install` refuses your Node version | The repository requires Node 24. Check `node --version` |
 | Vite says "Blocked request. This host is not allowed" | Copy `.env.example` to `.env` and list the name in `ALLOWED_HOSTS` |
