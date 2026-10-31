@@ -13,9 +13,12 @@ services:
       - "127.0.0.1:${HARNESS_LOGS_PORT:?}:9428"
   metrics:
     image: victoriametrics/victoria-metrics:v1.155.0
+    # Show data the moment it arrives. The default 30 s delay would hide an agent's own run from it.
+    command: ["-search.latencyOffset=0s"]
     ports:
       - "127.0.0.1:${HARNESS_METRICS_PORT:?}:8428"
   traces:
     image: victoriametrics/victoria-traces:v0.12.1
+    command: ["-search.latencyOffset=0s"]
     ports:
       - "127.0.0.1:${HARNESS_TRACES_PORT:?}:10428"

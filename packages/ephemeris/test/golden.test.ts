@@ -1,10 +1,11 @@
 import { readFileSync } from "node:fs"
 import { assert, describe, it } from "@effect/vitest"
 import { Effect, Option, Schema } from "effect"
-import { makeTile, selectTile, tdbFromUtcMillis, trackFor, type Tile } from "../src/service/index.js"
+import { makeTile, selectTile, tdbFromUtcMillis, trackFor } from "../src/service/index.js"
 import { Naif, NaifId, type Vector3Km } from "../src/types/bodies.js"
 import { TileCatalog } from "../src/types/catalog.js"
 import { TdbSeconds } from "../src/types/time.js"
+import type { Tile } from "../src/types/tile.js"
 
 /**
  * The accuracy claims, checked against sources outside this repository. The tile in fixtures/tiles

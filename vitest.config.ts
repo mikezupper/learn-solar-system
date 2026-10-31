@@ -47,7 +47,7 @@ export default defineConfig({
         "apps/web/src/ui/stage.ts",
         "apps/web/src/runtime/**",
         "apps/worker/src/runtime/**",
-        "tools/harness/src/bin/**",
+        "tools/harness/src/commands/**",
       ],
       thresholds: { lines: 85 },
       reporter: ["text-summary", "json-summary"],

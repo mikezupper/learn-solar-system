@@ -20,11 +20,11 @@ import {
   labelSide,
   labelsWithRoom,
   skyPositionsAt,
-  type BodyName,
 } from "@solar/classroom/service"
-import { KM_PER_AU } from "@solar/classroom/types"
+import { KM_PER_AU, type BodyName } from "@solar/classroom/types"
 import type { StageReport, StageView } from "../types/index.js"
 import { COPY } from "./copy.js"
+import STAGE_STYLES from "./stage.css?inline"
 
 /** One scene unit, once positions are relative to the camera and small enough for 32-bit floats. */
 const KM_PER_UNIT = 1e6
@@ -34,7 +34,7 @@ const FRAMED_RADIUS_KM = 30.4 * KM_PER_AU * 1.25
 const NEAREST_ZOOM_KM = 0.15 * KM_PER_AU
 /** The room a label needs. Labels sit to the right of their dots, so they are wider than tall. */
 const LABEL_BOX_PIXELS = { width: 64, height: 18 }
-const FRAMES_PER_REPORT = 120
+const FRAMES_PER_REPORT = 30
 /** Colors a learner would recognize. Uranus and Neptune are both pale, as Irwin et al. (2024) showed. */
 const BODIES: ReadonlyArray<{ readonly name: BodyName; readonly color: string }> = [
   { name: "Sun", color: "#ffd86b" },
@@ -59,15 +59,6 @@ const LABEL_PRIORITY: ReadonlyArray<string> = [
   "Venus",
   "Mercury",
 ]
-
-const STAGE_STYLES = `
-  :host { display: block; position: relative; contain: content; background: oklch(14% 0.02 265); }
-  canvas { display: block; inline-size: 100%; block-size: 100%; touch-action: none; }
-  canvas:focus-visible { outline: 3px solid oklch(80% 0.14 240); outline-offset: -3px; }
-  ol { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; pointer-events: none; overflow: clip; }
-  li { position: absolute; inset-block-start: 0; inset-inline-start: 0; color: oklch(95% 0.01 265);
-       font: 500 0.8125rem/1 system-ui, sans-serif; padding-inline: 0.625rem; white-space: nowrap; }
-`
 
 /** A soft round dot, so that points are not drawn as squares. */
 const dotTexture = (): CanvasTexture => {

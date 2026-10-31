@@ -1,5 +1,5 @@
 import { Data, Schema } from "effect"
-import type { Sky } from "@solar/classroom/service"
+import type { Sky } from "@solar/classroom/types"
 import type { TdbSeconds } from "@solar/ephemeris/types"
 
 /** Facts only the browser knows. The reducers receive them as data so that they stay pure. */

@@ -1,0 +1,39 @@
+/* Styles for the stage's shadow root. */
+:host {
+  display: block;
+  position: relative;
+  contain: content;
+  background: oklch(14% 0.02 265);
+}
+
+canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  touch-action: none;
+}
+
+canvas:focus-visible {
+  outline: 3px solid oklch(80% 0.14 240);
+  outline-offset: -3px;
+}
+
+ol {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+  overflow: clip;
+}
+
+li {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  padding-inline: 0.625rem;
+  color: oklch(95% 0.01 265);
+  font: 500 0.8125rem/1 system-ui, sans-serif;
+  white-space: nowrap;
+}

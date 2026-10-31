@@ -1,42 +1,14 @@
 import { Array, Option, pipe } from "effect"
-import { trackFor, type Tile, type Track } from "@solar/ephemeris/service"
-import { Naif, type NaifId, type TdbSeconds, type Vector3Km } from "@solar/ephemeris/types"
-import { KM_PER_AU, LIGHT_MINUTES_PER_KM } from "../types/index.js"
-
-export const PLANETS = [
-  { name: "Mercury", target: Naif.Mercury },
-  { name: "Venus", target: Naif.Venus },
-  { name: "Earth", target: Naif.Earth },
-  { name: "Mars", target: Naif.MarsBarycenter },
-  { name: "Jupiter", target: Naif.JupiterBarycenter },
-  { name: "Saturn", target: Naif.SaturnBarycenter },
-  { name: "Uranus", target: Naif.UranusBarycenter },
-  { name: "Neptune", target: Naif.NeptuneBarycenter },
-] as const satisfies ReadonlyArray<{ readonly name: string; readonly target: NaifId }>
-
-export type PlanetName = (typeof PLANETS)[number]["name"]
-export type BodyName = PlanetName | "Sun"
-
-/** What the table shows for one planet at one moment. */
-export interface Reading {
-  readonly planet: PlanetName
-  readonly sunDistanceAu: number
-  /** None for Earth, which has no distance from itself. */
-  readonly earthDistanceAu: Option.Option<number>
-  readonly lightMinutesFromEarth: Option.Option<number>
-}
-
-export interface SkyPosition {
-  readonly name: BodyName
-  readonly eclipticKm: Vector3Km
-}
-
-/** A tile with every track the classroom needs already resolved, so reading it cannot fail. */
-export interface Sky {
-  readonly sun: Track
-  readonly earth: Track
-  readonly planets: ReadonlyArray<{ readonly name: PlanetName; readonly track: Track }>
-}
+import { trackFor } from "@solar/ephemeris/service"
+import { Naif, type TdbSeconds, type Tile, type Vector3Km } from "@solar/ephemeris/types"
+import {
+  KM_PER_AU,
+  LIGHT_MINUTES_PER_KM,
+  PLANETS,
+  type Reading,
+  type Sky,
+  type SkyPosition,
+} from "../types/index.js"
 
 /** Answers none when the tile lacks a body the classroom shows. */
 export const makeSky = (tile: Tile): Option.Option<Sky> => {

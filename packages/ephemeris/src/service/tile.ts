@@ -2,16 +2,8 @@ import { Array, Option, pipe } from "effect"
 import { Naif, type NaifId, type Vector3Km } from "../types/bodies.js"
 import type { TileSegment } from "../types/catalog.js"
 import type { TdbSeconds } from "../types/time.js"
+import type { Tile, Track } from "../types/tile.js"
 import { evaluateChebyshev } from "./chebyshev.js"
-
-/** A tile ready to evaluate: its table of contents and its coefficients as one flat array. */
-export interface Tile {
-  readonly segments: ReadonlyMap<NaifId, TileSegment>
-  readonly coefficients: Float64Array
-}
-
-/** A body's position relative to some center, as a function of time. */
-export type Track = (at: TdbSeconds) => Vector3Km
 
 const DOUBLE_BYTES = 8
 const AXES = 3
