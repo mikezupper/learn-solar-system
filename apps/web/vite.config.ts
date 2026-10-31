@@ -1,8 +1,9 @@
 import { createReadStream, existsSync } from "node:fs"
 import { basename, join, resolve } from "node:path"
 import type { Connect } from "vite"
-import { defineConfig, type Plugin } from "vite"
+import { defineConfig, loadEnv, type Plugin } from "vite"
 import { gyral } from "@gyral/core/vite"
+import { parseAllowedHosts } from "./src/config/allowed-hosts.js"
 
 const repositoryRoot = resolve(import.meta.dirname, "../..")
 const tileDir = resolve(repositoryRoot, process.env.TILE_STORE_DIR ?? ".harness/tiles")
@@ -33,25 +34,33 @@ const serveTiles = (): Plugin => ({
 // In a worktree's dev server, the browser sends telemetry here to reach that worktree's collector.
 const otlpTarget = process.env.HARNESS_OTLP_TARGET
 
-export default defineConfig({
-  // This app renders only in the browser, so builds leave out Gyral's hydration code.
-  plugins: [gyral({ clientOnly: true }), serveTiles()],
-  server:
-    otlpTarget === undefined
-      ? {}
-      : {
-          proxy: {
-            "/otlp": { target: otlpTarget, rewrite: (path) => path.replace(/^\/otlp/, "") },
-          },
+export default defineConfig(({ mode }) => {
+  // `.env` lives at the repository root. See `.env.example` for what it may hold.
+  const allowedHosts = [...parseAllowedHosts(loadEnv(mode, repositoryRoot, "").ALLOWED_HOSTS)]
+  return {
+    envDir: repositoryRoot,
+    // This app renders only in the browser, so builds leave out Gyral's hydration code.
+    plugins: [gyral({ clientOnly: true }), serveTiles()],
+    server: {
+      allowedHosts,
+      ...(otlpTarget === undefined
+        ? {}
+        : {
+            proxy: {
+              "/otlp": { target: otlpTarget, rewrite: (path: string) => path.replace(/^\/otlp/, "") },
+            },
+          }),
+    },
+    preview: { allowedHosts },
+    build: {
+      target: "es2022",
+      chunkSizeWarningLimit: 1200,
+      rolldownOptions: {
+        input: {
+          main: resolve(import.meta.dirname, "index.html"),
+          about: resolve(import.meta.dirname, "about-the-data.html"),
         },
-  build: {
-    target: "es2022",
-    chunkSizeWarningLimit: 1200,
-    rolldownOptions: {
-      input: {
-        main: resolve(import.meta.dirname, "index.html"),
-        about: resolve(import.meta.dirname, "about-the-data.html"),
       },
     },
-  },
+  }
 })
