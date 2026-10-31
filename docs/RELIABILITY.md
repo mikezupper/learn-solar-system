@@ -24,6 +24,7 @@
 | The worker crashes between blob and catalog | An unlisted blob remains, which a rerun reuses | `build-tile.ts` |
 | The catalog cannot be fetched or is a newer format | The page says the data could not be loaded | `load-sky.ts` |
 | A tile arrives damaged | The page refuses it and shows no numbers | `load-tile.ts` |
+| A tile host on another origin sends no `Access-Control-Allow-Origin` | The page says the data could not be loaded | `tile-source.ts`, `load-sky.ts` |
 | SHA-256 is unavailable (plain http) | Bytes it cannot check are not shown, and the page asks for https | `digest.ts`, `load-sky.ts` |
 | WebGL will not start | The stage reports it; the table remains | `stage.ts` |
 | A date outside the catalog | The page names the years it has | `load-sky.ts` |

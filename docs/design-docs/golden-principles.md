@@ -21,12 +21,13 @@ Every rule names its enforcer. "Review" means it is not yet mechanical.
 | Views have no `class`, `style`, `div` or `span` | An element is chosen for its meaning | `pnpm lint:taste` |
 | CSS is logical and oklch, without `!important` | Right-to-left readers, even color, cascade layers | `pnpm lint:taste` |
 | The data page has no CSS or script | It must read correctly on anything | `pnpm lint:taste`, e2e |
-| Every document is reachable and links resolve | An unreachable document does not exist | `pnpm lint:docs` |
-| Design documents are re-verified every 30 days | Stale guidance misleads | `pnpm quality --check` |
+| Every document is reachable and links resolve | An unreachable document does not exist | `pnpm lint:docs`, which also reads the README and the guides at the root |
+| Design documents are re-verified every 30 days | Stale guidance misleads | `pnpm lint:freshness`, weekly in Gardening. Never in a pull request, because it depends on the date and not on the change |
 | `docs/generated` is never hand-edited | It derives from code | `pnpm gen-docs --check` |
 | At least 85% of lines are covered | A floor, not a goal | `pnpm coverage` |
 | JavaScript stays under 240 KiB gzipped | Classroom laptops and school networks | `pnpm budget` |
 | Every page passes axe in both color schemes | Every learner | `pnpm e2e` |
+| Numbers in the page's static text are under test | No type checks HTML, and a typo would reach a class | `explanation.test.ts` |
 | Expected values come from outside the code | A test that pastes its output proves nothing | Review |
 | Each command has a success spec and one failure spec per rule | Rules are not explicit otherwise | Review |
 | Lint messages say how to fix the problem | The reader is usually an agent | Review |

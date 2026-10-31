@@ -1,0 +1,25 @@
+name: Classroom feedback
+description: You used this with students, or you are thinking about it.
+labels: [classroom]
+body:
+  - type: markdown
+    attributes:
+      value: No teacher had used this when it was published, so the product rests on guesses that only you can test. Please leave out students' names and anything else that identifies them.
+  - type: input
+    id: who
+    attributes:
+      label: Who was it for?
+      placeholder: Grade 7 science, about 25 students
+  - type: textarea
+    id: worked
+    attributes:
+      label: What worked?
+  - type: textarea
+    id: did-not
+    attributes:
+      label: What got in the way, or confused students?
+  - type: textarea
+    id: wish
+    attributes:
+      label: What did you wish it could do?
+      description: For example, run time backward, jump to a date, or show moons.

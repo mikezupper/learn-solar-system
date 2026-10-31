@@ -13,6 +13,9 @@ The site is static and holds no accounts and no personal data. The main risks ar
 | A malicious site reads the dev server through DNS rebinding | Vite answers only to localhost and the names in `ALLOWED_HOSTS` | Real names live in a `.env` that git ignores |
 | Telemetry leaks data | With no endpoint nothing is sent. The dev stack binds to 127.0.0.1 only | |
 | Dependencies | Exact versions, lockfile, and a build-script allowlist in `pnpm-workspace.yaml` | No automated audit yet |
+| Flaws in the code | CodeQL analyzes every push and pull request | Findings wait in the repository's Security tab until someone reads them |
+| A fork's pull request reaches the repository | Workflows use `pull_request`, with read-only permissions and no secrets | |
 
 No secrets exist in this repository, and none are needed to run it. `.mcp.json` names a public Gyral
-endpoint and needs no token. A strict Content-Security-Policy is in the [debt tracker](exec-plans/tech-debt-tracker.md).
+endpoint and needs no token. A strict Content-Security-Policy is in the [debt tracker](exec-plans/tech-debt-tracker.md). To report a
+vulnerability, see [the security policy](../SECURITY.md).

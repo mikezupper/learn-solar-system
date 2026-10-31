@@ -1,0 +1,35 @@
+name: Bug report
+description: Something on the page or in the tooling does not work.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting this. If a number looks wrong, the accuracy report fits better.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect to see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we see it for ourselves?
+      description: The steps, including the page's full address if it has `?at=` in it.
+      placeholder: |
+        1. Open /?at=2026-08-12T17:46:00Z
+        2. Choose "1 week per second"
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Firefox 150 on a school Chromebook
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, console messages, or the output of the command that failed.

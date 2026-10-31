@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite it as below. For the planetary data itself, please cite the DE440 paper."
+title: "Solar System Classroom"
+abstract: >-
+  A page for teachers and students that shows where the Sun and planets really are, at true scale, calculated from
+  NASA JPL's DE440 ephemeris and checked against JPL Horizons.
+type: software
+authors:
+  - family-names: Zupper
+    given-names: Mike
+repository-code: "https://github.com/mikezupper/learn-solar-system"
+url: "https://github.com/mikezupper/learn-solar-system"
+license: MIT
+version: 0.1.0
+keywords:
+  - astronomy
+  - solar system
+  - ephemeris
+  - education
+  - WebGL
+references:
+  - type: article
+    title: "The JPL Planetary and Lunar Ephemerides DE440 and DE441"
+    authors:
+      - family-names: Park
+        given-names: Ryan S.
+      - family-names: Folkner
+        given-names: William M.
+      - family-names: Williams
+        given-names: James G.
+      - family-names: Boggs
+        given-names: Dale H.
+    journal: "The Astronomical Journal"
+    volume: 161
+    issue: 3
+    start: 105
+    year: 2021
+    doi: 10.3847/1538-3881/abd414

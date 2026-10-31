@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/mikezupper/learn-solar-system/discussions
+    about: Ask anything, or share how you used this with a class.
+  - name: Security problem
+    url: https://github.com/mikezupper/learn-solar-system/security/advisories/new
+    about: Report a vulnerability privately. Please do not open a public issue.

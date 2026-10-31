@@ -5,7 +5,7 @@ are, calculated from NASA JPL's data. This file is a table of contents. Read wha
 
 ## Start here
 
-1. `pnpm bootstrap` once per worktree: fetches the skills and installs dependencies.
+1. `pnpm bootstrap` once per worktree: fetches the public skills and installs dependencies.
 2. Read the plan for your work in [docs/exec-plans/active/](docs/exec-plans/index.md). Work that spans
    more than one sitting gets a plan first. See [docs/PLANS.md](docs/PLANS.md).
 3. `pnpm dev` boots this worktree on its own ports; `pnpm harness where` prints them; `pnpm dev:stop`
@@ -27,8 +27,12 @@ are, calculated from NASA JPL's data. This file is a table of contents. Read wha
 | Known debt | [docs/exec-plans/tech-debt-tracker.md](docs/exec-plans/tech-debt-tracker.md) |
 | Outside systems' exact contracts | [docs/references/index.md](docs/references/index.md) |
 | Facts derived from the code | [docs/generated/index.md](docs/generated/index.md) |
+| Deploying, teaching with it, contributing | [docs/guides/index.md](docs/guides/index.md), [CONTRIBUTING.md](CONTRIBUTING.md) |
 
 ## Skills: read the one for your task before you start
+
+Four skills are private to the maintainer, so their folders may be empty. No gate reads them. If one is
+empty, follow [CONTRIBUTING.md](CONTRIBUTING.md), which states what they ask.
 
 | Task | Skill |
 |---|---|
@@ -51,8 +55,9 @@ are, calculated from NASA JPL's data. This file is a table of contents. Read wha
   casts in application code. Effects run only in `app-runtime.ts` and each program's `main.ts`.
 - **Taste** (`pnpm lint:taste`): files stay under 400 lines; views have no `class`, `style`, `div` or
   `span`; CSS uses logical properties and oklch.
-- **Docs** (`pnpm lint:docs`, `pnpm quality --check`): every document is reachable from here, links
-  resolve, and design documents were verified in the last 30 days.
+- **Docs** (`pnpm lint:docs`, `pnpm quality --check`): every document is reachable from here, and links
+  resolve, including in the README and guides at the root. `pnpm lint:freshness` reports design documents
+  nobody has verified in 30 days; it runs weekly and in `verify:full`, never in a pull request.
 - **Coverage** (`pnpm coverage`): at least 85% of lines.
 - **Generated docs** (`pnpm gen-docs --check`): never edit `docs/generated/` by hand.
 
@@ -75,6 +80,7 @@ design, or change the rule and its reason together.
 ```sh
 pnpm verify              # everything that needs neither Docker nor the 33 MB kernel
 pnpm verify:full         # also the real kernel and the telemetry stack
+pnpm dev:quick           # the page on the 2026-2027 fixtures: no Docker, no downloads
 pnpm test                # unit tests: no network, no browser
 pnpm test:browser        # Gyral elements in Chromium
 pnpm e2e                 # needs `pnpm build` first

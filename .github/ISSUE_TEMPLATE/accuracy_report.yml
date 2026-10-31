@@ -1,0 +1,31 @@
+name: Accuracy report
+description: A number, a position or an explanation looks wrong or misleading.
+labels: [accuracy]
+body:
+  - type: markdown
+    attributes:
+      value: Accuracy is what this project is for, so this is among the most useful reports you can send. You do not need to be sure you are right.
+  - type: textarea
+    id: claim
+    attributes:
+      label: What looks wrong?
+      description: Quote the sentence, or name the planet and the column.
+    validations:
+      required: true
+  - type: input
+    id: moment
+    attributes:
+      label: The moment, if it matters
+      description: The page's address, or the date shown on it.
+      placeholder: /?at=2026-08-12T17:46:00Z
+  - type: textarea
+    id: expected
+    attributes:
+      label: What do you think it should be?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Where does your value come from?
+      description: JPL Horizons, a published catalog, a textbook, your own calculation. A link helps us check it.

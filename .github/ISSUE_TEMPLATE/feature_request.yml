@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest something this project could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the need before the solution. Who wants this, and what can they not do today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you suggest?
+  - type: textarea
+    id: accuracy
+    attributes:
+      label: Could it affect accuracy?
+      description: The project does not trade accuracy for spectacle. If this changes what the page shows, how would it stay true, or be clearly labeled when it is not?

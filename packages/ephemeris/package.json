@@ -1,6 +1,7 @@
 {
   "name": "@solar/ephemeris",
   "version": "0.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "exports": { "./types": "./src/types/index.ts", "./repo": "./src/repo/index.ts", "./service": "./src/service/index.ts" },

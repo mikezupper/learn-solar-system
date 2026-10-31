@@ -2,7 +2,8 @@
 
 The exact contracts of outside systems, kept here so that an agent need not leave the repository.
 
-- [The harness-engineering article](harness-engineering.md): the approach this repository follows.
+- [A summary of the harness-engineering article](harness-engineering.md): the approach this repository follows, in
+  our words, with a link to the original.
 - [NAIF SPK file layout](naif-spk.md): what `service/spk.ts` reads.
 - [JPL Horizons API](horizons-api.md): the request the verifier sends, and how to read the answer.
 - [Gyral agent pack](gyral-llms.txt): the rules, one full component and an import map, from

@@ -41,8 +41,9 @@ and `telemetryLayer` is the only place telemetry leaves a process.
 
 **`apps/web`**: the Vite app. `ui/classroom.ts` is the Gyral component and `ui/classroom-model.ts` its pure
 reducers. `ui/stage.ts` is the custom element and `ui/stage-scene.ts` the Three.js scene behind it.
-`ui/copy.ts` holds every sentence on screen, and `runtime/app-runtime.ts` the single place Effects run
-in the browser. `about-the-data.html` is a plain document with no CSS or script, on purpose.
+`ui/copy.ts` holds every sentence a component renders, and `runtime/app-runtime.ts` the single place Effects
+run in the browser. `index.html` holds the page's long explanation as static markup, so that it reads with no
+script and when the data fails to load. `about-the-data.html` is a plain document with no CSS or script, on purpose.
 
 **`tools/harness`**: the custom lints, generated docs, per-worktree boot and telemetry queries. Its
 rules live in `src/rules/` as pure functions.
@@ -53,7 +54,8 @@ rules live in `src/rules/` as pure functions.
 **`fixtures/`**: real data, used as expected values. `tiles/` is genuine worker output, and `horizons/`
 holds answers recorded from JPL.
 
-**`skills/`**: pinned submodules with the standards this repository follows, plus two skills of its own.
+**`skills/`**: pinned submodules with the standards this repository follows, plus two skills of its own. Four
+are private, so Git skips them unless asked. No gate reads any of them.
 
 ## Layers
 
@@ -92,6 +94,10 @@ These hold everywhere, so check them before changing anything nearby.
 - **Reducers and views are pure.** The page's facts, including the clock, arrive as messages.
 - **Telemetry goes nowhere unless configured.** With no endpoint, `telemetryLayer` is the empty layer.
 - **Real hostnames stay out of git.** The servers read `ALLOWED_HOSTS` from a `.env` that git ignores.
+- **Numbers in the page's static text are under test.** No type checks that HTML, so
+  `apps/web/test/explanation.test.ts` holds it against JPL's data and Kepler's third law.
+- **Tile requests are plain.** They carry no trace headers, so that a host on another origin need not
+  answer a CORS preflight.
 
 ## Boundaries
 

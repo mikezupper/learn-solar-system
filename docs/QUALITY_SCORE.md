@@ -23,4 +23,5 @@ Coverage is lines and branches from `pnpm coverage`. Grades are judgment; the ga
 | A planet stays on its line | `packages/classroom/test/orbit.test.ts`; `apps/worker/test/orbit-fidelity.kernel.test.ts` for a full orbit | `pnpm test`, `pnpm test:kernel` |
 | It reproduces a real eclipse | Same test file, against Espenak's published values | `pnpm test` |
 | The page shows those numbers | `apps/web/e2e/where-are-the-planets.spec.ts` | `pnpm e2e` |
+| The page's static text states true numbers | `apps/web/test/explanation.test.ts`, against the tile and Kepler's third law | `pnpm test` |
 | The worker is deterministic | `apps/worker/test/pipeline.kernel.test.ts` | `pnpm test:kernel` |

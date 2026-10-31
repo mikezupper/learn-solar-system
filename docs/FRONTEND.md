@@ -23,6 +23,8 @@ pure document has no CSS at all.
 - A component never imports the stage or the Effect runtime. It names driver tokens from
   `runtime/tokens.ts`, so model tests run in Node in milliseconds.
 - Check accessibility with axe in both color schemes, and confirm the scan reached the content.
+- The explanation below the live view is static HTML in `index.html`, so that it reads with no script. A number
+  stated there needs a test in `apps/web/test/explanation.test.ts`.
 
 ## The writing brief
 
@@ -31,7 +33,7 @@ Every sentence in this repository follows
 
 | Writing | Category | Reader | They should be able to |
 |---|---|---|---|
-| `apps/web/src/ui/copy.ts`, `about-the-data.html` | Explanatory and educational | A student or teacher with no astronomy background | Explain what they see, and know where the explanation stops |
+| `apps/web/src/ui/copy.ts`, `index.html`, `about-the-data.html` | Explanatory and educational | A student or teacher with no astronomy background | Explain what they see, and know where the explanation stops |
 | Everything under `docs/`, code comments, lint messages | Technical documentation | A coding agent or a maintainer new to the repository | Find the fact and act correctly |
 
 For learners: start from what they can see, define a term where it first matters, and say what the page
