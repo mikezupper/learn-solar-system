@@ -1,0 +1,10 @@
+{
+  "name": "@solar/classroom",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { "./types": "./src/types/index.ts", "./service": "./src/service/index.ts" },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "@solar/ephemeris": "workspace:*", "effect": "catalog:" },
+  "devDependencies": { "@effect/language-service": "catalog:", "@effect/vitest": "catalog:", "@types/node": "catalog:", "typescript": "catalog:", "vitest": "catalog:" }
+}

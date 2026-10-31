@@ -1,0 +1,99 @@
+
+
+*******************************************************************************
+Ephemeris / API_USER Sat Oct 31 08:10:07 2026 Pasadena, USA      / Horizons
+*******************************************************************************
+Target body name: Mercury (199)                   {source: DE441}
+Center body name: Sun (10)                        {source: DE441}
+Center-site name: BODY CENTER
+*******************************************************************************
+Start time      : A.D. 2026-Jan-04 16:48:00.0000 TDB
+Stop  time      : A.D. 2026-Dec-05 17:12:28.8000 TDB
+Step-size       : DISCRETE TIME-LIST
+*******************************************************************************
+Center geodetic : 0.0, 0.0, 0.0                   {E-lon(deg),Lat(deg),Alt(km)}
+Center cylindric: 0.0, 0.0, 0.0                   {E-lon(deg),Dxy(km),Dz(km)}
+Center radii    : 695700.0, 695700.0, 695700.0 km {Equator_a, b, pole_c}
+Output units    : KM-S
+Calendar mode   : Mixed Julian/Gregorian
+Output type     : GEOMETRIC cartesian states
+Output format   : 1 (position only)
+Reference frame : ICRF
+*******************************************************************************
+            JDTDB,            Calendar Date (TDB),                      X,                      Y,                      Z,
+**************************************************************************************************************************
+$$SOE
+2461045.200000000, A.D. 2026-Jan-04 16:48:00.0000, -2.096988410217238E+07, -5.955717163112434E+07, -2.964226644083636E+07,
+2461075.747000000, A.D. 2026-Feb-04 05:55:40.8000,  5.378007974743900E+07, -4.324331031245294E+06, -7.883785444014820E+06,
+2461106.294000000, A.D. 2026-Mar-06 19:03:21.6000, -5.209854077172996E+07,  1.170863722762018E+07,  1.165422872080908E+07,
+2461136.841000000, A.D. 2026-Apr-06 08:11:02.4000, -9.002804537223373E+06, -6.138276783349150E+07, -3.185786282110640E+07,
+2461167.388000000, A.D. 2026-May-06 21:18:43.2000,  5.049520700204011E+07,  9.786182906016443E+06, -5.431266211029899E+03,
+2461197.935000000, A.D. 2026-Jun-06 10:26:24.0000, -5.757573224063177E+07, -1.389766812363451E+06,  5.224632155881282E+06,
+2461228.482000000, A.D. 2026-Jul-06 23:34:04.8000,  3.317464311792798E+06, -6.079500178782573E+07, -3.282077010094834E+07,
+2461259.029000000, A.D. 2026-Aug-06 12:41:45.6000,  4.230360269810856E+07,  2.290494228594552E+07,  7.851684159204145E+06,
+2461288.576000000, A.D. 2026-Sep-05 01:49:26.4000, -5.904709319088066E+07, -1.092523667639532E+07,  2.831747820122192E+05,
+2461319.123000000, A.D. 2026-Oct-05 14:57:07.2000,  1.222635007135827E+07, -5.882735895210333E+07, -3.269297466749123E+07,
+2461349.670000000, A.D. 2026-Nov-05 04:04:48.0000,  3.328593970764710E+07,  3.088900350800369E+07,  1.305140073706815E+07,
+2461380.217000000, A.D. 2026-Dec-05 17:12:28.8000, -5.796613258923167E+07, -2.340679420759210E+07, -6.496589740424654E+06,
+$$EOE
+**************************************************************************************************************************
+ 
+TIME
+
+  Barycentric Dynamical Time ("TDB" or T_eph) output was requested. This
+continuous coordinate time is equivalent to the relativistic proper time
+of a clock at rest in a reference frame co-moving with the solar system
+barycenter but outside the system's gravity well. It is the independent
+variable in the solar system relativistic equations of motion.
+
+  TDB runs at a uniform rate of one SI second per second and is independent
+of irregularities in Earth's rotation.
+ 
+CALENDAR SYSTEM
+
+  Mixed calendar mode was active such that calendar dates after AD 1582-Oct-15
+(if any) are in the modern Gregorian system. Dates prior to 1582-Oct-5 (if any)
+are in the Julian calendar system, which is automatically extended for dates
+prior to its adoption on 45-Jan-1 BC.  The Julian calendar is useful for
+matching historical dates. The Gregorian calendar more accurately corresponds
+to the Earth's orbital motion and seasons. A "Gregorian-only" calendar mode is
+available if such physical events are the primary interest.
+
+REFERENCE FRAME AND COORDINATES
+
+  International Celestial Reference Frame (ICRF)
+
+    The ICRF is an adopted reference frame whose axes are defined relative to 
+    fixed extragalactic radio sources distributed across the sky.
+
+    The ICRF was aligned with the prior FK5/J2000 dynamical system at the ~0.02 
+    arcsecond level but is not identical and has no associated standard epoch.
+
+  Symbol meaning:
+
+    JDTDB    Julian Day Number, Barycentric Dynamical Time
+      X      X-component of position vector (km)
+      Y      Y-component of position vector (km)
+      Z      Z-component of position vector (km)
+
+ABERRATIONS AND CORRECTIONS
+
+ Geometric state vectors have NO corrections or aberrations applied.
+
+Computations by ...
+
+    Solar System Dynamics Group, Horizons On-Line Ephemeris System
+    4800 Oak Grove Drive, Jet Propulsion Laboratory
+    Pasadena, CA  91109   USA
+
+    General site: https://ssd.jpl.nasa.gov/
+    Mailing list: https://ssd.jpl.nasa.gov/email_list.html
+    System news : https://ssd.jpl.nasa.gov/horizons/news.html
+    User Guide  : https://ssd.jpl.nasa.gov/horizons/manual.html
+    Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
+                  API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
+                  command-line   telnet ssd.jpl.nasa.gov 6775
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/horizons_batch.txt
+                  scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
+    Inquiries   : Jon.D.Giorgini@jpl.nasa.gov
+*******************************************************************************

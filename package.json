@@ -1,0 +1,42 @@
+{
+  "name": "solar-system",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "harness": "tsx tools/harness/src/main.ts",
+    "bootstrap": "git submodule update --init --recursive && pnpm install",
+    "dev": "pnpm harness dev",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "lint": "eslint . --max-warnings=0",
+    "lint:layers": "pnpm harness lint-layers",
+    "lint:docs": "pnpm harness lint-docs",
+    "lint:taste": "pnpm harness lint-taste",
+    "gen-docs": "pnpm harness gen-docs",
+    "quality": "pnpm harness quality",
+    "test": "vitest run --project unit",
+    "test:browser": "vitest run --project browser",
+    "test:kernel": "vitest run --project kernel",
+    "coverage": "vitest run --project unit --coverage",
+    "tiles:build": "pnpm --filter @solar/worker tiles:build",
+    "build": "pnpm --filter @solar/web build",
+    "e2e": "pnpm --filter @solar/web e2e",
+    "obs:up": "pnpm harness obs up",
+    "obs:down": "pnpm harness obs down",
+    "obs:logs": "pnpm harness obs logs",
+    "obs:metrics": "pnpm harness obs metrics",
+    "obs:traces": "pnpm harness obs traces",
+    "verify": "pnpm typecheck && pnpm lint && pnpm lint:layers && pnpm lint:docs && pnpm lint:taste && pnpm gen-docs --check && pnpm quality --check && pnpm coverage && pnpm test:browser && pnpm build && pnpm e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@vitest/browser-playwright": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "10.14.0",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "8.72.1",
+    "vitest": "catalog:"
+  }
+}

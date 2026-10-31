@@ -1,0 +1,30 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+# The Effect family is released in lockstep. Pin every member to one exact version and upgrade
+# them together, or two copies of `effect` load and service identity breaks.
+catalog:
+  effect: 4.1.1
+  "@effect/platform-node": 4.1.1
+  "@effect/vitest": 4.1.1
+  "@effect/language-service": 0.87.5
+  "@gyral/core": 0.3.9
+  "@gyral/testing": 0.3.9
+  "@gyral/time": 0.3.9
+  three: 0.187.0
+  "@types/three": 0.187.0
+  "@types/node": ^24.0.0
+  typescript: 6.0.3
+  vite: 8.3.5
+  vitest: 5.0.5
+  "@vitest/coverage-v8": 5.0.5
+  "@vitest/browser-playwright": 5.0.5
+  playwright: 1.64.1
+  "@playwright/test": 1.64.1
+  "@axe-core/playwright": 4.14.0
+  tsx: 4.23.15
+
+onlyBuiltDependencies:
+  - esbuild

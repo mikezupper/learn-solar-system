@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.gyral/
+.harness/
+playwright-report/
+test-results/
+*.tsbuildinfo
+*.bsp
+.DS_Store

@@ -1,0 +1,10 @@
+{
+  "name": "@solar/harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { },
+  "scripts": { "typecheck": "tsc -p tsconfig.json" },
+  "dependencies": { "@effect/platform-node": "catalog:", "effect": "catalog:", "typescript": "catalog:" },
+  "devDependencies": { "@effect/language-service": "catalog:", "@effect/vitest": "catalog:", "@types/node": "catalog:", "tsx": "catalog:", "vitest": "catalog:" }
+}

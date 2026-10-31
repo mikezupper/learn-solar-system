@@ -1,0 +1,21 @@
+[submodule "skills/event-modeling-skill"]
+	path = skills/event-modeling-skill
+	url = git@github.com:mikezupper/event-modeling-skill.git
+[submodule "skills/designing-data-intensive-applications-skill"]
+	path = skills/designing-data-intensive-applications-skill
+	url = git@github.com:mikezupper/designing-data-intensive-applications-skill.git
+[submodule "skills/effect-fp-skill"]
+	path = skills/effect-fp-skill
+	url = git@github.com:mikezupper/effect-fp-skill.git
+[submodule "skills/modern-css-skill"]
+	path = skills/modern-css-skill
+	url = git@github.com:mikezupper/modern-css-skill.git
+[submodule "skills/semantic-html-skill"]
+	path = skills/semantic-html-skill
+	url = git@github.com:mikezupper/semantic-html-skill.git
+[submodule "skills/test-driven-development-skill"]
+	path = skills/test-driven-development-skill
+	url = git@github.com:mikezupper/test-driven-development-skill.git
+[submodule "skills/sense-of-style-writing-skill"]
+	path = skills/sense-of-style-writing-skill
+	url = git@github.com:mikezupper/the-sense-of-style-writing-skill.git
