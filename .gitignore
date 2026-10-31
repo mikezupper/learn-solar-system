@@ -3,6 +3,7 @@ dist/
 coverage/
 .gyral/
 .harness/
+.vitest/
 playwright-report/
 test-results/
 *.tsbuildinfo
