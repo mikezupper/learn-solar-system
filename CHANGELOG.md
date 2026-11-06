@@ -32,6 +32,8 @@ has no releases yet, so everything sits under Unreleased.
 
 ### Fixed
 
+- `pnpm dev:stop` now takes everything down when `pnpm dev` has already died, including a web server that outlived it. It had
+  crashed trying to signal the dead process, which left the containers running.
 - Tiles can now load from a host on another origin. Trace headers on those requests had triggered a CORS preflight
   that an ordinary static host refuses.
 - The page no longer paints as bare HTML on the dev server. Its stylesheets were imported from JavaScript, so they arrived only

@@ -22,6 +22,7 @@ export const runVisibly = (
   command: string,
   args: ReadonlyArray<string>,
   env: Readonly<Record<string, string>> = {},
+  onStart: (pid: number) => Effect.Effect<void, HarnessFailure> = () => Effect.void,
 ) =>
   Effect.gen(function* () {
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
@@ -36,6 +37,7 @@ export const runVisibly = (
         }),
       )
       .pipe(Effect.mapError(toFailure))
+    yield* onStart(handle.pid)
     const exitCode = yield* handle.exitCode.pipe(Effect.mapError(toFailure))
     if (exitCode !== ChildProcessSpawner.ExitCode(0)) {
       return yield* new HarnessFailure({
