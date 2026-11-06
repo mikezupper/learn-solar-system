@@ -641,7 +641,7 @@ toolchain and can be read and tested here.
 
 | Workflow | When | Jobs |
 |---|---|---|
-| [CI](.github/workflows/ci.yml) | Every push to `main` and every pull request | `verify` runs `pnpm verify`; `kernel` runs against the real JPL kernel; `telemetry` starts the stack and proves all three signals arrive |
+| [CI](.github/workflows/ci.yml) | Every push to `main` and every pull request | `verify` runs `pnpm verify`; `kernel` runs against the real JPL kernel; `telemetry` starts the stack and proves all three signals arrive; `image` builds the production image from the fixtures, checks its headers, and runs the page under its Content-Security-Policy |
 | [CodeQL](.github/workflows/codeql.yml) | Every push and pull request, and weekly | Static security analysis of the TypeScript |
 | [Gardening](.github/workflows/gardening.yml) | Weekly, or by hand | Finds documents nobody has re-verified in 30 days, ungraded packages and drifted generated files |
 
@@ -665,6 +665,9 @@ No setting is required, and no secrets exist. Copy [`.env.example`](.env.example
 | `VITE_OTLP_BASE_URL` | Page, at build time | Unset, so no telemetry | Where the page sends telemetry |
 | `VITE_WORKTREE` | Page, at build time | `unset` | Labels telemetry with the worktree |
 | `HARNESS_OTLP_TARGET` | Vite dev server | Unset | The collector behind the `/otlp` proxy |
+| `IMAGE_REGISTRY` | `deploy/build-image.sh`, from `.env` | Unset | The registry the production image is pushed to. Needed for `--push` |
+| `IMAGE_NAMESPACE` | `deploy/build-image.sh`, from `.env` | Unset | The namespace inside that registry. Needed for `--push` |
+| `IMAGE_NAME`, `IMAGE_PLATFORMS` | `deploy/build-image.sh` | `learn-solar-system`, `linux/amd64,linux/arm64` | The image's name, and the platforms it is built for |
 
 `pnpm dev` sets the worker and telemetry variables itself. Ports come from a hash of the worktree's path, below 32768 so that they
 stay out of Linux's ephemeral range, which lets several worktrees run side by side.
@@ -674,8 +677,19 @@ a decision: the whole accuracy claim rests on that file.
 
 ## Deployment
 
-**There is no public deployment yet.** The site is static, with no server code, database or secrets, so it can go on any static host.
-[The deployment guide](docs/guides/deployment.md) has the details. In short:
+**There is no public deployment yet.** The site is static, with no server code, database or secrets.
+[The deployment guide](docs/guides/deployment.md) has the details of two ways to run it.
+
+**As a Docker image.** `deploy/build-image.sh` builds the page and the data into an nginx image, runs it, and checks every
+cache rule and security header against it before anything leaves the machine. With `--push` it builds `linux/amd64` and
+`linux/arm64`, and pushes them to the registry named in `.env`, tagged `sha-<commit>` and `latest`.
+
+```sh
+deploy/build-image.sh            # build for this machine and check it
+deploy/build-image.sh --push     # then push every platform
+```
+
+**On any static host:**
 
 ```sh
 pnpm install --frozen-lockfile
@@ -691,11 +705,14 @@ its data with SHA-256, which browsers offer only on `https` and `localhost`. Til
 
 | Files | `Cache-Control` |
 |---|---|
-| `tiles/catalog.json`, `*.html` | `no-cache` |
-| `tiles/*.bin`, `assets/*` | `public, max-age=31536000, immutable` |
+| `*.html`, `tiles/catalog.json` | `no-cache` |
+| `assets/*`, `tiles/*.bin` | `public, max-age=31536000, immutable` |
+| Anything else | `public, max-age=3600` |
+| Errors | `no-store` |
 
-Upload `.bin` files before `catalog.json`. These steps were rehearsed on a plain static server over `localhost`, not with any
-particular hosting company.
+Every file that can change between releases is named after its contents, except the two pages and the catalog, which are
+checked on every use. So a release needs no purge. Upload `.bin` files before `catalog.json`. The static steps were rehearsed
+on a plain static server over `localhost`, not with any particular hosting company.
 
 ## Observability
 
@@ -726,9 +743,10 @@ tests send nothing**, because with no endpoint, `telemetryLayer` is the empty la
 │   ├── web/                        The page
 │   │   ├── index.html              The page's shell and its full explanation, as static HTML
 │   │   ├── about-the-data.html     A plain document with no CSS or script, on purpose
-│   │   ├── public/fonts/           The self-hosted typefaces, with their licenses
+│   │   ├── public/fonts/           The typefaces' licenses, served with the site
 │   │   ├── src/
 │   │   │   ├── config/             Build-time settings and allowed hosts
+│   │   │   ├── fonts/              The self-hosted typefaces, which the build names after their contents
 │   │   │   ├── runtime/            app-runtime.ts, the one place Effects run; driver tokens
 │   │   │   ├── service/            load-sky.ts: catalog, tile, Sky
 │   │   │   ├── types/
@@ -757,6 +775,7 @@ tests send nothing**, because with no endpoint, `telemetryLayer` is the empty la
 │   ├── tiles/                      Genuine worker output for 2026 and 2027
 │   └── horizons/                   Answers recorded from JPL
 ├── observability/                  Docker Compose and Vector config for the telemetry stack
+├── deploy/                         The production image: Dockerfile, nginx config, and the scripts that build and check it
 ├── docs/
 │   ├── guides/                     Deploying, and using the page with a class
 │   ├── product-specs/              What the product does, slice by slice
@@ -831,7 +850,6 @@ Open an issue: [a number looks wrong](https://github.com/mikezupper/learn-solar-
 | Untested on a projector, Firefox, or a real phone | Tests run in Chromium, and in WebKit at phone sizes, which is not quite Safari on iOS. A dark page could wash out in a lit classroom |
 | Data covers 2000 to 2050 | Uranus and Neptune cannot finish an orbit |
 | Leap seconds are a table in the code | A new one would need a release, though none has been added since 2017 |
-| No strict Content-Security-Policy | Needed before public deployment |
 | One tile writer at a time | The catalog has no compare-and-swap |
 
 ## Citation, license and credits
@@ -850,7 +868,7 @@ This project's code and documents are released under the [MIT License](LICENSE).
 - **JPL's data**: the kernels, and tiles and fixtures derived from them, remain subject to JPL's own terms.
 - **The submodules under `skills/`** are separate repositories with their own terms. They are not part of this project's code.
 - **Dependencies** each have their own licenses.
-- **The fonts in `apps/web/public/fonts/`** are under the SIL Open Font License, included beside them.
+- **The fonts in `apps/web/src/fonts/`** are under the SIL Open Font License, whose text is in `apps/web/public/fonts/`.
 - **[The harness-engineering summary](docs/references/harness-engineering.md)** is in our own words, and the article it describes belongs to its authors.
 
 ### Credits

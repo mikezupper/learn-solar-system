@@ -1,13 +1,13 @@
 @font-face {
   font-family: Unbounded;
-  src: url("/fonts/unbounded-latin.woff2") format("woff2");
+  src: url("../fonts/unbounded-latin.woff2") format("woff2");
   font-weight: 500 800;
   font-display: swap;
 }
 
 @font-face {
   font-family: Doto;
-  src: url("/fonts/doto-latin.woff2") format("woff2");
+  src: url("../fonts/doto-latin.woff2") format("woff2");
   font-weight: 900;
   font-display: swap;
 }

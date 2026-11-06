@@ -1,0 +1,22 @@
+# Only what the image needs reaches Docker. Above all never .env, which holds real hostnames.
+.env
+.env.*
+
+.git
+**/node_modules
+**/dist
+**/.gyral
+**/test-results
+**/playwright-report
+.harness
+.vitest
+coverage
+*.tsbuildinfo
+*.bsp
+
+# For people and agents, not for the build.
+skills
+docs
+observability
+.github
+.claude

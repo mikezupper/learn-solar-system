@@ -1,6 +1,6 @@
 # Security
 
-- **Status:** accepted · **Verified:** 2026-10-31
+- **Status:** accepted · **Verified:** 2026-11-06
 
 The site is static and holds no accounts and no personal data. The main risks are integrity and supply chain.
 
@@ -17,5 +17,6 @@ The site is static and holds no accounts and no personal data. The main risks ar
 | A fork's pull request reaches the repository | Workflows use `pull_request`, with read-only permissions and no secrets | |
 
 No secrets exist in this repository, and none are needed to run it. `.mcp.json` names a public Gyral
-endpoint and needs no token. A strict Content-Security-Policy is in the [debt tracker](exec-plans/tech-debt-tracker.md). To report a
+endpoint and needs no token. The production image sends a strict Content-Security-Policy, set in `deploy/nginx.conf`, and a browser test in CI fails if the
+page breaks it. To report a
 vulnerability, see [the security policy](../SECURITY.md).

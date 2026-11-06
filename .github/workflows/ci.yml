@@ -23,6 +23,27 @@ jobs:
       - run: pnpm --filter @solar/web exec playwright install --with-deps chromium webkit
       - run: pnpm verify
 
+  # The production image, built from the two years in fixtures/tiles, so that CI never calls JPL.
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker buildx build --file deploy/Dockerfile --build-arg TILE_SOURCE=fixtures --load --tag learn-solar-system:ci .
+      - run: |
+          docker run --detach --name site --publish 127.0.0.1:8080:8080 learn-solar-system:ci
+          curl --silent --output /dev/null --retry 20 --retry-delay 1 --retry-connrefused --retry-all-errors http://127.0.0.1:8080/healthz
+      - run: deploy/check-image.sh http://127.0.0.1:8080
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @solar/web exec playwright install --with-deps chromium webkit
+      - run: pnpm --filter @solar/web exec playwright test e2e/served.spec.ts
+        env:
+          E2E_BASE_URL: http://127.0.0.1:8080
+
   kernel:
     runs-on: ubuntu-latest
     steps:

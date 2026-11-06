@@ -9,6 +9,13 @@ import { CameraRig, FRAMED_RADIUS_KM } from "./stage-rig.js"
 import { buildScene, PLANET_COLORS, type Scene3D } from "./stage-scene.js"
 import STAGE_STYLES from "./stage.css?inline"
 
+/**
+ * One sheet, shared by every stage. A constructed sheet, unlike a <style> element, is allowed by the
+ * page's Content-Security-Policy without 'unsafe-inline'.
+ */
+const STAGE_SHEET = new CSSStyleSheet()
+STAGE_SHEET.replaceSync(STAGE_STYLES)
+
 const FRAMES_PER_REPORT = 30
 const FRAMES_PER_MEASURE = 8
 const SECONDS_PER_MILLI = 0.001
@@ -76,9 +83,8 @@ export class SkyStage extends HTMLElement {
       list.append(item)
       return [name, item] as const
     })
-    const style = document.createElement("style")
-    style.textContent = STAGE_STYLES
-    root.replaceChildren(style, year, canvas, this.#overlay, list, badge)
+    root.adoptedStyleSheets = [STAGE_SHEET]
+    root.replaceChildren(year, canvas, this.#overlay, list, badge)
 
     Result.match(buildScene(canvas), {
       onFailure: () => {

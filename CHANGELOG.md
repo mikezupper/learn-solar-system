@@ -29,6 +29,14 @@ has no releases yet, so everything sits under Unreleased.
 - The harness: custom lints, generated documents, a per-worktree dev environment, and a telemetry stack.
 - `pnpm dev:quick`, which runs the page on real data with no Docker or downloads.
 - An MIT license, contributor and teacher guides, a deployment guide, issue and pull-request templates, and CI.
+- A production Docker image: nginx serving the page and the data, for `linux/amd64` and `linux/arm64`. Every file named
+  after its contents is kept for a year, and the pages and the catalog are checked on every use, so a release needs no
+  purge. `deploy/build-image.sh` builds it, checks every rule against a running container, and pushes it.
+
+### Changed
+
+- The two fonts are now named after their contents, like every other file that can change between releases, so that an
+  updated font reaches visitors instead of waiting out a year in their cache.
 
 ### Fixed
 
@@ -40,3 +48,9 @@ has no releases yet, so everything sits under Unreleased.
   after every module had loaded. They are now linked from the HTML, which holds the first paint.
 - Two downloads of the kernel can now run at once. They had shared one partial file, so on an empty cache the second
   could fail.
+
+### Security
+
+- The image sends a strict Content-Security-Policy, which allows scripts, styles, fonts and data from the site's own origin only.
+  The 3D view now styles itself with a constructed stylesheet, and the page with no script hides its buttons from a stylesheet,
+  so that neither needs an inline style.

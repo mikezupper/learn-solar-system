@@ -104,6 +104,8 @@ test.describe("a reader wants to understand the page", () => {
       for (const name of EXPLANATION) {
         await expect(page.getByRole("heading", { level: 2, name, exact: true })).toBeVisible()
       }
+      // These buttons drive the picture, so without a script they would do nothing.
+      await expect(page.getByRole("button", { name: "Watch Mercury hurry" })).toBeHidden()
     })
   })
 })

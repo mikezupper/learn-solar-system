@@ -135,6 +135,10 @@
     border-inline-start: 0.5rem solid currentColor;
   }
   article [data-try-view]:hover { background: var(--warp); color: var(--on-warp); }
+  /* These buttons set up the picture, so without a script they would do nothing. */
+  @media (scripting: none) {
+    article [data-try-view] { display: none; }
+  }
   [data-formula] { display: grid; gap: 0.5rem; max-inline-size: none; margin-block-start: 1rem; }
   [data-formula] b { color: var(--warp); font: 900 clamp(3rem, 1rem + 13vi, 12rem)/0.9 var(--dots); word-spacing: -0.45em; white-space: nowrap; }
   [data-formula] var { font-family: inherit; font-size: inherit; font-style: normal; }

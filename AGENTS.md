@@ -85,6 +85,7 @@ pnpm test                # unit tests: no network, no browser
 pnpm test:browser        # Gyral elements in Chromium
 pnpm e2e                 # needs `pnpm build` first; Chromium, plus WebKit at phone sizes
 pnpm tiles:build         # compile, check against Horizons, publish missing years (TILE_YEARS, TILE_STORE_DIR)
+deploy/build-image.sh    # the production image: build and check it; --push publishes it. See docs/guides/deployment.md
 pnpm obs:logs '<LogsQL>' ; pnpm obs:metrics '<PromQL>' ; pnpm obs:traces solar-web
 pnpm gen-docs            # regenerate docs/generated
 ```

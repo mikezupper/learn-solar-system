@@ -4,12 +4,15 @@ import { defineConfig, devices } from "@playwright/test"
 const PORT =
   4600 + new TextEncoder().encode(import.meta.dirname).reduce((sum, byte) => sum + byte, 0) % 800
 
+/** A running copy of the production image, which `e2e/served.spec.ts` checks. Without it, a preview server starts. */
+const external = process.env.E2E_BASE_URL
+
 export default defineConfig({
   testDir: "e2e",
   forbidOnly: true,
   reporter: [["list"]],
   use: {
-    baseURL: `http://localhost:${String(PORT)}`,
+    baseURL: external ?? `http://localhost:${String(PORT)}`,
     timezoneId: "UTC",
     locale: "en-US",
   },
@@ -21,14 +24,18 @@ export default defineConfig({
     {
       // Most phones that reach this page run Safari, so the layouts that matter there run in its engine too.
       name: "webkit",
-      testMatch: ["layered-ui.spec.ts"],
+      testMatch: ["layered-ui.spec.ts", "served.spec.ts"],
       use: { ...devices["iPhone 13 Mini"] },
     },
   ],
-  webServer: {
-    command: `pnpm exec vite preview --port ${String(PORT)} --strictPort`,
-    port: PORT,
-    reuseExistingServer: false,
-    env: { TILE_STORE_DIR: "fixtures/tiles" },
-  },
+  ...(external === undefined
+    ? {
+        webServer: {
+          command: `pnpm exec vite preview --port ${String(PORT)} --strictPort`,
+          port: PORT,
+          reuseExistingServer: false,
+          env: { TILE_STORE_DIR: "fixtures/tiles" },
+        },
+      }
+    : {}),
 })

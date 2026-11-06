@@ -42,7 +42,7 @@ and `telemetryLayer` is the only place telemetry leaves a process.
 **`apps/web`**: the Vite app. `ui/classroom.ts` is the Gyral component, `ui/classroom-state.ts` its state, `ui/classroom-model.ts`
 its pure reducers and `ui/classroom-view.ts` its templates. `ui/stage.ts` is the custom element, with `ui/stage-scene.ts` the
 Three.js scene, `ui/stage-rig.ts` the camera, `ui/stage-painter.ts` each frame, and `ui/stage-overlay.ts` the 2D canvas above it.
-`ui/moment-clock.ts` runs the date between ticks. `public/fonts/` holds the self-hosted typefaces and their licenses.
+`ui/moment-clock.ts` runs the date between ticks. `src/fonts/` holds the self-hosted typefaces, which the build names after their contents, and `public/fonts/` their licenses.
 `ui/copy.ts` holds every sentence a component renders, and `runtime/app-runtime.ts` the single place Effects
 run in the browser. `index.html` holds the page's long explanation as static markup, so that it reads with no
 script and when the data fails to load. `about-the-data.html` is a plain document with no CSS or script, on purpose.
