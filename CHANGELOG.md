@@ -32,6 +32,8 @@ has no releases yet, so everything sits under Unreleased.
 - A production Docker image: nginx serving the page and the data, for `linux/amd64` and `linux/arm64`. Every file named
   after its contents is kept for a year, and the pages and the catalog are checked on every use, so a release needs no
   purge. `deploy/build-image.sh` builds it, checks every rule against a running container, and pushes it.
+- `deploy/compose.yaml`, which runs the image on one server, read-only and with no Linux capabilities, on
+  `127.0.0.1:8080` for a proxy or tunnel in front of it.
 
 ### Changed
 

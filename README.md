@@ -682,7 +682,8 @@ a decision: the whole accuracy claim rests on that file.
 
 **As a Docker image.** `deploy/build-image.sh` builds the page and the data into an nginx image, runs it, and checks every
 cache rule and security header against it before anything leaves the machine. With `--push` it builds `linux/amd64` and
-`linux/arm64`, and pushes them to the registry named in `.env`, tagged `sha-<commit>` and `latest`.
+`linux/arm64`, and pushes them to the registry named in `.env`, tagged `sha-<commit>` and `latest`. `deploy/compose.yaml` runs
+it on a server, behind a proxy or tunnel of your own.
 
 ```sh
 deploy/build-image.sh            # build for this machine and check it
@@ -775,7 +776,8 @@ tests send nothing**, because with no endpoint, `telemetryLayer` is the empty la
 │   ├── tiles/                      Genuine worker output for 2026 and 2027
 │   └── horizons/                   Answers recorded from JPL
 ├── observability/                  Docker Compose and Vector config for the telemetry stack
-├── deploy/                         The production image: Dockerfile, nginx config, and the scripts that build and check it
+├── deploy/                         The production image: Dockerfile, nginx config, the scripts that build and check it,
+│                                   and a compose file that runs it on a server
 ├── docs/
 │   ├── guides/                     Deploying, and using the page with a class
 │   ├── product-specs/              What the product does, slice by slice

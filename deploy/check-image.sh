@@ -17,6 +17,7 @@ NEVER="no-store"
 
 failures=0
 pass() { printf 'ok    %s\n' "$*"; }
+note() { printf 'note  %s\n' "$*"; }
 fail() {
   printf 'FAIL  %s\n' "$*"
   failures=$((failures + 1))
@@ -64,6 +65,33 @@ expect_header() {
   fi
 }
 
+# Checks that a cache holding one of the files with a fixed name can ask whether it changed.
+# Last-Modified must work. A copy dated a day later, as after a rollback, must get the file again,
+# so the date has to match exactly. An ETag is checked when one arrives: some CDNs drop it from
+# pages, and browsers then ask with Last-Modified alone.
+expect_revalidation() {
+  local path=$1 response modified later etag
+  response=$(headers_of "$path")
+  modified=$(header "$response" Last-Modified)
+  etag=$(header "$response" ETag)
+  if [ -n "$modified" ]; then
+    later=$(python3 -c '
+import datetime, email.utils, sys
+date = email.utils.parsedate_to_datetime(sys.argv[1]) + datetime.timedelta(days=1)
+print(email.utils.format_datetime(date, usegmt=True))' "$modified")
+    expect_cache "$path, unchanged since its Last-Modified" "$path" 304 "$ALWAYS_ASK" --header "If-Modified-Since: $modified"
+    expect_cache "$path, from a later release" "$path" 200 "$ALWAYS_ASK" --header "If-Modified-Since: $later"
+  else
+    fail "$path sends no Last-Modified, so a cache cannot ask whether it changed"
+  fi
+  if [ -n "$etag" ]; then
+    expect_cache "$path, unchanged since its ETag" "$path" 304 "$ALWAYS_ASK" --header "If-None-Match: $etag"
+    expect_cache "$path, with another ETag" "$path" 200 "$ALWAYS_ASK" --header 'If-None-Match: "0-0"'
+  else
+    note "$path sends no ETag, as when a CDN drops it; browsers ask with Last-Modified instead"
+  fi
+}
+
 page=$(curl --silent --show-error --fail "$base/")
 assets=$(printf '%s' "$page" | grep -oE '/assets/[^"]+\.(js|css)' | sort -u)
 [ -n "$assets" ] || fail "the page names no script or stylesheet under /assets"
@@ -103,13 +131,8 @@ expect_cache "a missing year" /tiles/planets-1900-0000000000000000.bin 404 "$NEV
 expect_cache "a folder" /tiles/ 404 "$NEVER"
 expect_cache "the health check" /healthz 200 "$NEVER"
 
-echo "Revalidation: an unchanged file costs a 304"
-etag=$(header "$(headers_of /)" ETag)
-if [ -n "$etag" ]; then
-  expect_cache "the page, unchanged" / 304 "$ALWAYS_ASK" --header "If-None-Match: $etag"
-else
-  fail "the page sends no ETag, so a cache cannot ask whether it changed"
-fi
+echo "Revalidation: an unchanged file costs a 304, and any other copy gets the file again"
+for path in / /about-the-data.html /tiles/catalog.json; do expect_revalidation "$path"; done
 
 echo "Compression"
 expect_header "a script" "$script" Content-Encoding gzip --header "Accept-Encoding: gzip"

@@ -1,0 +1,35 @@
+# The Solar System Classroom on one server.
+#
+# Copy this file and .env.example to one folder on the server, fill in .env, and run
+# `docker compose up -d`. The site answers plain HTTP on the port in .env, by default on 127.0.0.1
+# only, so that HTTPS and any CDN stay in front of it: a reverse proxy, a load balancer, or a
+# Cloudflare Tunnel that is run separately.
+# docs/guides/deployment.md, "With Docker Compose", has the steps.
+
+name: learn-solar-system
+
+services:
+  web:
+    image: ${IMAGE_REPOSITORY:?Set IMAGE_REPOSITORY in .env}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${SITE_ADDRESS:-127.0.0.1}:${SITE_PORT:-8080}:8080"
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+    # Static files only, so nothing in the container changes while it runs. nginx keeps its pid
+    # and temporary files in /tmp.
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--output-document=/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+      start_interval: 1s
+    deploy:
+      resources:
+        limits: { memory: 128m }

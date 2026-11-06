@@ -1,6 +1,8 @@
 # Only what the image needs reaches Docker. Above all never .env, which holds real hostnames.
 .env
 .env.*
+**/.env
+**/.env.*
 
 .git
 **/node_modules

@@ -7,8 +7,8 @@ CSS and JavaScript, plus a folder of data files. It needs no server code, databa
 
 There are two ways to run it. [The Docker image](#the-docker-image) holds the page, the data and every rule below, and
 is checked against a running container before it is pushed. [Any static host](#on-a-static-host) works too, with the
-same rules set by hand. The image was rehearsed on this machine and in CI. The static steps were rehearsed on a plain
-static file server, over `localhost`. No particular hosting company has been tried.
+same rules set by hand. The image was rehearsed on this machine and in CI, and has run behind Cloudflare. The static
+steps were rehearsed on a plain static file server, over `localhost`. No static hosting company has been tried.
 
 ## What a host must provide
 
@@ -33,8 +33,10 @@ deploy/build-image.sh --push     # then build linux/amd64 and linux/arm64, and p
 The script needs Docker with buildx, and a working tree with nothing uncommitted, because each image names its
 commit. It pushes three kinds of tags: `sha-<commit>`, `latest`, and `vX.Y.Z` when the commit carries that git tag.
 Before anything is pushed, [`deploy/check-image.sh`](../../deploy/check-image.sh) checks every cache rule in the table
-below against the running container. It also checks the security headers, and that a year of data arrives with the
-SHA-256 its catalog states. `/healthz` answers the container's health check.
+below against the running container. It also checks the security headers, that a year of data arrives with the
+SHA-256 its catalog states, and that the pages and the catalog revalidate: a copy still current costs a 304, and a copy
+from any other release, even a later one after a rollback, gets the file again. `/healthz` answers the container's
+health check.
 
 **The data is built inside the image.** The first build downloads JPL's 33 MB kernel and asks Horizons 459 questions,
 as in [step 1](#1-publish-the-data). The script's builder, `learn-solar-system`, keeps both in its cache, so a later
@@ -60,6 +62,43 @@ To roll back, run the previous `sha-` tag.
   year per second costs each student about two small requests a second.
 - **HSTS** is already sent, without `includeSubDomains`, because other names on the same domain are not this site's to
   decide for.
+
+### With Docker Compose
+
+[`deploy/compose.yaml`](../../deploy/compose.yaml) runs the image on one server, read-only and with no Linux
+capabilities. It runs the site only: HTTPS, and any CDN, stay with whatever is in front of it, such as a reverse proxy
+or a Cloudflare Tunnel run separately. The site answers plain HTTP on `127.0.0.1:8080`, so nothing else on the network
+reaches it. `SITE_ADDRESS` and `SITE_PORT` in `.env` change that.
+
+1. On the server, put `compose.yaml` and `.env.example` in one folder, and copy `.env.example` to `.env`.
+2. In `.env`, fill in the image's pull address and the tag, and a port if `8080` is taken.
+3. Run `docker compose up -d`. Then `curl -I http://127.0.0.1:8080/` should answer `200 OK`.
+4. Send the proxy's or tunnel's traffic for the site's name to `http://127.0.0.1:8080`. For a Cloudflare Tunnel, that
+   is a public hostname with the service type `HTTP` and the URL `127.0.0.1:8080`. A `cloudflared` or proxy that runs in
+   a container needs `network_mode: host` to reach it, since a container's own `127.0.0.1` is not the server's.
+5. From any machine, run `deploy/check-image.sh https://<the site's name>`. It runs every check through what is in
+   front, so it also catches a setting there that rewrites the site's headers.
+
+To release, set `IMAGE_TAG` in `.env` to the new `sha-` tag, or leave it at `latest`, and run
+`docker compose pull && docker compose up -d`. A rollback is the previous tag. While the container is replaced, for a
+second or two, whatever is in front answers with an error page.
+
+Behind Cloudflare, set these for the site's hostname:
+
+- **Always Use HTTPS** on, because the page shows no numbers over plain HTTP.
+- **Browser Cache TTL** at "Respect Existing Headers", so that Cloudflare passes the site's `Cache-Control` on unchanged.
+- **No Cache Rule for pages.** By default Cloudflare caches the year-long files and passes pages and the catalog through,
+  which is what this site wants. A "cache everything" rule would keep serving an old page after a release.
+- **Rocket Loader off, and Web Analytics' automatic setup off.** Both add scripts that the page's Content-Security-Policy
+  blocks: Rocket Loader would break the page, and the analytics would never load.
+
+Cloudflare may drop the ETag from the two pages, though not from the catalog. It does that while a feature that rewrites
+HTML is on, even one that finds nothing to change, such as Email Address Obfuscation or Automatic HTTPS Rewrites. The
+pages then revalidate with `Last-Modified` alone, which costs the same 304, and `check-image.sh` reports the missing
+ETag as a note rather than a failure. The site has no email addresses or `http://` links for either feature to change.
+
+The compose file was tested on this machine, where the site starts read-only and healthy and passes every check on
+`127.0.0.1`. It has also run behind a Cloudflare Tunnel, where every check passed through Cloudflare's edge.
 
 ## On a static host
 
